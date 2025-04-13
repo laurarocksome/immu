@@ -1,0 +1,282 @@
+"use client"
+
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { ChevronDown } from "lucide-react"
+import Logo from "@/app/components/logo"
+
+type WeightUnit = "kg" | "lb"
+type HeightUnit = "cm" | "ft"
+
+export default function UserProfilePage() {
+  const router = useRouter()
+  const [gender, setGender] = useState<string | null>(null)
+  const [age, setAge] = useState<string>("")
+  const [weight, setWeight] = useState<string>("")
+  const [weightUnit, setWeightUnit] = useState<WeightUnit>("kg")
+  const [height, setHeight] = useState<string>("")
+  const [heightUnit, setHeightUnit] = useState<HeightUnit>("cm")
+  const [showWeightDropdown, setShowWeightDropdown] = useState(false)
+  const [showHeightDropdown, setShowHeightDropdown] = useState(false)
+  const [error, setError] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+
+  const handleGenderSelect = (selectedGender: string) => {
+    setGender(selectedGender)
+  }
+
+  const toggleWeightDropdown = () => {
+    setShowWeightDropdown(!showWeightDropdown)
+    if (showHeightDropdown) setShowHeightDropdown(false)
+  }
+
+  const toggleHeightDropdown = () => {
+    setShowHeightDropdown(!showHeightDropdown)
+    if (showWeightDropdown) setShowWeightDropdown(false)
+  }
+
+  const selectWeightUnit = (unit: WeightUnit) => {
+    setWeightUnit(unit)
+    setShowWeightDropdown(false)
+  }
+
+  const selectHeightUnit = (unit: HeightUnit) => {
+    setHeightUnit(unit)
+    setShowHeightDropdown(false)
+  }
+
+  const validateInputs = () => {
+    if (!gender) {
+      setError("Please select your gender")
+      return false
+    }
+
+    if (!age || isNaN(Number(age)) || Number(age) <= 0 || Number(age) > 120) {
+      setError("Please enter a valid age")
+      return false
+    }
+
+    if (!weight || isNaN(Number(weight)) || Number(weight) <= 0) {
+      setError("Please enter a valid weight")
+      return false
+    }
+
+    if (!height || isNaN(Number(height)) || Number(height) <= 0) {
+      setError("Please enter a valid height")
+      return false
+    }
+
+    return true
+  }
+
+  const handleContinue = () => {
+    if (!validateInputs()) return
+
+    setIsLoading(true)
+
+    // Save user profile data to localStorage
+    const userProfile = {
+      gender,
+      age: Number(age),
+      weight: Number(weight),
+      weightUnit,
+      height: Number(height),
+      heightUnit,
+    }
+
+    localStorage.setItem("userProfile", JSON.stringify(userProfile))
+
+    // Simulate a brief loading period
+    setTimeout(() => {
+      // Continue to the account creation page
+      router.push("/onboarding/create-account")
+      setIsLoading(false)
+    }, 800)
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-brand-lightest to-white text-brand-dark">
+      {/* Header */}
+      <header className="p-4 flex justify-center items-center bg-brand-dark text-white">
+        <Logo />
+      </header>
+
+      {/* Main Content */}
+      <main className="flex-1 px-4 pb-8 overflow-auto">
+        <div className="max-w-md mx-auto">
+          <div className="mb-8 text-center">
+            <h2 className="text-2xl font-bold mb-2">About You</h2>
+            <p className="text-brand-dark/70">Please enter some basic information to personalize your experience.</p>
+          </div>
+
+          {/* Error message */}
+          {error && (
+            <div className="mb-6 p-3 bg-red-500/20 border border-red-500/50 rounded-xl text-center text-red-700">
+              {error}
+            </div>
+          )}
+
+          <div className="glass-card rounded-2xl p-6 space-y-6">
+            {/* Gender Selection */}
+            <div>
+              <label className="block mb-2">Your gender at birth</label>
+              <div className="grid grid-cols-2 gap-4">
+                <button
+                  type="button"
+                  onClick={() => handleGenderSelect("Female")}
+                  className={`py-3 rounded-xl transition-colors ${
+                    gender === "Female"
+                      ? "bg-pink-400 text-white"
+                      : "bg-white/80 border border-brand-dark/20 hover:bg-white"
+                  }`}
+                >
+                  Female
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleGenderSelect("Male")}
+                  className={`py-3 rounded-xl transition-colors ${
+                    gender === "Male"
+                      ? "bg-pink-400 text-white"
+                      : "bg-white/80 border border-brand-dark/20 hover:bg-white"
+                  }`}
+                >
+                  Male
+                </button>
+              </div>
+            </div>
+
+            {/* Age Input */}
+            <div>
+              <label htmlFor="age" className="block mb-2">
+                Age
+              </label>
+              <input
+                type="number"
+                id="age"
+                value={age}
+                onChange={(e) => setAge(e.target.value)}
+                placeholder="Enter your age"
+                className="w-full p-3 rounded-xl bg-white/80 border border-brand-dark/20 focus:outline-none focus:ring-2 focus:ring-pink-400"
+                min="1"
+                max="120"
+              />
+            </div>
+
+            {/* Weight Input */}
+            <div>
+              <label className="block mb-2 text-center">Weight</label>
+              <div className="flex">
+                <input
+                  type="number"
+                  value={weight}
+                  onChange={(e) => setWeight(e.target.value)}
+                  placeholder="Enter weight"
+                  className="flex-1 p-3 rounded-l-xl bg-white/80 border border-brand-dark/20 focus:outline-none focus:ring-2 focus:ring-pink-400"
+                  min="1"
+                />
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={toggleWeightDropdown}
+                    className="flex items-center justify-between w-32 p-3 bg-white/80 border border-brand-dark/20 rounded-r-xl"
+                  >
+                    <span>{weightUnit}</span>
+                    <ChevronDown className="h-4 w-4 ml-2" />
+                  </button>
+
+                  {showWeightDropdown && (
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-brand-dark/20 rounded-xl shadow-lg z-10">
+                      <button
+                        type="button"
+                        onClick={() => selectWeightUnit("kg")}
+                        className="block w-full text-left px-4 py-2 hover:bg-brand-lightest"
+                      >
+                        kg
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => selectWeightUnit("lb")}
+                        className="block w-full text-left px-4 py-2 hover:bg-brand-lightest"
+                      >
+                        lb
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Height Input */}
+            <div>
+              <label className="block mb-2 text-center">Height</label>
+              <div className="flex">
+                <input
+                  type="number"
+                  value={height}
+                  onChange={(e) => setHeight(e.target.value)}
+                  placeholder="Enter height"
+                  className="flex-1 p-3 rounded-l-xl bg-white/80 border border-brand-dark/20 focus:outline-none focus:ring-2 focus:ring-pink-400"
+                  min="1"
+                />
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={toggleHeightDropdown}
+                    className="flex items-center justify-between w-32 p-3 bg-white/80 border border-brand-dark/20 rounded-r-xl"
+                  >
+                    <span>{heightUnit}</span>
+                    <ChevronDown className="h-4 w-4 ml-2" />
+                  </button>
+
+                  {showHeightDropdown && (
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-brand-dark/20 rounded-xl shadow-lg z-10">
+                      <button
+                        type="button"
+                        onClick={() => selectHeightUnit("cm")}
+                        className="block w-full text-left px-4 py-2 hover:bg-brand-lightest"
+                      >
+                        cm
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => selectHeightUnit("ft")}
+                        className="block w-full text-left px-4 py-2 hover:bg-brand-lightest"
+                      >
+                        ft
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Next button */}
+          <button
+            onClick={handleContinue}
+            disabled={isLoading}
+            className="w-full gradient-button py-4 rounded-full mt-8"
+          >
+            {isLoading ? "Saving Profile..." : "Next"}
+          </button>
+        </div>
+      </main>
+
+      {/* Progress indicator */}
+      <div className="p-4 flex justify-center">
+        <div className="flex space-x-2">
+          <div className="w-2 h-2 rounded-full bg-pink-400"></div>
+          <div className="w-2 h-2 rounded-full bg-pink-400"></div>
+          <div className="w-2 h-2 rounded-full bg-pink-400"></div>
+          <div className="w-2 h-2 rounded-full bg-pink-400"></div>
+          <div className="w-2 h-2 rounded-full bg-pink-400"></div>
+          <div className="w-2 h-2 rounded-full bg-pink-400"></div>
+          <div className="w-2 h-2 rounded-full bg-pink-400"></div>
+          <div className="w-2 h-2 rounded-full bg-pink-400"></div>
+          <div className="w-2 h-2 rounded-full bg-pink-400"></div>
+        </div>
+      </div>
+    </div>
+  )
+}
