@@ -85,15 +85,19 @@ export default function SymptomsPage() {
         setSelectedSymptoms([...selectedSymptoms, symptom])
         setError("")
       } else {
-        setError("You can select up to 5 symptoms")
+        setError("You can select only 5 symptoms")
       }
     }
   }
 
   const handleContinue = () => {
-    // Save selected symptoms even if empty
-    localStorage.setItem("selectedSymptoms", JSON.stringify(selectedSymptoms))
-    router.push("/onboarding/stress")
+    if (selectedSymptoms.length === 5) {
+      // Save selected symptoms
+      localStorage.setItem("selectedSymptoms", JSON.stringify(selectedSymptoms))
+      router.push("/onboarding/stress")
+    } else {
+      setError("Please select exactly 5 symptoms to continue")
+    }
   }
 
   const handleBack = () => {
@@ -129,8 +133,7 @@ export default function SymptomsPage() {
           <div className="mb-6 text-center">
             <h2 className="text-2xl font-bold mb-2">What symptoms are you experiencing?</h2>
             <p className="text-brand-dark/70 mb-4">
-              Select up to 5 symptoms that you're currently experiencing. You can also continue without selecting any
-              symptoms.
+              Select 5 symptoms that you're currently experiencing. You must select exactly 5 symptoms to continue.
             </p>
           </div>
 
@@ -194,7 +197,11 @@ export default function SymptomsPage() {
           </div>
 
           {/* Navigation buttons */}
-          <button className="w-full gradient-button py-4 rounded-full" onClick={handleContinue}>
+          <button
+            className={`w-full gradient-button py-4 rounded-full ${selectedSymptoms.length !== 5 ? "opacity-70" : ""}`}
+            onClick={handleContinue}
+            disabled={selectedSymptoms.length !== 5}
+          >
             Continue
           </button>
         </div>

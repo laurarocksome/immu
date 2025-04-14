@@ -11,7 +11,6 @@ export default function Home() {
 
         {/* Main content */}
         <div className="w-full space-y-6">
-          <h1 className="text-2xl font-semibold text-center text-primary-color">Welcome to IMMU</h1>
           <p className="text-lg text-secondary-color text-center mb-8">
             Your personal guide to the Autoimmune Protocol diet
           </p>

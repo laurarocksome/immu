@@ -132,7 +132,10 @@ export default function CreateAccountPage() {
                 className="h-5 w-5 rounded border-brand-dark/30 bg-white/80 text-pink-400 focus:ring-pink-400"
               />
               <label htmlFor="terms" className="ml-2 text-brand-dark">
-                I agree to terms and conditions
+                I agree to{" "}
+                <a href="/terms" className="text-pink-500 hover:underline">
+                  terms and conditions
+                </a>
               </label>
             </div>
           </div>
