@@ -24,34 +24,6 @@ import DietViolationOptions from "@/app/components/diet-violation-options"
 import RestartConfirmation from "@/app/components/restart-confirmation"
 import AdaptationPeriodQuestion from "@/app/components/adaptation-period-question"
 
-// Sample symptoms for tracking
-const symptoms = [
-  { id: 1, name: "Fatigue", description: "Feeling tired or exhausted" },
-  { id: 2, name: "Joint Pain", description: "Pain, stiffness, or swelling in joints" },
-  { id: 3, name: "Brain Fog", description: "Difficulty concentrating or thinking clearly" },
-  { id: 4, name: "Digestive Issues", description: "Bloating, gas, diarrhea, or constipation" },
-  { id: 5, name: "Headaches", description: "Pain or pressure in head" },
-]
-
-// Period symptoms
-const periodSymptoms = [
-  { id: "menstrual_cramps", name: "Menstrual Cramps" },
-  { id: "headaches", name: "Headaches or Migraines" },
-  { id: "breast_tenderness", name: "Breast Tenderness" },
-  { id: "lower_back_pain", name: "Lower Back Pain" },
-  { id: "muscle_aches", name: "Muscle Aches" },
-  { id: "joint_pain", name: "Joint Pain" },
-]
-
-// Add this new array of digestive symptoms after the period symptoms array
-const digestiveSymptoms = [
-  { id: "nauseous", name: "Nauseous" },
-  { id: "bloated", name: "Bloated" },
-  { id: "gassy", name: "Gassy" },
-  { id: "heartburn", name: "Heartburn" },
-  { id: "ok", name: "OK" },
-]
-
 // Sample mood options
 const moodOptions = [
   { value: 5, label: "Great", icon: Smile },
@@ -79,6 +51,25 @@ const stressLevels = [
   { value: 5, label: "Severe", description: "Extremely stressed" },
 ]
 
+// Period symptoms
+const periodSymptoms = [
+  { id: "menstrual_cramps", name: "Menstrual Cramps" },
+  { id: "headaches", name: "Headaches or Migraines" },
+  { id: "breast_tenderness", name: "Breast Tenderness" },
+  { id: "lower_back_pain", name: "Lower Back Pain" },
+  { id: "muscle_aches", name: "Muscle Aches" },
+  { id: "joint_pain", name: "Joint Pain" },
+]
+
+// Digestive symptoms
+const digestiveSymptoms = [
+  { id: "nauseous", name: "Nauseous" },
+  { id: "bloated", name: "Bloated" },
+  { id: "gassy", name: "Gassy" },
+  { id: "heartburn", name: "Heartburn" },
+  { id: "ok", name: "OK" },
+]
+
 export default function LogDayPage() {
   const router = useRouter()
   const [selectedDate, setSelectedDate] = useState(new Date())
@@ -87,7 +78,7 @@ export default function LogDayPage() {
   const [sleep, setSleep] = useState<number | null>(null)
   const [stress, setStress] = useState<number | null>(null)
   const [notes, setNotes] = useState("")
-  const [userSymptoms, setUserSymptoms] = useState(symptoms)
+  const [userSymptoms, setUserSymptoms] = useState<Array<{ id: number; name: string; description: string }>>([])
 
   // New states for diet tracking
   const [showDietQuestion, setShowDietQuestion] = useState(false)
@@ -103,29 +94,87 @@ export default function LogDayPage() {
   const [customPeriodSymptom, setCustomPeriodSymptom] = useState("")
   const [showCustomSymptomInput, setShowCustomSymptomInput] = useState(false)
 
-  // Add these new state variables after the period tracking states
+  // Digestive symptoms states
   const [selectedDigestiveSymptoms, setSelectedDigestiveSymptoms] = useState<string[]>([])
   const [customDigestiveSymptom, setCustomDigestiveSymptom] = useState("")
   const [showCustomDigestiveSymptomInput, setShowCustomDigestiveSymptomInput] = useState(false)
 
   useEffect(() => {
-    // Load user symptoms from localStorage if available
-    const savedSymptoms = localStorage.getItem("userSymptoms")
-    if (savedSymptoms) {
-      const parsedSymptoms = JSON.parse(savedSymptoms)
+    // Load user symptoms from localStorage
+    const loadUserSymptoms = () => {
+      try {
+        // First try to get the symptoms selected during onboarding
+        const selectedSymptoms = localStorage.getItem("selectedSymptoms")
 
-      // Convert the string array to our symptom format
-      const formattedSymptoms = parsedSymptoms.map((name: string, index: number) => ({
-        id: index + 1,
-        name,
-        description: `Track your ${name.toLowerCase()} symptoms`,
-      }))
+        if (selectedSymptoms) {
+          const parsedSymptoms = JSON.parse(selectedSymptoms)
 
-      // If we have user symptoms, use them instead of the default ones
-      if (formattedSymptoms.length > 0) {
-        setUserSymptoms(formattedSymptoms)
+          if (Array.isArray(parsedSymptoms) && parsedSymptoms.length > 0) {
+            // Convert the string array to our symptom format
+            const formattedSymptoms = parsedSymptoms.map((name, index) => ({
+              id: index + 1,
+              name,
+              description: `Track your ${name.toLowerCase()} symptoms`,
+            }))
+
+            setUserSymptoms(formattedSymptoms)
+            console.log("Loaded symptoms from onboarding:", formattedSymptoms)
+            return
+          }
+        }
+
+        // If no onboarding symptoms found, check for previously saved userSymptoms
+        const savedSymptoms = localStorage.getItem("userSymptoms")
+        if (savedSymptoms) {
+          const parsedSymptoms = JSON.parse(savedSymptoms)
+
+          if (Array.isArray(parsedSymptoms) && parsedSymptoms.length > 0) {
+            // If it's already in the right format, use it directly
+            if (typeof parsedSymptoms[0] === "object" && parsedSymptoms[0].id) {
+              setUserSymptoms(parsedSymptoms)
+              console.log("Loaded symptoms from userSymptoms (object format):", parsedSymptoms)
+            } else {
+              // Convert string array to our symptom format
+              const formattedSymptoms = parsedSymptoms.map((name, index) => ({
+                id: index + 1,
+                name,
+                description: `Track your ${name.toLowerCase()} symptoms`,
+              }))
+
+              setUserSymptoms(formattedSymptoms)
+              console.log("Loaded symptoms from userSymptoms (string format):", formattedSymptoms)
+            }
+            return
+          }
+        }
+
+        // If no symptoms found anywhere, use default fallback symptoms
+        const defaultSymptoms = [
+          { id: 1, name: "Fatigue", description: "Feeling tired or exhausted" },
+          { id: 2, name: "Joint Pain", description: "Pain, stiffness, or swelling in joints" },
+          { id: 3, name: "Brain Fog", description: "Difficulty concentrating or thinking clearly" },
+          { id: 4, name: "Digestive Issues", description: "Bloating, gas, diarrhea, or constipation" },
+          { id: 5, name: "Headaches", description: "Pain or pressure in head" },
+        ]
+
+        setUserSymptoms(defaultSymptoms)
+        console.log("Using default symptoms:", defaultSymptoms)
+      } catch (error) {
+        console.error("Error loading user symptoms:", error)
+        // Fallback to default symptoms in case of error
+        const defaultSymptoms = [
+          { id: 1, name: "Fatigue", description: "Feeling tired or exhausted" },
+          { id: 2, name: "Joint Pain", description: "Pain, stiffness, or swelling in joints" },
+          { id: 3, name: "Brain Fog", description: "Difficulty concentrating or thinking clearly" },
+          { id: 4, name: "Digestive Issues", description: "Bloating, gas, diarrhea, or constipation" },
+          { id: 5, name: "Headaches", description: "Pain or pressure in head" },
+        ]
+        setUserSymptoms(defaultSymptoms)
       }
     }
+
+    // Load user symptoms
+    loadUserSymptoms()
 
     // Check if the user has already logged their diet success today
     checkIfDietSuccessLoggedToday()
@@ -283,7 +332,6 @@ export default function LogDayPage() {
     return symptom ? symptom.name : symptomId
   }
 
-  // Add these new functions after the period symptom functions
   // Toggle digestive symptom selection
   const toggleDigestiveSymptom = (symptomId: string) => {
     setSelectedDigestiveSymptoms((prev) => {
@@ -330,7 +378,9 @@ export default function LogDayPage() {
     // Save symptoms to localStorage
     localStorage.setItem("loggedSymptoms", JSON.stringify(loggedSymptoms))
 
-    // Update the handleSaveLog function to include digestive symptoms
+    // Save the user's symptoms for future use
+    localStorage.setItem("userSymptoms", JSON.stringify(userSymptoms.map((s) => s.name)))
+
     // Modify the loggedDay object in the handleSaveLog function to include digestive symptoms
     const loggedDay = {
       mood,
