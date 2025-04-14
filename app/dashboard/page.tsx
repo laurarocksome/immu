@@ -14,6 +14,7 @@ import {
   ChevronLeft,
   LightbulbIcon,
   HelpCircle,
+  ExternalLink,
 } from "lucide-react"
 import Logo from "@/components/Logo"
 
@@ -427,6 +428,34 @@ export default function Dashboard() {
     return `${linePath} L ${lastX},100 L ${firstX},100 Z`
   }
 
+  // Function to get digestive symptom tip
+  const getDigestiveSymptomTip = (symptomId: string) => {
+    switch (symptomId) {
+      case "nauseous":
+        return {
+          tip: "If you feel nauseous, try increasing healthy fats, check for food sensitivities, and stay hydrated.",
+          link: "/faq#digestive-nauseous",
+        }
+      case "bloated":
+        return {
+          tip: "Bloating may be caused by too much fiber, fermented foods, coconut, or stress. Try adjusting your diet.",
+          link: "/faq#digestive-bloated",
+        }
+      case "gassy":
+        return {
+          tip: "Gas can be caused by fiber, coconut, large portions, or cruciferous vegetables. Try cooking vegetables well.",
+          link: "/faq#digestive-gassy",
+        }
+      case "heartburn":
+        return {
+          tip: "Heartburn may be triggered by high-fat foods, large portions, or eating too close to bedtime.",
+          link: "/faq#digestive-heartburn",
+        }
+      default:
+        return null
+    }
+  }
+
   // Function to generate daily observations based on logged symptoms
   const generateDailyObservations = () => {
     // If no symptoms are logged, return null
@@ -457,8 +486,21 @@ export default function Dashboard() {
       const relevantSymptoms = loggedDigestiveSymptoms.filter((s) => s !== "ok")
 
       if (relevantSymptoms.length > 0) {
+        // Add general observation about digestive symptoms
         const symptomNames = relevantSymptoms.map(getDigestiveSymptomName).join(", ")
         observations.push(`Your digestive symptoms (${symptomNames}) may be related to recent dietary changes.`)
+
+        // Add specific tips for each digestive symptom
+        relevantSymptoms.forEach((symptomId) => {
+          const tipInfo = getDigestiveSymptomTip(symptomId)
+          if (tipInfo) {
+            observations.push({
+              text: tipInfo.tip,
+              link: tipInfo.link,
+              linkText: "Learn more",
+            })
+          }
+        })
       }
     }
 
@@ -517,7 +559,6 @@ export default function Dashboard() {
           </div>
         </div>
       )}
-
       {/* Header */}
       <header className="p-4 flex justify-between items-center header-gradient text-white">
         <Logo />
@@ -538,7 +579,6 @@ export default function Dashboard() {
           </button>
         </div>
       </header>
-
       {/* Main Content */}
       <main className="flex-1 p-6 overflow-auto">
         {/* Date and Greeting */}
@@ -1096,15 +1136,27 @@ export default function Dashboard() {
               {dailyObservations.map((observation, index) => (
                 <li key={index} className="flex items-start">
                   <span className="inline-block w-2 h-2 rounded-full bg-pink-400 mt-1.5 mr-3 flex-shrink-0"></span>
-                  <span className="text-sm text-primary-color">{observation}</span>
+                  {typeof observation === "string" ? (
+                    <span className="text-sm text-primary-color">{observation}</span>
+                  ) : (
+                    <div className="text-sm text-primary-color">
+                      {observation.text}{" "}
+                      <button
+                        onClick={() => router.push(observation.link)}
+                        className="text-accent-color inline-flex items-center"
+                      >
+                        {observation.linkText}
+                        <ExternalLink className="h-3 w-3 ml-1" />
+                      </button>
+                    </div>
+                  )}
                 </li>
               ))}
             </ul>
           )}
         </div>
       </main>
-
-      {/* Bottom Navigation */}
+      ;
       <nav className="grid grid-cols-5 border-t border-[#e4e0f0] bg-white/80 backdrop-blur-sm">
         <button
           className="flex flex-col items-center justify-center py-3 text-xs"

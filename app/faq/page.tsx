@@ -2,19 +2,21 @@
 
 import type React from "react"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useEffect } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { List, Home, Plus, BookOpen, UtensilsCrossed, ArrowLeft, ChevronDown, ChevronUp } from "lucide-react"
 import Logo from "@/app/components/logo"
 
 // FAQ item interface
 interface FAQItem {
+  id: string
   question: string
   answer: React.ReactNode
 }
 
 export default function FAQPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null)
 
   const handleBack = () => {
@@ -29,9 +31,29 @@ export default function FAQPage() {
     }
   }
 
+  // Check for hash in URL on mount to expand specific FAQ item
+  useEffect(() => {
+    const hash = window.location.hash
+    if (hash) {
+      const targetId = hash.substring(1) // Remove the # character
+      const targetIndex = faqItems.findIndex((item) => item.id === targetId)
+      if (targetIndex !== -1) {
+        setExpandedIndex(targetIndex)
+        // Scroll to the element
+        setTimeout(() => {
+          const element = document.getElementById(targetId)
+          if (element) {
+            element.scrollIntoView({ behavior: "smooth", block: "start" })
+          }
+        }, 100)
+      }
+    }
+  }, [])
+
   // FAQ data
   const faqItems: FAQItem[] = [
     {
+      id: "aip-diet",
       question: "What is the AIP Diet?",
       answer: (
         <p className="text-brand-dark/80">
@@ -42,6 +64,7 @@ export default function FAQPage() {
       ),
     },
     {
+      id: "diet-duration",
       question: "How long should I follow the AIP diet?",
       answer: (
         <p className="text-brand-dark/80">
@@ -51,6 +74,7 @@ export default function FAQPage() {
       ),
     },
     {
+      id: "adaptation-period",
       question: "What is the adaptation period?",
       answer: (
         <p className="text-brand-dark/80">
@@ -61,6 +85,7 @@ export default function FAQPage() {
       ),
     },
     {
+      id: "eliminated-foods",
       question: "What foods are eliminated on AIP?",
       answer: (
         <p className="text-brand-dark/80">
@@ -70,6 +95,7 @@ export default function FAQPage() {
       ),
     },
     {
+      id: "stress-management",
       question: "How do I manage stress during AIP?",
       answer: (
         <div>
@@ -106,6 +132,7 @@ export default function FAQPage() {
       ),
     },
     {
+      id: "caffeine-restriction",
       question: "Why is caffeine not allowed on AIP?",
       answer: (
         <div>
@@ -131,6 +158,7 @@ export default function FAQPage() {
       ),
     },
     {
+      id: "weight-loss",
       question: "What about weight loss on AIP?",
       answer: (
         <div>
@@ -160,12 +188,190 @@ export default function FAQPage() {
       ),
     },
     {
+      id: "symptom-tracking",
       question: "How do I track my symptoms?",
       answer: (
         <p className="text-brand-dark/80">
           IMMU helps you track your symptoms daily. Consistent tracking is important to identify patterns and
           connections between foods and symptoms. Use the dashboard to log your meals and symptoms each day.
         </p>
+      ),
+    },
+    {
+      id: "digestive-nauseous",
+      question: "What causes nausea on AIP and how can I manage it?",
+      answer: (
+        <div>
+          <p className="text-brand-dark/80 mb-3">
+            If you're experiencing nausea while following the AIP diet, several factors could be contributing:
+          </p>
+          <ul className="list-disc pl-5 text-brand-dark/80 mb-3">
+            <li>
+              <strong>Insufficient healthy fats:</strong> Increase your healthy fat intake gradually with foods like
+              avocado, olive oil, and coconut oil.
+            </li>
+            <li>
+              <strong>Food sensitivities:</strong> Try to remember what you ate today and check if the same foods give
+              you this feeling next time.
+            </li>
+            <li>
+              <strong>Fermented foods:</strong> Increase intake of fermented food gradually as they can cause digestive
+              upset when introduced too quickly.
+            </li>
+            <li>
+              <strong>High iron-foods:</strong> Some AIP-compliant foods high in iron could cause nausea in sensitive
+              individuals.
+            </li>
+            <li>
+              <strong>Low blood sugar:</strong> Ensure you're eating regular, balanced meals throughout the day.
+            </li>
+            <li>
+              <strong>Too much fiber:</strong> Try to increase your fiber intake gradually and make sure to cook your
+              vegetables thoroughly.
+            </li>
+            <li>
+              <strong>Dehydration:</strong> Ensure you're drinking enough water throughout the day.
+            </li>
+          </ul>
+          <p className="text-brand-dark/80 italic">
+            If nausea persists despite these adjustments, consider consulting with a healthcare provider to rule out
+            other causes.
+          </p>
+        </div>
+      ),
+    },
+    {
+      id: "digestive-bloated",
+      question: "What causes bloating on AIP and how can I manage it?",
+      answer: (
+        <div>
+          <p className="text-brand-dark/80 mb-3">
+            Bloating can be common when transitioning to the AIP diet. Here are potential causes and solutions:
+          </p>
+          <ul className="list-disc pl-5 text-brand-dark/80 mb-3">
+            <li>
+              <strong>Too much fiber:</strong> Try to increase your fiber intake gradually and make sure to cook your
+              vegetables thoroughly.
+            </li>
+            <li>
+              <strong>PMS:</strong> Hormonal fluctuations before your period can cause temporary bloating.
+            </li>
+            <li>
+              <strong>Fermented foods:</strong> Increase intake of fermented food gradually to allow your gut to adjust.
+            </li>
+            <li>
+              <strong>Coconut products:</strong> Large amounts of coconut can be hard to digest. Reduce the intake and
+              experiment to see how it affects you.
+            </li>
+            <li>
+              <strong>Large portions and fast eating:</strong> Try eating smaller meals more slowly, chewing thoroughly.
+            </li>
+            <li>
+              <strong>Stress:</strong> Practice stress management techniques as stress can directly impact digestion.
+            </li>
+          </ul>
+          <p className="text-brand-dark/80 italic">
+            Tracking your food intake alongside bloating symptoms can help identify your specific triggers.
+          </p>
+        </div>
+      ),
+    },
+    {
+      id: "digestive-gassy",
+      question: "What causes gas on AIP and how can I manage it?",
+      answer: (
+        <div>
+          <p className="text-brand-dark/80 mb-3">
+            Excessive gas can be uncomfortable but is often manageable with some adjustments:
+          </p>
+          <ul className="list-disc pl-5 text-brand-dark/80 mb-3">
+            <li>
+              <strong>Too much fiber:</strong> Try to increase your fiber intake gradually and make sure to cook your
+              vegetables thoroughly.
+            </li>
+            <li>
+              <strong>Coconut products:</strong> Large amounts of coconut can be hard to digest. Reduce the intake and
+              experiment to see how it affects you.
+            </li>
+            <li>
+              <strong>Large portions and fast eating:</strong> Eat smaller meals more slowly and chew thoroughly.
+            </li>
+            <li>
+              <strong>Fermented foods:</strong> Increase intake of fermented food gradually to allow your gut to adjust.
+            </li>
+            <li>
+              <strong>Drinking with a straw:</strong> This can cause you to swallow excess air.
+            </li>
+            <li>
+              <strong>Chewing gum:</strong> Avoid chewing gum as it can lead to swallowing air.
+            </li>
+            <li>
+              <strong>Cruciferous vegetables:</strong> Foods like cauliflower and Brussels sprouts can cause gas. Cook
+              them well and reduce portions.
+            </li>
+            <li>
+              <strong>Starchy vegetables:</strong> Sweet potatoes, squash, and plantains can cause gas in some people.
+              Try pairing them with non-starchy vegetables.
+            </li>
+          </ul>
+          <p className="text-brand-dark/80 italic">
+            Remember that some gas is normal, especially when transitioning to a new diet with different fiber sources.
+          </p>
+        </div>
+      ),
+    },
+    {
+      id: "digestive-heartburn",
+      question: "What causes heartburn on AIP and how can I manage it?",
+      answer: (
+        <div>
+          <p className="text-brand-dark/80 mb-3">
+            Heartburn can occur even on the AIP diet. Here are common causes and management strategies:
+          </p>
+          <ul className="list-disc pl-5 text-brand-dark/80 mb-3">
+            <li>
+              <strong>High fat foods:</strong> Moderate high-fat foods, and try consuming smaller, balanced portions.
+            </li>
+            <li>
+              <strong>Overeating or large portions:</strong> Eat smaller meals more frequently throughout the day.
+            </li>
+            <li>
+              <strong>Spicy foods or strong seasonings:</strong> Even AIP-compliant seasonings can trigger heartburn in
+              sensitive individuals.
+            </li>
+            <li>
+              <strong>Coconut products:</strong> Coconut oil, milk, or flour can sometimes cause digestive upset for
+              those who are sensitive.
+            </li>
+            <li>
+              <strong>Acidic foods:</strong> Some AIP foods are naturally acidic, such as apple cider vinegar or certain
+              fruits.
+            </li>
+            <li>
+              <strong>Underlying gut issues:</strong> Low stomach acid can paradoxically cause heartburn symptoms.
+            </li>
+            <li>
+              <strong>Eating too close to bedtime:</strong> Avoid eating at least 2-3 hours before lying down or going
+              to bed.
+            </li>
+            <li>
+              <strong>Fermented foods:</strong> Start with very small amounts of fermented foods, and see how your body
+              responds.
+            </li>
+            <li>
+              <strong>Stress and anxiety:</strong> Practice stress management techniques as stress can increase acid
+              production.
+            </li>
+            <li>
+              <strong>Drinking large amounts of water with meals:</strong> This can dilute stomach acid and impair
+              digestion.
+            </li>
+          </ul>
+          <p className="text-brand-dark/80 italic">
+            If heartburn persists despite these adjustments, consult with a healthcare provider to rule out other
+            causes.
+          </p>
+        </div>
       ),
     },
   ]
@@ -191,7 +397,7 @@ export default function FAQPage() {
 
           <div className="space-y-2">
             {faqItems.map((item, index) => (
-              <div key={index} className="glass-card rounded-xl overflow-hidden">
+              <div key={index} id={item.id} className="glass-card rounded-xl overflow-hidden">
                 <button
                   onClick={() => toggleExpand(index)}
                   className="w-full p-4 flex justify-between items-center text-left font-semibold"
