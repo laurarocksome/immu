@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { ArrowLeft } from "lucide-react"
 import Logo from "@/app/components/logo"
 
 export default function SymptomsPage() {
@@ -95,6 +96,11 @@ export default function SymptomsPage() {
     router.push("/onboarding/stress")
   }
 
+  const handleBack = () => {
+    // Navigate back to the conditions page
+    router.push("/onboarding/conditions")
+  }
+
   const clearSearch = () => {
     setSearchTerm("")
   }
@@ -106,7 +112,17 @@ export default function SymptomsPage() {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header */}
-      <header className="p-4 flex justify-center items-center bg-brand-dark text-white">
+      <header className="p-4 flex justify-center items-center bg-brand-dark text-white relative">
+        <div className="absolute left-4">
+          <button
+            onClick={handleBack}
+            className="text-white/80 hover:text-white flex items-center"
+            aria-label="Go back"
+          >
+            <ArrowLeft className="h-5 w-5 mr-1" />
+            <span>Back</span>
+          </button>
+        </div>
         <Logo />
       </header>
 
@@ -172,13 +188,15 @@ export default function SymptomsPage() {
           )}
         </div>
 
-        {/* Continue button */}
-        <button
-          className="w-full py-3 rounded-lg font-medium bg-pink-500 text-white hover:bg-pink-600"
-          onClick={handleContinue}
-        >
-          Continue
-        </button>
+        {/* Navigation buttons */}
+        <div className="flex gap-3">
+          <button
+            className="w-full py-3 rounded-lg font-medium bg-pink-500 text-white hover:bg-pink-600"
+            onClick={handleContinue}
+          >
+            Continue
+          </button>
+        </div>
 
         {/* Progress dots */}
         <div className="flex justify-center mt-6 space-x-2">
