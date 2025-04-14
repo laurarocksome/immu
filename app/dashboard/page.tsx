@@ -11,7 +11,9 @@ import {
   User,
   ArrowRight,
   ChevronRight,
+  ChevronLeft,
   LightbulbIcon,
+  HelpCircle,
 } from "lucide-react"
 import Logo from "@/components/Logo"
 
@@ -358,33 +360,6 @@ export default function Dashboard() {
     return date.toLocaleDateString("en-US", { weekday: "short" })
   }
 
-  // Generate dates for the date picker
-  const generateDates = () => {
-    const dates = []
-    const today = new Date()
-
-    // Add 3 days before today
-    for (let i = 3; i > 0; i--) {
-      const date = new Date()
-      date.setDate(today.getDate() - i)
-      dates.push(date)
-    }
-
-    // Add today
-    dates.push(today)
-
-    // Add 3 days after today
-    for (let i = 1; i <= 3; i++) {
-      const date = new Date()
-      date.setDate(today.getDate() + i)
-      dates.push(date)
-    }
-
-    return dates
-  }
-
-  const dates = generateDates()
-
   // Function to create smooth curve path
   const createSmoothCurvePath = (values: number[]) => {
     const points = values.map((value, i) => {
@@ -546,12 +521,22 @@ export default function Dashboard() {
       {/* Header */}
       <header className="p-4 flex justify-between items-center header-gradient text-white">
         <Logo />
-        <button
-          className="w-10 h-10 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 transition-colors"
-          onClick={handleProfileClick}
-        >
-          <User className="h-5 w-5 text-white" />
-        </button>
+        <div className="flex items-center">
+          <button
+            className="w-10 h-10 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 transition-colors mr-2"
+            onClick={() => router.push("/faq")}
+            aria-label="FAQ"
+          >
+            <HelpCircle className="h-5 w-5 text-white" />
+          </button>
+          <button
+            className="w-10 h-10 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 transition-colors"
+            onClick={handleProfileClick}
+            aria-label="Profile"
+          >
+            <User className="h-5 w-5 text-white" />
+          </button>
+        </div>
       </header>
 
       {/* Main Content */}
@@ -565,29 +550,40 @@ export default function Dashboard() {
         {/* Date Picker and Streak in one row */}
         <div className="flex flex-row gap-4 mb-6 overflow-x-auto">
           {/* Date Picker */}
-          <div className="flex space-x-2 min-w-max">
-            {dates.map((date, index) => {
-              const isToday = date.toDateString() === new Date().toDateString()
-              const isSelected = date.toDateString() === selectedDate.toDateString()
+          <div className="glass-card p-4 flex items-center justify-between min-w-[200px]">
+            <button
+              onClick={() => {
+                const prevDate = new Date(selectedDate)
+                prevDate.setDate(prevDate.getDate() - 1)
+                setSelectedDate(prevDate)
+              }}
+              className="w-8 h-8 flex items-center justify-center rounded-full bg-white text-primary-color shadow-sm"
+              aria-label="Previous day"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
 
-              return (
-                <button
-                  key={index}
-                  onClick={() => setSelectedDate(date)}
-                  className={`flex flex-col items-center p-2 rounded-xl min-w-[60px] ${
-                    isSelected
-                      ? "bg-[#da83d2] text-white"
-                      : isToday
-                        ? "bg-[#f0eaf9] text-primary-color"
-                        : "bg-white text-primary-color shadow-sm"
-                  }`}
-                >
-                  <span className="text-xs font-medium">{getDayName(date)}</span>
-                  <span className="text-lg font-bold">{date.getDate()}</span>
-                  <span className="text-xs">{date.toLocaleDateString("en-US", { month: "short" })}</span>
-                </button>
-              )
-            })}
+            <div className="flex flex-col items-center">
+              <span className="text-sm font-medium text-secondary-color">
+                {selectedDate.toLocaleDateString("en-US", { weekday: "short" })}
+              </span>
+              <span className="text-2xl font-bold text-primary-color">{selectedDate.getDate()}</span>
+              <span className="text-xs text-secondary-color">
+                {selectedDate.toLocaleDateString("en-US", { month: "short" })}
+              </span>
+            </div>
+
+            <button
+              onClick={() => {
+                const nextDate = new Date(selectedDate)
+                nextDate.setDate(nextDate.getDate() + 1)
+                setSelectedDate(nextDate)
+              }}
+              className="w-8 h-8 flex items-center justify-center rounded-full bg-white text-primary-color shadow-sm"
+              aria-label="Next day"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
           </div>
 
           {/* Streak Card */}

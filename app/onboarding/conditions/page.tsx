@@ -131,6 +131,10 @@ export default function ConditionsPage() {
   const handleContinue = () => {
     // Save selected conditions even if empty
     localStorage.setItem("selectedConditions", JSON.stringify(selectedConditions))
+
+    // Also save to userConditions for profile page compatibility
+    localStorage.setItem("userConditions", JSON.stringify(selectedConditions))
+
     router.push("/onboarding/symptoms")
   }
 

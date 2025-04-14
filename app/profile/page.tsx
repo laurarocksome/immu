@@ -23,6 +23,18 @@ export default function ProfilePage() {
     // Load profile data
     const profileData = JSON.parse(localStorage.getItem("userProfile") || "null")
     setProfile(profileData)
+
+    // Try to load conditions from both possible localStorage keys
+    const conditions = JSON.parse(localStorage.getItem("userConditions") || "[]")
+    if (conditions.length === 0) {
+      // If userConditions is empty, try selectedConditions
+      const selectedConditions = JSON.parse(localStorage.getItem("selectedConditions") || "[]")
+      if (selectedConditions.length > 0) {
+        // If found in selectedConditions, save to userConditions for future use
+        localStorage.setItem("userConditions", JSON.stringify(selectedConditions))
+      }
+    }
+
     setIsLoading(false)
   }, [])
 
@@ -119,7 +131,7 @@ export default function ProfilePage() {
           <div className="glass-card rounded-2xl p-6 mb-6">
             <div className="flex justify-between items-center mb-4">
               <h3 className="font-semibold text-lg">Conditions</h3>
-              <button className="text-pink-400 flex items-center">
+              <button className="text-pink-400 flex items-center" onClick={() => router.push("/onboarding/conditions")}>
                 <Edit className="h-4 w-4 mr-1" />
                 Edit
               </button>
@@ -127,10 +139,16 @@ export default function ProfilePage() {
 
             <div>
               {(() => {
+                // Try to get conditions from both possible localStorage keys
                 const conditions = JSON.parse(localStorage.getItem("userConditions") || "[]")
-                return conditions.length > 0 ? (
+                const selectedConditions = JSON.parse(localStorage.getItem("selectedConditions") || "[]")
+
+                // Use whichever has data, preferring userConditions
+                const displayConditions = conditions.length > 0 ? conditions : selectedConditions
+
+                return displayConditions.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
-                    {conditions.map((condition: string, index: number) => (
+                    {displayConditions.map((condition, index) => (
                       <span key={index} className="bg-pink-200/70 text-brand-dark px-3 py-1 rounded-full text-sm">
                         {condition}
                       </span>
