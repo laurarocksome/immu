@@ -148,101 +148,106 @@ export default function ConditionsPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-brand-lightest to-white text-brand-dark">
       {/* Header */}
       <header className="p-4 flex justify-center items-center bg-brand-dark text-white relative">
-        <div className="absolute left-4">
-          <button
-            onClick={handleBack}
-            className="text-white/80 hover:text-white flex items-center"
-            aria-label="Go back"
-          >
-            <ArrowLeft className="h-5 w-5 mr-1" />
-            <span>Back</span>
-          </button>
-        </div>
+        <button
+          onClick={handleBack}
+          className="absolute left-4 text-white/80 hover:text-white transition-colors flex items-center"
+          aria-label="Go back"
+        >
+          <ArrowLeft className="h-5 w-5 mr-1" />
+          <span>Back</span>
+        </button>
         <Logo />
       </header>
 
-      <main className="flex-1 p-4 flex flex-col">
-        <h1 className="text-2xl font-bold mb-2">What conditions are you managing?</h1>
-        <p className="text-gray-600 mb-6">
-          Select up to 3 conditions that you're currently experiencing or have been diagnosed with. You can also
-          continue without selecting any conditions.
-        </p>
-
-        {/* Search */}
-        <div className="relative mb-4">
-          <input
-            type="text"
-            placeholder="Search conditions..."
-            className="w-full p-3 border rounded-lg"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          {searchTerm && (
-            <button className="absolute right-3 top-3 text-gray-500" onClick={clearSearch} aria-label="Clear search">
-              ✕
-            </button>
-          )}
-        </div>
-
-        {/* Error message */}
-        {error && <p className="text-red-500 mb-2">{error}</p>}
-
-        {/* Selected count */}
-        <p className="text-sm text-gray-600 mb-2">Selected: {selectedConditions.length}/3</p>
-
-        {/* Conditions list */}
-        <div className="flex-1 mb-4 border rounded-lg p-2 overflow-hidden">
-          <div className="max-h-64 overflow-y-auto">
-            {displayedConditions.map((condition) => (
-              <div
-                key={condition}
-                className={`p-3 mb-2 rounded-lg cursor-pointer ${
-                  selectedConditions.includes(condition)
-                    ? "bg-pink-100 border-pink-300 border"
-                    : "bg-gray-50 hover:bg-gray-100"
-                }`}
-                onClick={() => handleConditionClick(condition)}
-              >
-                <div className="flex items-center">
-                  <span className="flex-1">{condition}</span>
-                  {selectedConditions.includes(condition) && <span className="text-pink-500">✓</span>}
-                </div>
-              </div>
-            ))}
-            {filteredConditions.length === 0 && <p className="text-center p-4 text-gray-500">No conditions found</p>}
+      <main className="flex-1 px-4 pb-8 overflow-auto">
+        <div className="max-w-md mx-auto">
+          <div className="mb-6 text-center">
+            <h2 className="text-2xl font-bold mb-2">What conditions are you managing?</h2>
+            <p className="text-brand-dark/70 mb-4">
+              Select up to 3 conditions that you're currently experiencing or have been diagnosed with. You can also
+              continue without selecting any conditions.
+            </p>
           </div>
 
-          {/* Show more/less button */}
-          {!searchTerm && filteredConditions.length > 5 && (
-            <button
-              className="w-full mt-2 py-2 text-pink-500 font-medium bg-pink-50 rounded-lg hover:bg-pink-100"
-              onClick={toggleShowAllConditions}
-            >
-              {showAllConditions ? "Show less" : `Show more (${filteredConditions.length - 5} more)`}
-            </button>
-          )}
-        </div>
+          {/* Search */}
+          <div className="relative mb-4">
+            <input
+              type="text"
+              placeholder="Search conditions..."
+              className="w-full p-3 rounded-xl bg-white/80 border border-brand-dark/20 focus:outline-none focus:ring-2 focus:ring-pink-400"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            {searchTerm && (
+              <button className="absolute right-3 top-3 text-gray-500" onClick={clearSearch} aria-label="Clear search">
+                ✕
+              </button>
+            )}
+          </div>
 
-        {/* Navigation buttons */}
-        <div className="flex gap-3">
-          <button
-            className="w-full py-3 rounded-lg font-medium bg-pink-500 text-white hover:bg-pink-600"
-            onClick={handleContinue}
-          >
+          {/* Error message */}
+          {error && (
+            <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-xl text-center text-red-700">
+              {error}
+            </div>
+          )}
+
+          {/* Selected count */}
+          <p className="text-sm text-brand-dark/70 mb-2">Selected: {selectedConditions.length}/3</p>
+
+          {/* Conditions list */}
+          <div className="glass-card rounded-2xl p-4 mb-8 overflow-hidden">
+            <div className="max-h-64 overflow-y-auto">
+              {displayedConditions.map((condition) => (
+                <div
+                  key={condition}
+                  className={`p-3 mb-2 rounded-xl cursor-pointer transition-colors ${
+                    selectedConditions.includes(condition)
+                      ? "bg-pink-400 text-white"
+                      : "bg-white/80 border border-brand-dark/20 hover:bg-white"
+                  }`}
+                  onClick={() => handleConditionClick(condition)}
+                >
+                  <div className="flex items-center">
+                    <span className="flex-1">{condition}</span>
+                    {selectedConditions.includes(condition) && <span>✓</span>}
+                  </div>
+                </div>
+              ))}
+              {filteredConditions.length === 0 && (
+                <p className="text-center p-4 text-brand-dark/70">No conditions found</p>
+              )}
+            </div>
+
+            {/* Show more/less button */}
+            {!searchTerm && filteredConditions.length > 5 && (
+              <button
+                className="w-full mt-2 py-2 text-pink-400 font-medium bg-white/80 rounded-xl hover:bg-white border border-pink-400/20"
+                onClick={toggleShowAllConditions}
+              >
+                {showAllConditions ? "Show less" : `Show more (${filteredConditions.length - 5} more)`}
+              </button>
+            )}
+          </div>
+
+          {/* Navigation buttons */}
+          <button className="w-full gradient-button py-4 rounded-full" onClick={handleContinue}>
             Continue
           </button>
         </div>
 
         {/* Progress dots */}
-        <div className="flex justify-center mt-6 space-x-2">
-          <div className="w-2 h-2 rounded-full bg-pink-500"></div>
-          <div className="w-2 h-2 rounded-full bg-gray-300"></div>
-          <div className="w-2 h-2 rounded-full bg-gray-300"></div>
-          <div className="w-2 h-2 rounded-full bg-gray-300"></div>
-          <div className="w-2 h-2 rounded-full bg-gray-300"></div>
+        <div className="p-4 flex justify-center mt-6">
+          <div className="flex space-x-2">
+            <div className="w-2 h-2 rounded-full bg-pink-400"></div>
+            <div className="w-2 h-2 rounded-full bg-brand-dark/30"></div>
+            <div className="w-2 h-2 rounded-full bg-brand-dark/30"></div>
+            <div className="w-2 h-2 rounded-full bg-brand-dark/30"></div>
+            <div className="w-2 h-2 rounded-full bg-brand-dark/30"></div>
+          </div>
         </div>
       </main>
     </div>
