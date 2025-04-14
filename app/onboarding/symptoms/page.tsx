@@ -4,201 +4,191 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Logo from "@/app/components/logo"
 
-// List of common symptoms
-const allSymptoms = [
-  "Puffy Face",
-  "Swelling in the Neck",
-  "Weight Gain",
-  "Cold Intolerance",
-  "Heat Intolerance",
-  "Hair Thinning",
-  "Hair Loss",
-  "Brittle Nails",
-  "Dry or Itchy Skin",
-  "Muscle Cramps",
-  "Joint Stiffness",
-  "Slow Heart Rate",
-  "Hoarseness",
-  "Rapid Heart Rate",
-  "Constipation",
-  "Brain Fog",
-  "Sluggishness",
-  "Anxiety",
-  "Depression",
-  "Insomnia",
-  "Frequent Infections",
-  "Low Libido",
-  "Acne",
-  "Bloating",
-  "Vision Problems",
-  "Slow Wound Healing",
-  "Chronic Pain",
-  "Face Redness",
-  "Restless Legs",
-  "Eczema",
-  "Fatigue",
-  "Headaches",
-  "Dizziness",
-  "Nausea",
-  "Digestive Issues",
-  "Joint Pain",
-  "Muscle Weakness",
-  "Memory Problems",
-  "Mood Swings",
-  "Irregular Periods",
-]
-
-// Initial symptoms to show (first 12)
-const initialSymptoms = allSymptoms.slice(0, 12)
-
 export default function SymptomsPage() {
   const router = useRouter()
-  const [searchTerm, setSearchTerm] = useState("")
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([])
-  const [showAllSymptoms, setShowAllSymptoms] = useState(false)
-  const [filteredSymptoms, setFilteredSymptoms] = useState<string[]>(initialSymptoms)
+  const [searchTerm, setSearchTerm] = useState("")
   const [error, setError] = useState("")
+  const [showAllSymptoms, setShowAllSymptoms] = useState(false)
 
-  // Handle search and filtering
+  // Load saved symptoms from localStorage if available
   useEffect(() => {
-    if (searchTerm) {
-      const filtered = allSymptoms.filter((symptom) => symptom.toLowerCase().includes(searchTerm.toLowerCase()))
-      setFilteredSymptoms(filtered)
-      setShowAllSymptoms(true) // Show all matching results when searching
-    } else {
-      setFilteredSymptoms(showAllSymptoms ? allSymptoms : initialSymptoms)
+    const savedSymptoms = localStorage.getItem("selectedSymptoms")
+    if (savedSymptoms) {
+      try {
+        setSelectedSymptoms(JSON.parse(savedSymptoms))
+      } catch (e) {
+        console.error("Error parsing saved symptoms:", e)
+      }
     }
-  }, [searchTerm, showAllSymptoms])
+  }, [])
 
-  const toggleSymptom = (symptom: string) => {
+  // Alphabetically sorted list of symptoms
+  const symptomsList = [
+    "Abdominal pain",
+    "Acid reflux",
+    "Acne",
+    "Anxiety",
+    "Bloating",
+    "Brain fog",
+    "Chest pain",
+    "Constipation",
+    "Coughing",
+    "Depression",
+    "Diarrhea",
+    "Dizziness",
+    "Dry eyes",
+    "Dry mouth",
+    "Fatigue",
+    "Fever",
+    "Gas",
+    "Headache",
+    "Heart palpitations",
+    "Heartburn",
+    "Hives",
+    "Insomnia",
+    "Irritability",
+    "Itchy skin",
+    "Joint pain",
+    "Mood swings",
+    "Muscle aches",
+    "Nausea",
+    "Numbness",
+    "Rash",
+    "Shortness of breath",
+    "Sinus congestion",
+    "Sore throat",
+    "Stomach cramps",
+    "Swelling",
+    "Tingling",
+    "Vomiting",
+    "Weight gain",
+    "Weight loss",
+  ].sort()
+
+  const filteredSymptoms = symptomsList.filter((symptom) => symptom.toLowerCase().includes(searchTerm.toLowerCase()))
+
+  // Determine which symptoms to display
+  const displayedSymptoms = searchTerm
+    ? filteredSymptoms
+    : showAllSymptoms
+      ? filteredSymptoms
+      : filteredSymptoms.slice(0, 5)
+
+  const handleSymptomClick = (symptom: string) => {
     if (selectedSymptoms.includes(symptom)) {
       setSelectedSymptoms(selectedSymptoms.filter((s) => s !== symptom))
       setError("")
     } else {
-      if (selectedSymptoms.length >= 5) {
-        setError("You can select a maximum of 5 symptoms")
-        return
+      if (selectedSymptoms.length < 5) {
+        setSelectedSymptoms([...selectedSymptoms, symptom])
+        setError("")
+      } else {
+        setError("You can select up to 5 symptoms")
       }
-      setSelectedSymptoms([...selectedSymptoms, symptom])
-      setError("")
     }
-  }
-
-  const handleShowMore = () => {
-    setShowAllSymptoms(true)
-    setFilteredSymptoms(allSymptoms)
-  }
-
-  const handleShowLess = () => {
-    setShowAllSymptoms(false)
-    setFilteredSymptoms(initialSymptoms)
-    setSearchTerm("")
   }
 
   const handleContinue = () => {
-    if (selectedSymptoms.length === 0) {
-      setError("Please select at least 1 symptom to continue")
-      return
-    }
-
-    // Save to local storage for now (in a real app, you'd save to a database)
-    localStorage.setItem("userSymptoms", JSON.stringify(selectedSymptoms))
-
-    // Navigate to the next step in the onboarding flow
+    // Save selected symptoms even if empty
+    localStorage.setItem("selectedSymptoms", JSON.stringify(selectedSymptoms))
     router.push("/onboarding/stress")
   }
 
+  const clearSearch = () => {
+    setSearchTerm("")
+  }
+
+  const toggleShowAllSymptoms = () => {
+    setShowAllSymptoms(!showAllSymptoms)
+  }
+
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-brand-lightest to-white text-brand-dark">
+    <div className="min-h-screen flex flex-col">
       {/* Header */}
       <header className="p-4 flex justify-center items-center bg-brand-dark text-white">
         <Logo />
       </header>
 
-      {/* Main Content */}
-      <main className="flex-1 px-4 pb-8 overflow-auto">
-        <div className="max-w-md mx-auto">
-          <div className="mb-6 text-center">
-            <h2 className="text-2xl font-bold mb-2">Identify Your Symptoms</h2>
-            <p className="text-brand-dark/70">Select up to 5 symptoms you experience most frequently.</p>
-          </div>
+      <main className="flex-1 p-4 flex flex-col">
+        <h1 className="text-2xl font-bold mb-2">What symptoms are you experiencing?</h1>
+        <p className="text-gray-600 mb-6">
+          Select up to 5 symptoms that you're currently experiencing. You can also continue without selecting any
+          symptoms.
+        </p>
 
-          {/* Selected symptoms count */}
-          <div className="text-center mb-4">
-            <p>{selectedSymptoms.length} of 5 symptoms selected</p>
-          </div>
-
-          {/* Error message */}
-          {error && (
-            <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-xl text-center text-red-700">
-              {error}
-            </div>
+        {/* Search */}
+        <div className="relative mb-4">
+          <input
+            type="text"
+            placeholder="Search symptoms..."
+            className="w-full p-3 border rounded-lg"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          {searchTerm && (
+            <button className="absolute right-3 top-3 text-gray-500" onClick={clearSearch} aria-label="Clear search">
+              ✕
+            </button>
           )}
+        </div>
 
-          {/* Search bar */}
-          <div className="mb-8">
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search symptoms..."
-              className="w-full p-3 rounded-xl bg-white/80 border border-brand-dark/20 focus:outline-none focus:ring-2 focus:ring-pink-400"
-            />
-          </div>
+        {/* Error message */}
+        {error && <p className="text-red-500 mb-2">{error}</p>}
 
-          {/* Symptoms tag cloud */}
-          <div className="flex flex-wrap gap-2 mb-6 justify-center">
-            {filteredSymptoms.map((symptom) => (
-              <button
+        {/* Selected count */}
+        <p className="text-sm text-gray-600 mb-2">Selected: {selectedSymptoms.length}/5</p>
+
+        {/* Symptoms list */}
+        <div className="flex-1 mb-4 border rounded-lg p-2 overflow-hidden">
+          <div className="max-h-64 overflow-y-auto">
+            {displayedSymptoms.map((symptom) => (
+              <div
                 key={symptom}
-                onClick={() => toggleSymptom(symptom)}
-                className={`px-4 py-2 rounded-full text-center transition-colors ${
+                className={`p-3 mb-2 rounded-lg cursor-pointer ${
                   selectedSymptoms.includes(symptom)
-                    ? "bg-pink-400 text-white"
-                    : "bg-white/80 border border-brand-dark/20 hover:bg-white"
+                    ? "bg-pink-100 border-pink-300 border"
+                    : "bg-gray-50 hover:bg-gray-100"
                 }`}
+                onClick={() => handleSymptomClick(symptom)}
               >
-                {symptom}
-              </button>
+                <div className="flex items-center">
+                  <span className="flex-1">{symptom}</span>
+                  {selectedSymptoms.includes(symptom) && <span className="text-pink-500">✓</span>}
+                </div>
+              </div>
             ))}
+            {filteredSymptoms.length === 0 && <p className="text-center p-4 text-gray-500">No symptoms found</p>}
           </div>
 
           {/* Show more/less button */}
-          {!searchTerm && (
-            <div className="flex justify-center mb-8">
-              {!showAllSymptoms ? (
-                <button onClick={handleShowMore} className="text-pink-400 hover:text-pink-500 underline">
-                  Show more symptoms
-                </button>
-              ) : (
-                <button onClick={handleShowLess} className="text-pink-400 hover:text-pink-500 underline">
-                  Show less
-                </button>
-              )}
-            </div>
+          {!searchTerm && filteredSymptoms.length > 5 && (
+            <button
+              className="w-full mt-2 py-2 text-pink-500 font-medium bg-pink-50 rounded-lg hover:bg-pink-100"
+              onClick={toggleShowAllSymptoms}
+            >
+              {showAllSymptoms ? "Show less" : `Show more (${filteredSymptoms.length - 5} more)`}
+            </button>
           )}
+        </div>
 
-          {/* Next button */}
-          <button onClick={handleContinue} className="w-full gradient-button py-4 rounded-full">
-            Next
-          </button>
+        {/* Continue button */}
+        <button
+          className="w-full py-3 rounded-lg font-medium bg-pink-500 text-white hover:bg-pink-600"
+          onClick={handleContinue}
+        >
+          Continue
+        </button>
+
+        {/* Progress dots */}
+        <div className="flex justify-center mt-6 space-x-2">
+          <div className="w-2 h-2 rounded-full bg-pink-500"></div>
+          <div className="w-2 h-2 rounded-full bg-pink-500"></div>
+          <div className="w-2 h-2 rounded-full bg-gray-300"></div>
+          <div className="w-2 h-2 rounded-full bg-gray-300"></div>
+          <div className="w-2 h-2 rounded-full bg-gray-300"></div>
         </div>
       </main>
-
-      {/* Progress indicator */}
-      <div className="p-4 flex justify-center">
-        <div className="flex space-x-2">
-          <div className="w-2 h-2 rounded-full bg-pink-400"></div>
-          <div className="w-2 h-2 rounded-full bg-pink-400"></div>
-          <div className="w-2 h-2 rounded-full bg-brand-dark/30"></div>
-          <div className="w-2 h-2 rounded-full bg-brand-dark/30"></div>
-          <div className="w-2 h-2 rounded-full bg-brand-dark/30"></div>
-          <div className="w-2 h-2 rounded-full bg-brand-dark/30"></div>
-          <div className="w-2 h-2 rounded-full bg-brand-dark/30"></div>
-          <div className="w-2 h-2 rounded-full bg-brand-dark/30"></div>
-          <div className="w-2 h-2 rounded-full bg-brand-dark/30"></div>
-        </div>
-      </div>
     </div>
   )
 }
