@@ -140,14 +140,58 @@ export default function DietTimelinePage() {
               <span className="font-bold">{maxDays} Days</span>
             </div>
 
-            <input
-              type="range"
-              min={minDays}
-              max={maxDays}
-              value={selectedDays}
-              onChange={handleSliderChange}
-              className="w-full h-2 bg-white/50 rounded-lg appearance-none cursor-pointer accent-pink-400"
-            />
+            <div className="relative py-4">
+              {/* Track background */}
+              <div className="absolute top-1/2 left-0 right-0 h-2 -translate-y-1/2 bg-gray-200 rounded-full"></div>
+
+              {/* Filled track */}
+              <div
+                className="absolute top-1/2 left-0 h-2 -translate-y-1/2 bg-pink-400 rounded-full"
+                style={{
+                  width: `${((selectedDays - minDays) / (maxDays - minDays)) * 100}%`,
+                }}
+              ></div>
+
+              {/* Actual input slider */}
+              <input
+                type="range"
+                min={minDays}
+                max={maxDays}
+                value={selectedDays}
+                onChange={handleSliderChange}
+                className="w-full h-2 appearance-none cursor-pointer bg-transparent relative z-10"
+                style={{
+                  // Custom thumb styling
+                  WebkitAppearance: "none",
+                }}
+              />
+            </div>
+
+            <style jsx>{`
+              /* Custom thumb styling for webkit browsers */
+              input[type=range]::-webkit-slider-thumb {
+                -webkit-appearance: none;
+                appearance: none;
+                width: 20px;
+                height: 20px;
+                border-radius: 50%;
+                background: #ec4899;
+                cursor: pointer;
+                border: 2px solid white;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+              }
+              
+              /* Custom thumb styling for Firefox */
+              input[type=range]::-moz-range-thumb {
+                width: 20px;
+                height: 20px;
+                border-radius: 50%;
+                background: #ec4899;
+                cursor: pointer;
+                border: 2px solid white;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+              }
+            `}</style>
 
             <div className="mt-4 text-center">
               <p className="font-medium">Selected timeframe: {selectedDays} days</p>
