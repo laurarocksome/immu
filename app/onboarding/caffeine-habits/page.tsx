@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Logo from "@/app/components/logo"
+import { ArrowLeft } from "lucide-react"
 
 // Caffeine consumption options
 const caffeineOptions = ["None", "1-2 cups", "3-4 cups", "5+ cups"]
@@ -30,10 +31,28 @@ export default function CaffeinePage() {
     router.push("/onboarding/alcohol-habits")
   }
 
+  const handleBack = () => {
+    // Check if user came from athlete-info page
+    const activityLevel = localStorage.getItem("userActivityLevel")
+    if (activityLevel === "Athlete") {
+      router.push("/onboarding/athlete-info")
+    } else {
+      router.push("/onboarding/activity")
+    }
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-brand-lightest to-white text-brand-dark">
       {/* Header */}
-      <header className="p-4 flex justify-center items-center bg-brand-dark text-white">
+      <header className="p-4 flex justify-center items-center bg-brand-dark text-white relative">
+        <button
+          onClick={handleBack}
+          className="absolute left-4 text-white/80 hover:text-white transition-colors flex items-center"
+          aria-label="Go back to previous page"
+        >
+          <ArrowLeft className="h-5 w-5 mr-1" />
+          <span>Back</span>
+        </button>
         <Logo />
       </header>
 

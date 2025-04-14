@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { ChevronDown } from "lucide-react"
+import { ChevronDown, ArrowLeft } from "lucide-react"
 import Logo from "@/app/components/logo"
 
 type WeightUnit = "kg" | "lb"
@@ -94,10 +94,22 @@ export default function UserProfilePage() {
     }, 800)
   }
 
+  const handleBack = () => {
+    router.push("/onboarding/diet-timeline")
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-brand-lightest to-white text-brand-dark">
       {/* Header */}
-      <header className="p-4 flex justify-center items-center bg-brand-dark text-white">
+      <header className="p-4 flex justify-center items-center bg-brand-dark text-white relative">
+        <button
+          onClick={handleBack}
+          className="absolute left-4 text-white/80 hover:text-white transition-colors flex items-center"
+          aria-label="Go back to previous page"
+        >
+          <ArrowLeft className="h-5 w-5 mr-1" />
+          <span>Back</span>
+        </button>
         <Logo />
       </header>
 

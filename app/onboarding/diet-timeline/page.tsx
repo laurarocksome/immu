@@ -6,6 +6,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Logo from "@/app/components/logo"
 import Link from "next/link"
+import { ArrowLeft } from "lucide-react"
 
 export default function DietTimelinePage() {
   const router = useRouter()
@@ -50,6 +51,44 @@ export default function DietTimelinePage() {
     router.push("/onboarding/user-profile")
   }
 
+  const handleBack = () => {
+    // Check if user came from adaptation-period page
+    const vegetableHabits = localStorage.getItem("userVegetableHabits") || ""
+    const caffeineHabits = localStorage.getItem("userCaffeineHabits") || ""
+    const alcoholHabits = localStorage.getItem("userAlcoholHabits") || ""
+    const sugarHabits = localStorage.getItem("userSugarHabits") || ""
+
+    // Count how many habits might need adaptation
+    let adaptationCount = 0
+
+    // Check caffeine habits
+    if (caffeineHabits === "3-4 cups" || caffeineHabits === "5+ cups") {
+      adaptationCount++
+    }
+
+    // Check alcohol habits
+    if (alcoholHabits === "Weekly (1-2 times a week)" || alcoholHabits === "Frequently (3+ times a week)") {
+      adaptationCount++
+    }
+
+    // Check sugar habits
+    if (sugarHabits === "Yes, daily (in coffee, tea, etc.)" || sugarHabits === "Yes, multiple times a day") {
+      adaptationCount++
+    }
+
+    // Check vegetable habits
+    if (vegetableHabits === "1-2 servings" || vegetableHabits === "None") {
+      adaptationCount++
+    }
+
+    // If 2 or more habits need adaptation, go back to adaptation period page
+    if (adaptationCount >= 2) {
+      router.push("/onboarding/adaptation-period")
+    } else {
+      router.push("/onboarding/vegetable-habits")
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-brand-lightest to-white text-brand-dark">
@@ -61,7 +100,15 @@ export default function DietTimelinePage() {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-brand-lightest to-white text-brand-dark">
       {/* Header */}
-      <header className="p-4 flex justify-center items-center bg-brand-dark text-white">
+      <header className="p-4 flex justify-center items-center bg-brand-dark text-white relative">
+        <button
+          onClick={handleBack}
+          className="absolute left-4 text-white/80 hover:text-white transition-colors flex items-center"
+          aria-label="Go back to previous page"
+        >
+          <ArrowLeft className="h-5 w-5 mr-1" />
+          <span>Back</span>
+        </button>
         <Logo />
       </header>
 

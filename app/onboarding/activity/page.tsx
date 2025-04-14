@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Logo from "@/app/components/logo"
+import { ArrowLeft } from "lucide-react"
 
 // Activity level options
 const activityLevels = ["Sedentary", "Light activity", "Moderate activity", "Active", "Athlete"]
@@ -35,10 +36,28 @@ export default function ActivityPage() {
     }
   }
 
+  const handleBack = () => {
+    // Check if user came from no-stress-help page
+    const stressOption = localStorage.getItem("userStressManagement")
+    if (stressOption === "Nothing helps me manage stress") {
+      router.push("/onboarding/no-stress-help")
+    } else {
+      router.push("/onboarding/stress")
+    }
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-brand-lightest to-white text-brand-dark">
       {/* Header */}
-      <header className="p-4 flex justify-center items-center bg-brand-dark text-white">
+      <header className="p-4 flex justify-center items-center bg-brand-dark text-white relative">
+        <button
+          onClick={handleBack}
+          className="absolute left-4 text-white/80 hover:text-white transition-colors flex items-center"
+          aria-label="Go back to previous page"
+        >
+          <ArrowLeft className="h-5 w-5 mr-1" />
+          <span>Back</span>
+        </button>
         <Logo />
       </header>
 
