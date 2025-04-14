@@ -14,7 +14,7 @@ export default function Home() {
 
         <p className="mb-8 text-secondary-color">Your personal guide to the Autoimmune Protocol diet</p>
 
-        <div className="space-y-4">
+        <div className="space-y-6">
           <Link href="/login" passHref>
             <Button className="w-full gradient-button">Login</Button>
           </Link>
