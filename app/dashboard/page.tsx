@@ -18,7 +18,7 @@ import {
   Scale,
   Check,
 } from "lucide-react"
-import Logo from "@/components/Logo"
+import Logo from "@/app/components/logo"
 
 // Update the chart dates to show daily data
 const chartDates = ["Day 1", "Day 2", "Day 3", "Day 4", "Day 5", "Day 6", "Day 7"]
@@ -605,6 +605,9 @@ export default function Dashboard() {
   // Get the observations
   const dailyObservations = generateDailyObservations()
 
+  // Initialize nextPhaseDate outside the scope of the JSX
+  const nextPhaseDate = new Date()
+
   return (
     <div className="min-h-screen app-gradient flex flex-col">
       {/* Welcome Overlay */}
@@ -820,65 +823,22 @@ export default function Dashboard() {
                       )
 
                       // Determine current phase
-                      let currentPhase = "adaptation"
-                      let nextPhase = "elimination"
-
-                      if (hasAdaptation && daysElapsed < adaptationDays) {
-                        // In adaptation phase
-                        currentPhase = "adaptation"
-                        nextPhase = "elimination"
-                      } else if (daysElapsed < (hasAdaptation ? adaptationDays + eliminationDays : eliminationDays)) {
-                        // In elimination phase
-                        currentPhase = "elimination"
-                        nextPhase = "reintroduction"
-                      } else {
-                        // In reintroduction phase
-                        currentPhase = "reintroduction"
-                        nextPhase = "completed"
-                      }
-
-                      return nextPhase === "completed"
-                        ? "Diet Completion"
-                        : `${nextPhase.charAt(0).toUpperCase() + nextPhase.slice(1)}`
-                    })()}
-                  </p>
-                  <p className="font-bold text-primary-color">
-                    {(() => {
-                      // Get diet data from localStorage
-                      const adaptationChoice = localStorage.getItem("userAdaptationChoice")
-                      const hasAdaptation = adaptationChoice === "Yes"
-                      const startDate = localStorage.getItem("dietStartDate")
-                      const dietStartDate = startDate ? new Date(startDate) : new Date()
-                      const dietTimeline = localStorage.getItem("userDietTimeline")
-                      const totalSelectedDays = dietTimeline ? Number.parseInt(dietTimeline) : 30
-
-                      // Calculate days for each phase
-                      const adaptationDays = hasAdaptation ? 28 : 0
-                      const eliminationDays = totalSelectedDays - adaptationDays
-
-                      // Calculate days elapsed since diet start
-                      const today = new Date()
-                      const daysElapsed = Math.floor(
-                        (today.getTime() - dietStartDate.getTime()) / (1000 * 60 * 60 * 24),
-                      )
-
-                      // Determine current phase and calculate next phase date
-                      const nextPhaseDate = new Date(dietStartDate)
+                      const currentPhase = "adaptation"
 
                       if (hasAdaptation && daysElapsed < adaptationDays) {
                         // In adaptation phase, next is elimination
-                        nextPhaseDate.setDate(nextPhaseDate.getDate() + adaptationDays)
+                        nextPhaseDate.setDate(dietStartDate.getDate() + adaptationDays)
                       } else if (daysElapsed < (hasAdaptation ? adaptationDays + eliminationDays : eliminationDays)) {
                         // In elimination phase, next is reintroduction
                         nextPhaseDate.setDate(
-                          nextPhaseDate.getDate() +
+                          dietStartDate.getDate() +
                             (hasAdaptation ? adaptationDays + eliminationDays : eliminationDays),
                         )
                       } else {
                         // In reintroduction phase, next is completion
                         const reintroductionDays = 150 // 5 months
                         nextPhaseDate.setDate(
-                          nextPhaseDate.getDate() +
+                          dietStartDate.getDate() +
                             (hasAdaptation ? adaptationDays + eliminationDays : eliminationDays) +
                             reintroductionDays,
                         )
