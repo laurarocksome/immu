@@ -120,6 +120,10 @@ export default function Dashboard() {
   // Add a new state for elimination phase percentage
   const [eliminationPhasePercentage, setEliminationPhasePercentage] = useState(0)
 
+  // Add a new state for reintroduction phase day
+  const [reintroductionDay, setReintroductionDay] = useState(0)
+  const [currentPhase, setCurrentPhase] = useState<"adaptation" | "elimination" | "reintroduction">("elimination")
+
   // Function to handle symptom selection
   const handleSymptomSelect = (symptomName: string) => {
     if (selectedSymptom === symptomName) {
@@ -341,6 +345,7 @@ export default function Dashboard() {
 
     if (!startDate) {
       setIsAdaptationPhase(false)
+      setCurrentPhase("elimination")
       return
     }
 
@@ -362,18 +367,350 @@ export default function Dashboard() {
       setIsAdaptationPhase(true)
       setAdaptationDay(daysElapsed + 1) // +1 because day 1 is the first day
       setEliminationPhasePercentage(0) // Not in elimination phase yet
+      setReintroductionDay(0) // Not in reintroduction phase yet
+      setCurrentPhase("adaptation")
     } else if (daysElapsed < (hasAdaptation ? adaptationDays + eliminationDays : eliminationDays)) {
       // In elimination phase
       setIsAdaptationPhase(false)
+      setCurrentPhase("elimination")
 
       // Calculate elimination phase percentage
       const eliminationDaysElapsed = daysElapsed - (hasAdaptation ? adaptationDays : 0)
       const percentage = Math.floor((eliminationDaysElapsed / eliminationDays) * 100)
       setEliminationPhasePercentage(percentage)
+      setReintroductionDay(0) // Not in reintroduction phase yet
     } else {
       // In reintroduction phase
       setIsAdaptationPhase(false)
       setEliminationPhasePercentage(100) // Elimination phase completed
+      setCurrentPhase("reintroduction")
+
+      // Calculate reintroduction day
+      const reintroductionDaysElapsed =
+        daysElapsed - (hasAdaptation ? adaptationDays + eliminationDays : eliminationDays)
+      setReintroductionDay(reintroductionDaysElapsed + 1) // +1 because day 1 is the first day
+    }
+  }
+
+  // Function to generate to-do items for the reintroduction phase
+  const generateReintroductionTodoItems = () => {
+    if (currentPhase !== "reintroduction" || reintroductionDay === 0) return []
+
+    // Common items for all days
+    const commonItems = [
+      { id: "water", text: "Drink 1.5–2L water" },
+      { id: "walk", text: "Walk 30 minutes" },
+      { id: "sleep", text: "Sleep 7–8 hours" },
+    ]
+
+    // Day-specific items
+    switch (reintroductionDay) {
+      case 1:
+        return [
+          { id: "reintroduce_egg_yolk", text: "Reintroduce egg yolk (boiled or poached)", isSpecial: true },
+          ...commonItems,
+          { id: "log_feelings", text: "Log how you feel 2–3 times today (mood, digestion, energy)" },
+        ]
+      case 2:
+        return [
+          { id: "rest_day", text: "Rest day — no new food", isSpecial: true },
+          ...commonItems,
+          { id: "observe_symptoms", text: "Observe for any delayed symptoms" },
+          { id: "update_product_list", text: "Update the product list with 'Can eat' or 'Can't eat'" },
+        ]
+      case 3:
+        return [
+          { id: "reintroduce_peas", text: "Reintroduce green peas or sugar snap peas", isSpecial: true },
+          ...commonItems,
+          { id: "log_feelings", text: "Log how you feel 2–3 times" },
+        ]
+      case 4:
+        return [
+          { id: "eat_vegetables", text: "Eat a variety of vegetables today" },
+          ...commonItems,
+          { id: "update_product_list", text: "Update the product list with 'Can eat' or 'Can't eat'" },
+        ]
+      case 5:
+        return [
+          { id: "reintroduce_ghee", text: "Reintroduce ghee (1 tsp with a warm meal)", isSpecial: true },
+          ...commonItems,
+          { id: "lemon_water", text: "Drink lemon water in the morning" },
+          { id: "log_feelings", text: "Log how you feel 2–3 times" },
+          { id: "calming_music", text: "Play calming music in the evening" },
+        ]
+      case 6:
+        return [
+          { id: "stretching", text: "Do a stretching session" },
+          ...commonItems,
+          { id: "update_product_list", text: "Update the product list with 'Can eat' or 'Can't eat'" },
+        ]
+      case 7:
+        return [
+          {
+            id: "reintroduce_spices",
+            text: "Reintroduce cumin or coriander (use sparingly in cooking)",
+            isSpecial: true,
+          },
+          ...commonItems,
+          { id: "log_feelings", text: "Log how you feel 2–3 times" },
+          { id: "meditate", text: "Meditate for 10 minutes" },
+        ]
+      case 8:
+        return [
+          { id: "cook_dinner", text: "Cook a nourishing veggie-based dinner" },
+          ...commonItems,
+          { id: "update_product_list", text: "Update the product list with 'Can eat' or 'Can't eat'" },
+        ]
+      case 9:
+        return [
+          { id: "reintroduce_cocoa", text: "Reintroduce unsweetened cocoa (1 tsp max)", isSpecial: true },
+          ...commonItems,
+          { id: "log_feelings", text: "Log how you feel 2–3 times" },
+        ]
+      case 10:
+        return [
+          { id: "mocktail", text: "Try a mocktail as a reward" },
+          ...commonItems,
+          { id: "update_product_list", text: "Update the product list with 'Can eat' or 'Can't eat'" },
+        ]
+      case 11:
+        return [
+          {
+            id: "reintroduce_nut_oil",
+            text: "Reintroduce nut/seed oil (e.g., walnut or sesame, 1 tsp)",
+            isSpecial: true,
+          },
+          ...commonItems,
+          { id: "log_feelings", text: "Log how you feel 2–3 times" },
+          { id: "extra_water", text: "Drink extra water" },
+        ]
+      case 12:
+        return [
+          ...commonItems,
+          { id: "update_product_list", text: "Update the product list with 'Can eat' or 'Can't eat'" },
+        ]
+      case 13:
+        return [
+          { id: "reintroduce_sprouts", text: "Reintroduce legume sprouts (e.g., pea shoots)", isSpecial: true },
+          ...commonItems,
+          { id: "new_vegetables", text: "Add three new vegetables to your plate" },
+          { id: "log_feelings", text: "Log how you feel 2–3 times" },
+        ]
+      case 14:
+        return [
+          { id: "meditate_longer", text: "Meditate for 20 minutes" },
+          ...commonItems,
+          { id: "update_product_list", text: "Update the product list with 'Can eat' or 'Can't eat'" },
+        ]
+      case 15:
+        return [
+          { id: "reintroduce_almonds", text: "Reintroduce almonds (start small, preferably soaked)", isSpecial: true },
+          ...commonItems,
+          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
+        ]
+      case 16:
+      case 17:
+        return [
+          { id: "eat_almonds", text: "Eat almonds (start small, preferably soaked)" },
+          ...commonItems,
+          { id: "almond_milk", text: "Use a splash of almond milk" },
+          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
+          ...(reintroductionDay === 17 ? [{ id: "update_product_list", text: "Update the product list" }] : []),
+        ]
+      case 18:
+        return [
+          { id: "reintroduce_seeds", text: "Reintroduce seeds (tahini or raw seeds, one type only)", isSpecial: true },
+          ...commonItems,
+          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
+        ]
+      case 19:
+      case 20:
+        return [
+          { id: "eat_seeds", text: "Eat seeds (tahini or raw seeds, one type only)" },
+          ...commonItems,
+          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
+          ...(reintroductionDay === 20
+            ? [
+                { id: "avoid_mixing", text: "Avoid mixing seeds" },
+                { id: "update_product_list", text: "Update the product list" },
+              ]
+            : []),
+        ]
+      case 21:
+        return [
+          {
+            id: "reintroduce_egg_whites",
+            text: "Reintroduce egg whites (start small, gradually increase)",
+            isSpecial: true,
+          },
+          ...commonItems,
+          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
+        ]
+      case 22:
+        return [
+          { id: "eat_egg_whites", text: "Eat egg whites (start small, gradually increase)" },
+          ...commonItems,
+          { id: "grounding", text: "Add grounding practices: journaling, stretching, slow walks" },
+          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
+        ]
+      case 23:
+        return [
+          { id: "eat_whole_egg", text: "Eat a whole egg" },
+          ...commonItems,
+          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
+          { id: "update_product_list", text: "Update the product list" },
+        ]
+      case 24:
+        return [
+          {
+            id: "reintroduce_butter",
+            text: "Reintroduce grass-fed butter (do not combine with other dairy)",
+            isSpecial: true,
+          },
+          ...commonItems,
+          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
+        ]
+      case 25:
+      case 26:
+        return [
+          { id: "eat_butter", text: "Eat grass-fed butter (do not combine with other dairy)" },
+          ...commonItems,
+          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
+          ...(reintroductionDay === 26 ? [{ id: "update_product_list", text: "Update the product list" }] : []),
+        ]
+      case 27:
+        return [
+          { id: "review_list", text: "Review your personal 'Can eat' list" },
+          ...commonItems,
+          { id: "calming_activity", text: "Plan a calming activity" },
+        ]
+      case 28:
+        return [
+          { id: "reintroduce_cashews", text: "Reintroduce plain, unroasted cashews", isSpecial: true },
+          ...commonItems,
+          { id: "tea", text: "Add lemon or ginger tea to support digestion" },
+          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
+        ]
+      case 29:
+        return [
+          { id: "eat_cashews", text: "Eat plain, unroasted cashews" },
+          ...commonItems,
+          { id: "tea", text: "Add lemon or ginger tea to support digestion" },
+          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
+          { id: "update_product_list", text: "Update the product list" },
+        ]
+      case 30:
+        return [
+          { id: "reintroduce_potato", text: "Reintroduce cooked potato (white, peeled)", isSpecial: true },
+          ...commonItems,
+          { id: "log_feelings", text: "Log how you feel 2–3 times" },
+          { id: "update_product_list", text: "Update the product list" },
+        ]
+      case 31:
+        return [
+          { id: "reintroduce_pepper", text: "Reintroduce sweet red pepper (roasted or sautéed)", isSpecial: true },
+          ...commonItems,
+          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
+        ]
+      case 32:
+      case 33:
+        return [
+          { id: "eat_pepper", text: "Eat sweet red pepper (roasted or sautéed)" },
+          ...commonItems,
+          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
+          ...(reintroductionDay === 33 ? [{ id: "update_product_list", text: "Update the product list" }] : []),
+        ]
+      case 34:
+        return [
+          { id: "reintroduce_paprika", text: "Reintroduce paprika (use a small pinch in meals)", isSpecial: true },
+          ...commonItems,
+          { id: "no_new_food", text: "Do not introduce any other new food during this time" },
+          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
+        ]
+      case 35:
+      case 36:
+        return [
+          { id: "eat_paprika", text: "Eat paprika (use a small pinch in meals)" },
+          ...commonItems,
+          { id: "no_new_food", text: "Do not introduce any other new food during this time" },
+          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
+          ...(reintroductionDay === 36 ? [{ id: "update_product_list", text: "Update the product list" }] : []),
+        ]
+      case 37:
+        return [
+          { id: "reintroduce_eggplant", text: "Reintroduce cooked eggplant (start with 1/4 cup)", isSpecial: true },
+          ...commonItems,
+          { id: "log_feelings", text: "Log how you feel 2–3 times" },
+          { id: "update_product_list", text: "Update the product list" },
+        ]
+      case 38:
+        return [
+          { id: "reintroduce_rice", text: "Reintroduce white rice (start with 2 tbsp cooked)", isSpecial: true },
+          ...commonItems,
+          { id: "deep_breathing", text: "Add deep breathing after meals" },
+          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
+          { id: "relaxing_ritual", text: "End day with a relaxing ritual (bath, walk, etc.)" },
+        ]
+      case 39:
+      case 40:
+        return [
+          { id: "eat_rice", text: "Eat white rice" },
+          ...commonItems,
+          { id: "deep_breathing", text: "Add deep breathing after meals" },
+          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
+          ...(reintroductionDay === 40
+            ? [
+                { id: "relaxing_ritual", text: "End day with a relaxing ritual (bath, walk, etc.)" },
+                { id: "update_product_list", text: "Update the product list" },
+              ]
+            : []),
+        ]
+      case 41:
+        return [
+          {
+            id: "reintroduce_yogurt",
+            text: "Reintroduce grass-fed yogurt or kefir (unsweetened, small portion)",
+            isSpecial: true,
+          },
+          ...commonItems,
+          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
+        ]
+      case 42:
+      case 43:
+        return [
+          { id: "eat_yogurt", text: "Eat grass-fed yogurt or kefir (unsweetened, small portion)" },
+          ...commonItems,
+          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
+          ...(reintroductionDay === 43 ? [{ id: "update_product_list", text: "Update the product list" }] : []),
+        ]
+      case 44:
+        return [
+          {
+            id: "reintroduce_tomato",
+            text: "Reintroduce cooked and peeled tomato (start with 1 tbsp)",
+            isSpecial: true,
+          },
+          ...commonItems,
+          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
+        ]
+      case 45:
+        return [
+          { id: "eat_tomato", text: "Eat cooked and peeled tomato (start with 1 tbsp)" },
+          ...commonItems,
+          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
+          { id: "update_product_list", text: "Update the product list" },
+        ]
+      default:
+        // For days beyond 45, provide general maintenance tasks
+        return [
+          ...commonItems,
+          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
+          {
+            id: "continue_reintroductions",
+            text: "Continue with your personalized reintroduction schedule",
+            isSpecial: true,
+          },
+        ]
     }
   }
 
@@ -436,59 +773,74 @@ export default function Dashboard() {
     return items
   }
 
-  // Modify the generateTodoItems function to handle both phases
+  // Function to generate to-do items based on adaptation day
+  const generateAdaptationTodoItems = () => {
+    if (!isAdaptationPhase) return []
+
+    let items: TodoItem[] = []
+
+    // Base items for days 1-7
+    if (adaptationDay >= 1) {
+      items = [
+        { id: "water", text: "Drink water (1-1.5L)" },
+        { id: "walk", text: "Walk 30 minutes" },
+        { id: "caffeine", text: "No caffeine consumption" },
+        { id: "sleep", text: "Sleep 8 hours" },
+      ]
+    }
+
+    // Add items for days 8-14
+    if (adaptationDay >= 8) {
+      items.push({ id: "alcohol", text: "No alcohol consumption" })
+    }
+
+    // Add items for days 15-21
+    if (adaptationDay >= 15) {
+      items.push({ id: "sugar", text: "No sugar consumption" })
+    }
+
+    // Add items for days 22-28
+    if (adaptationDay >= 22) {
+      items.push({ id: "vegetables", text: "Eat more vegetables (for snacks and with your main meal)" })
+    }
+
+    // Special items for specific days
+    if (adaptationDay === 10) {
+      items.push({
+        id: "journal",
+        text: "Try to write down your feelings and thoughts on a piece of paper",
+        isSpecial: true,
+      })
+    } else if (adaptationDay === 18) {
+      items.push({
+        id: "meditation",
+        text: "Try meditation",
+        isSpecial: true,
+      })
+    } else if (adaptationDay === 24) {
+      items.push({
+        id: "mocktail",
+        text: "Try a mocktail, celebrate, you almost finished one phase!",
+        isSpecial: true,
+      })
+    }
+
+    return items
+  }
+
+  // Modify the generateTodoItems function to handle all phases
   const generateTodoItems = () => {
     let items: TodoItem[] = []
 
     if (isAdaptationPhase) {
-      // Base items for days 1-7
-      if (adaptationDay >= 1) {
-        items = [
-          { id: "water", text: "Drink water (1-1.5L)" },
-          { id: "walk", text: "Walk 30 minutes" },
-          { id: "caffeine", text: "No caffeine consumption" },
-          { id: "sleep", text: "Sleep 8 hours" },
-        ]
-      }
-
-      // Add items for days 8-14
-      if (adaptationDay >= 8) {
-        items.push({ id: "alcohol", text: "No alcohol consumption" })
-      }
-
-      // Add items for days 15-21
-      if (adaptationDay >= 15) {
-        items.push({ id: "sugar", text: "No sugar consumption" })
-      }
-
-      // Add items for days 22-28
-      if (adaptationDay >= 22) {
-        items.push({ id: "vegetables", text: "Eat more vegetables (for snacks and with your main meal)" })
-      }
-
-      // Special items for specific days
-      if (adaptationDay === 10) {
-        items.push({
-          id: "journal",
-          text: "Try to write down your feelings and thoughts on a piece of paper",
-          isSpecial: true,
-        })
-      } else if (adaptationDay === 18) {
-        items.push({
-          id: "meditation",
-          text: "Try meditation",
-          isSpecial: true,
-        })
-      } else if (adaptationDay === 24) {
-        items.push({
-          id: "mocktail",
-          text: "Try a mocktail, celebrate, you almost finished one phase!",
-          isSpecial: true,
-        })
-      }
-    } else {
-      // Get elimination phase to-do items
+      // Generate adaptation phase to-do items
+      items = generateAdaptationTodoItems()
+    } else if (currentPhase === "elimination") {
+      // Generate elimination phase to-do items
       items = generateEliminationTodoItems()
+    } else if (currentPhase === "reintroduction") {
+      // Generate reintroduction phase to-do items
+      items = generateReintroductionTodoItems()
     }
 
     setTodoItems(items)
@@ -688,7 +1040,7 @@ export default function Dashboard() {
   // Effect to generate to-do items when adaptation phase or day changes
   useEffect(() => {
     generateTodoItems()
-  }, [isAdaptationPhase, adaptationDay, eliminationPhasePercentage])
+  }, [isAdaptationPhase, adaptationDay, eliminationPhasePercentage, reintroductionDay, currentPhase])
 
   // Effect to load completed to-dos when to-do items change
   useEffect(() => {
@@ -898,6 +1250,17 @@ export default function Dashboard() {
 
   // Initialize nextPhaseDate outside the scope of the JSX
   const nextPhaseDate = new Date()
+
+  // Function to get the phase display text
+  const getPhaseDisplayText = () => {
+    if (isAdaptationPhase) {
+      return `Adaptation Phase - Day ${adaptationDay}`
+    } else if (currentPhase === "elimination") {
+      return `Elimination Phase - ${eliminationPhasePercentage}% complete`
+    } else {
+      return `Reintroduction Phase - Day ${reintroductionDay}`
+    }
+  }
 
   return (
     <div className="min-h-screen app-gradient flex flex-col">
@@ -1579,11 +1942,7 @@ export default function Dashboard() {
             </div>
 
             <div className="mb-2">
-              <p className="text-sm text-secondary-color">
-                {isAdaptationPhase
-                  ? `Adaptation Phase - Day ${adaptationDay}`
-                  : `Elimination Phase - ${eliminationPhasePercentage}% complete`}
-              </p>
+              <p className="text-sm text-secondary-color">{getPhaseDisplayText()}</p>
             </div>
 
             <ul className="space-y-3">
