@@ -117,6 +117,9 @@ export default function Dashboard() {
   const [completedTodoIds, setCompletedTodoIds] = useState<string[]>([])
   const [showConfetti, setShowConfetti] = useState(false)
 
+  // Add a new state for elimination phase percentage
+  const [eliminationPhasePercentage, setEliminationPhasePercentage] = useState(0)
+
   // Function to handle symptom selection
   const handleSymptomSelect = (symptomName: string) => {
     if (selectedSymptom === symptomName) {
@@ -328,19 +331,14 @@ export default function Dashboard() {
     }
   }
 
-  // Function to determine adaptation phase and day
-  const determineAdaptationPhase = () => {
+  // Modify the determineAdaptationPhase function to also determine elimination phase percentage
+  const determinePhases = () => {
     if (typeof window === "undefined") return
 
     const adaptationChoice = localStorage.getItem("userAdaptationChoice")
     const hasAdaptation = adaptationChoice === "Yes"
-
-    if (!hasAdaptation) {
-      setIsAdaptationPhase(false)
-      return
-    }
-
     const startDate = localStorage.getItem("dietStartDate")
+
     if (!startDate) {
       setIsAdaptationPhase(false)
       return
@@ -350,130 +348,230 @@ export default function Dashboard() {
     const today = new Date()
     const daysElapsed = Math.floor((today.getTime() - dietStartDate.getTime()) / (1000 * 60 * 60 * 24))
 
-    // Adaptation phase is the first 28 days
-    if (daysElapsed < 28) {
+    // Get diet timeline
+    const dietTimeline = localStorage.getItem("userDietTimeline")
+    const totalSelectedDays = dietTimeline ? Number.parseInt(dietTimeline) : 30
+
+    // Calculate adaptation and elimination days
+    const adaptationDays = hasAdaptation ? 28 : 0
+    const eliminationDays = hasAdaptation ? totalSelectedDays - adaptationDays : totalSelectedDays
+
+    // Determine current phase
+    if (hasAdaptation && daysElapsed < adaptationDays) {
+      // In adaptation phase
       setIsAdaptationPhase(true)
       setAdaptationDay(daysElapsed + 1) // +1 because day 1 is the first day
-    } else {
+      setEliminationPhasePercentage(0) // Not in elimination phase yet
+    } else if (daysElapsed < (hasAdaptation ? adaptationDays + eliminationDays : eliminationDays)) {
+      // In elimination phase
       setIsAdaptationPhase(false)
+
+      // Calculate elimination phase percentage
+      const eliminationDaysElapsed = daysElapsed - (hasAdaptation ? adaptationDays : 0)
+      const percentage = Math.floor((eliminationDaysElapsed / eliminationDays) * 100)
+      setEliminationPhasePercentage(percentage)
+    } else {
+      // In reintroduction phase
+      setIsAdaptationPhase(false)
+      setEliminationPhasePercentage(100) // Elimination phase completed
     }
   }
 
-  // Function to generate to-do items based on adaptation day
-  const generateTodoItems = () => {
-    if (!isAdaptationPhase) return
+  // Function to generate to-do items for the elimination phase
+  const generateEliminationTodoItems = () => {
+    if (isAdaptationPhase || eliminationPhasePercentage === 0) return []
 
     let items: TodoItem[] = []
 
-    // Base items for days 1-7
-    if (adaptationDay >= 1) {
+    // Common items for all percentage ranges
+    const commonItems = [
+      { id: "track_symptoms", text: "Track your symptoms" },
+      { id: "sleep", text: "Maintain 7-8h of sleep" },
+      { id: "water", text: "Drink 1.5–2L water" },
+    ]
+
+    // Add percentage-specific items
+    if (eliminationPhasePercentage <= 20) {
+      // 0-20% days of the elimination diet phase
       items = [
-        { id: "water", text: "Drink water (1-1.5L)" },
-        { id: "walk", text: "Walk 30 minutes" },
-        { id: "caffeine", text: "No caffeine consumption" },
-        { id: "sleep", text: "Sleep 8 hours" },
+        ...commonItems,
+        { id: "protein", text: "Have protein with every meal" },
+        { id: "yoga", text: "Try a gentle yoga or breathwork session" },
+      ]
+    } else if (eliminationPhasePercentage <= 40) {
+      // 21-40% days of the elimination diet phase
+      items = [
+        ...commonItems,
+        { id: "new_aip", text: "Try one new AIP recipe" },
+        { id: "eft", text: "Research EFT tapping stress relief method" },
+        { id: "meditation", text: "Listen to a 10 minute calming playlist or guided meditation" },
+      ]
+    } else if (eliminationPhasePercentage <= 60) {
+      // 41-60% days of the elimination diet phase
+      items = [
+        ...commonItems,
+        { id: "mindful_eating", text: "Try eating your meals more mindfully (no phone, chew slowly)" },
+        { id: "journal", text: "Journal about changes in mood, sleep, digestion" },
+      ]
+    } else if (eliminationPhasePercentage <= 80) {
+      // 61-80% days of the elimination diet phase
+      items = [
+        ...commonItems,
+        { id: "new_veggies", text: "Explore new veggies or safe fruits you haven't tried yet" },
+        { id: "strength_training", text: "Start light strength training at home" },
+      ]
+    } else {
+      // 81-100% days of the elimination diet phase
+      items = [
+        ...commonItems,
+        {
+          id: "journal_end",
+          text: "Journal your feelings now that Elimination phase is coming to an end",
+          isSpecial: true,
+        },
+        { id: "review_logs", text: "Review your food and symptom logs — are any patterns clear?", isSpecial: true },
       ]
     }
 
-    // Add items for days 8-14
-    if (adaptationDay >= 8) {
-      items.push({ id: "alcohol", text: "No alcohol consumption" })
-    }
+    return items
+  }
 
-    // Add items for days 15-21
-    if (adaptationDay >= 15) {
-      items.push({ id: "sugar", text: "No sugar consumption" })
-    }
+  // Modify the generateTodoItems function to handle both phases
+  const generateTodoItems = () => {
+    let items: TodoItem[] = []
 
-    // Add items for days 22-28
-    if (adaptationDay >= 22) {
-      items.push({ id: "vegetables", text: "Eat more vegetables (for snacks and with your main meal)" })
-    }
+    if (isAdaptationPhase) {
+      // Base items for days 1-7
+      if (adaptationDay >= 1) {
+        items = [
+          { id: "water", text: "Drink water (1-1.5L)" },
+          { id: "walk", text: "Walk 30 minutes" },
+          { id: "caffeine", text: "No caffeine consumption" },
+          { id: "sleep", text: "Sleep 8 hours" },
+        ]
+      }
 
-    // Special items for specific days
-    if (adaptationDay === 10) {
-      items.push({
-        id: "journal",
-        text: "Try to write down your feelings and thoughts on a piece of paper",
-        isSpecial: true,
-      })
-    } else if (adaptationDay === 18) {
-      items.push({
-        id: "meditation",
-        text: "Try meditation",
-        isSpecial: true,
-      })
-    } else if (adaptationDay === 24) {
-      items.push({
-        id: "mocktail",
-        text: "Try a mocktail, celebrate, you almost finished one phase!",
-        isSpecial: true,
-      })
+      // Add items for days 8-14
+      if (adaptationDay >= 8) {
+        items.push({ id: "alcohol", text: "No alcohol consumption" })
+      }
+
+      // Add items for days 15-21
+      if (adaptationDay >= 15) {
+        items.push({ id: "sugar", text: "No sugar consumption" })
+      }
+
+      // Add items for days 22-28
+      if (adaptationDay >= 22) {
+        items.push({ id: "vegetables", text: "Eat more vegetables (for snacks and with your main meal)" })
+      }
+
+      // Special items for specific days
+      if (adaptationDay === 10) {
+        items.push({
+          id: "journal",
+          text: "Try to write down your feelings and thoughts on a piece of paper",
+          isSpecial: true,
+        })
+      } else if (adaptationDay === 18) {
+        items.push({
+          id: "meditation",
+          text: "Try meditation",
+          isSpecial: true,
+        })
+      } else if (adaptationDay === 24) {
+        items.push({
+          id: "mocktail",
+          text: "Try a mocktail, celebrate, you almost finished one phase!",
+          isSpecial: true,
+        })
+      }
+    } else {
+      // Get elimination phase to-do items
+      items = generateEliminationTodoItems()
     }
 
     setTodoItems(items)
   }
 
-  // Function to load completed to-dos for the current date
+  // Function to load completed to-dos from local storage
   const loadCompletedTodos = () => {
     if (typeof window === "undefined") return
 
-    const today = new Date().toISOString().split("T")[0] // YYYY-MM-DD format
     const completedTodosStr = localStorage.getItem("completedTodos")
-
     if (completedTodosStr) {
-      const allCompletedTodos: CompletedTodos[] = JSON.parse(completedTodosStr)
-      const todayCompleted = allCompletedTodos.find((item) => item.date === today)
+      try {
+        const completedTodos: CompletedTodos[] = JSON.parse(completedTodosStr)
+        const today = new Date().toISOString().split("T")[0] // Get today's date in YYYY-MM-DD format
 
-      if (todayCompleted) {
-        setCompletedTodoIds(todayCompleted.completedIds)
-      } else {
-        setCompletedTodoIds([])
+        // Find the completed todos for today
+        const todayCompleted = completedTodos.find((item) => item.date === today)
+
+        // If we have completed todos for today, set the completed ids
+        if (todayCompleted) {
+          setCompletedTodoIds(todayCompleted.completedIds)
+        } else {
+          setCompletedTodoIds([]) // No completed todos for today
+        }
+      } catch (e) {
+        console.error("Error parsing completed todos:", e)
+        setCompletedTodoIds([]) // Error, so set to empty
       }
     } else {
-      setCompletedTodoIds([])
+      setCompletedTodoIds([]) // No completed todos saved
     }
   }
 
-  // Function to toggle a to-do item's completion status
+  // Function to toggle to-do completion status
   const toggleTodoCompletion = (id: string) => {
-    const today = new Date().toISOString().split("T")[0] // YYYY-MM-DD format
-    let newCompletedIds: string[]
+    if (typeof window === "undefined") return
 
-    if (completedTodoIds.includes(id)) {
-      // Remove from completed
-      newCompletedIds = completedTodoIds.filter((itemId) => itemId !== id)
+    const today = new Date().toISOString().split("T")[0] // Get today's date in YYYY-MM-DD format
+    const isCompleted = completedTodoIds.includes(id)
+
+    let updatedCompletedIds: string[] = []
+
+    if (isCompleted) {
+      // Remove the id from the completed list
+      updatedCompletedIds = completedTodoIds.filter((todoId) => todoId !== id)
     } else {
-      // Add to completed
-      newCompletedIds = [...completedTodoIds, id]
+      // Add the id to the completed list
+      updatedCompletedIds = [...completedTodoIds, id]
+    }
 
-      // Check if all items are now completed
-      if (newCompletedIds.length === todoItems.length && todoItems.length > 0) {
-        setShowConfetti(true)
+    // Update state
+    setCompletedTodoIds(updatedCompletedIds)
+
+    // Load existing completed todos from localStorage
+    const completedTodosStr = localStorage.getItem("completedTodos")
+    let completedTodos: CompletedTodos[] = []
+
+    if (completedTodosStr) {
+      try {
+        completedTodos = JSON.parse(completedTodosStr)
+      } catch (e) {
+        console.error("Error parsing completed todos:", e)
       }
     }
 
-    setCompletedTodoIds(newCompletedIds)
+    // Find if we have an entry for today
+    const todayIndex = completedTodos.findIndex((item) => item.date === today)
 
-    // Save to localStorage
-    const completedTodosStr = localStorage.getItem("completedTodos")
-    const allCompletedTodos: CompletedTodos[] = completedTodosStr ? JSON.parse(completedTodosStr) : []
-
-    // Find if we already have an entry for today
-    const todayIndex = allCompletedTodos.findIndex((item) => item.date === today)
-
-    if (todayIndex >= 0) {
-      // Update existing entry
-      allCompletedTodos[todayIndex].completedIds = newCompletedIds
+    if (todayIndex !== -1) {
+      // Update existing entry for today
+      completedTodos[todayIndex] = { date: today, completedIds: updatedCompletedIds }
     } else {
-      // Add new entry
-      allCompletedTodos.push({
-        date: today,
-        completedIds: newCompletedIds,
-      })
+      // Add a new entry for today
+      completedTodos.push({ date: today, completedIds: updatedCompletedIds })
     }
 
-    localStorage.setItem("completedTodos", JSON.stringify(allCompletedTodos))
+    // Save updated completed todos to localStorage
+    localStorage.setItem("completedTodos", JSON.stringify(completedTodos))
+
+    // Show confetti if all items are completed
+    if (updatedCompletedIds.length === todoItems.length) {
+      setShowConfetti(true)
+    }
   }
 
   useEffect(() => {
@@ -489,8 +587,8 @@ export default function Dashboard() {
       // Load user profile data
       loadUserProfile()
 
-      // Determine adaptation phase and day
-      determineAdaptationPhase()
+      // Determine phases
+      determinePhases()
 
       // Get diet timeline data
       const dietTimeline = localStorage.getItem("userDietTimeline")
@@ -590,7 +688,7 @@ export default function Dashboard() {
   // Effect to generate to-do items when adaptation phase or day changes
   useEffect(() => {
     generateTodoItems()
-  }, [isAdaptationPhase, adaptationDay])
+  }, [isAdaptationPhase, adaptationDay, eliminationPhasePercentage])
 
   // Effect to load completed to-dos when to-do items change
   useEffect(() => {
@@ -1473,7 +1571,7 @@ export default function Dashboard() {
         </div>
 
         {/* To Do List Module */}
-        {isAdaptationPhase && todoItems.length > 0 && (
+        {todoItems.length > 0 && (
           <div className="glass-card p-6 mb-6">
             <div className="flex items-center mb-4">
               <ListChecks className="h-5 w-5 mr-2 text-blue-500" />
@@ -1481,7 +1579,11 @@ export default function Dashboard() {
             </div>
 
             <div className="mb-2">
-              <p className="text-sm text-secondary-color">Adaptation Phase - Day {adaptationDay}</p>
+              <p className="text-sm text-secondary-color">
+                {isAdaptationPhase
+                  ? `Adaptation Phase - Day ${adaptationDay}`
+                  : `Elimination Phase - ${eliminationPhasePercentage}% complete`}
+              </p>
             </div>
 
             <ul className="space-y-3">
