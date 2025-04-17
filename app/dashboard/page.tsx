@@ -17,6 +17,9 @@ import {
   ExternalLink,
   Scale,
   Check,
+  CheckCircle2,
+  Circle,
+  ListChecks,
 } from "lucide-react"
 import Logo from "@/app/components/logo"
 
@@ -66,6 +69,19 @@ interface UserProfile {
   weightHistory?: Array<{ date: string; weight: number }>
 }
 
+// Interface for to-do item
+interface TodoItem {
+  id: string
+  text: string
+  isSpecial?: boolean
+}
+
+// Interface for completed to-do items
+interface CompletedTodos {
+  date: string
+  completedIds: string[]
+}
+
 export default function Dashboard() {
   const router = useRouter()
   const [conditions, setConditions] = useState<string[]>([])
@@ -92,6 +108,12 @@ export default function Dashboard() {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
   const [isUpdatingWeight, setIsUpdatingWeight] = useState(false)
   const [weightUpdateSuccess, setWeightUpdateSuccess] = useState(false)
+
+  // To-do list states
+  const [isAdaptationPhase, setIsAdaptationPhase] = useState(false)
+  const [adaptationDay, setAdaptationDay] = useState(1)
+  const [todoItems, setTodoItems] = useState<TodoItem[]>([])
+  const [completedTodoIds, setCompletedTodoIds] = useState<string[]>([])
 
   // Function to handle symptom selection
   const handleSymptomSelect = (symptomName: string) => {
@@ -304,6 +326,149 @@ export default function Dashboard() {
     }
   }
 
+  // Function to determine adaptation phase and day
+  const determineAdaptationPhase = () => {
+    if (typeof window === "undefined") return
+
+    const adaptationChoice = localStorage.getItem("userAdaptationChoice")
+    const hasAdaptation = adaptationChoice === "Yes"
+
+    if (!hasAdaptation) {
+      setIsAdaptationPhase(false)
+      return
+    }
+
+    const startDate = localStorage.getItem("dietStartDate")
+    if (!startDate) {
+      setIsAdaptationPhase(false)
+      return
+    }
+
+    const dietStartDate = new Date(startDate)
+    const today = new Date()
+    const daysElapsed = Math.floor((today.getTime() - dietStartDate.getTime()) / (1000 * 60 * 60 * 24))
+
+    // Adaptation phase is the first 28 days
+    if (daysElapsed < 28) {
+      setIsAdaptationPhase(true)
+      setAdaptationDay(daysElapsed + 1) // +1 because day 1 is the first day
+    } else {
+      setIsAdaptationPhase(false)
+    }
+  }
+
+  // Function to generate to-do items based on adaptation day
+  const generateTodoItems = () => {
+    if (!isAdaptationPhase) return
+
+    let items: TodoItem[] = []
+
+    // Base items for days 1-7
+    if (adaptationDay >= 1) {
+      items = [
+        { id: "water", text: "Drink water (1-1.5L)" },
+        { id: "walk", text: "Walk 30 minutes" },
+        { id: "caffeine", text: "No caffeine consumption" },
+        { id: "sleep", text: "Sleep 8 hours" },
+      ]
+    }
+
+    // Add items for days 8-14
+    if (adaptationDay >= 8) {
+      items.push({ id: "alcohol", text: "No alcohol consumption" })
+    }
+
+    // Add items for days 15-21
+    if (adaptationDay >= 15) {
+      items.push({ id: "sugar", text: "No sugar consumption" })
+    }
+
+    // Add items for days 22-28
+    if (adaptationDay >= 22) {
+      items.push({ id: "vegetables", text: "Eat more vegetables (for snacks and with your main meal)" })
+    }
+
+    // Special items for specific days
+    if (adaptationDay === 10) {
+      items.push({
+        id: "journal",
+        text: "Try to write down your feelings and thoughts on a piece of paper",
+        isSpecial: true,
+      })
+    } else if (adaptationDay === 18) {
+      items.push({
+        id: "meditation",
+        text: "Try meditation",
+        isSpecial: true,
+      })
+    } else if (adaptationDay === 24) {
+      items.push({
+        id: "mocktail",
+        text: "Try a mocktail, celebrate, you almost finished one phase!",
+        isSpecial: true,
+      })
+    }
+
+    setTodoItems(items)
+  }
+
+  // Function to load completed to-dos for the current date
+  const loadCompletedTodos = () => {
+    if (typeof window === "undefined") return
+
+    const today = new Date().toISOString().split("T")[0] // YYYY-MM-DD format
+    const completedTodosStr = localStorage.getItem("completedTodos")
+
+    if (completedTodosStr) {
+      const allCompletedTodos: CompletedTodos[] = JSON.parse(completedTodosStr)
+      const todayCompleted = allCompletedTodos.find((item) => item.date === today)
+
+      if (todayCompleted) {
+        setCompletedTodoIds(todayCompleted.completedIds)
+      } else {
+        setCompletedTodoIds([])
+      }
+    } else {
+      setCompletedTodoIds([])
+    }
+  }
+
+  // Function to toggle a to-do item's completion status
+  const toggleTodoCompletion = (id: string) => {
+    const today = new Date().toISOString().split("T")[0] // YYYY-MM-DD format
+    let newCompletedIds: string[]
+
+    if (completedTodoIds.includes(id)) {
+      // Remove from completed
+      newCompletedIds = completedTodoIds.filter((itemId) => itemId !== id)
+    } else {
+      // Add to completed
+      newCompletedIds = [...completedTodoIds, id]
+    }
+
+    setCompletedTodoIds(newCompletedIds)
+
+    // Save to localStorage
+    const completedTodosStr = localStorage.getItem("completedTodos")
+    const allCompletedTodos: CompletedTodos[] = completedTodosStr ? JSON.parse(completedTodosStr) : []
+
+    // Find if we already have an entry for today
+    const todayIndex = allCompletedTodos.findIndex((item) => item.date === today)
+
+    if (todayIndex >= 0) {
+      // Update existing entry
+      allCompletedTodos[todayIndex].completedIds = newCompletedIds
+    } else {
+      // Add new entry
+      allCompletedTodos.push({
+        date: today,
+        completedIds: newCompletedIds,
+      })
+    }
+
+    localStorage.setItem("completedTodos", JSON.stringify(allCompletedTodos))
+  }
+
   useEffect(() => {
     // Format current date
     const date = new Date()
@@ -316,6 +481,9 @@ export default function Dashboard() {
     if (typeof window !== "undefined") {
       // Load user profile data
       loadUserProfile()
+
+      // Determine adaptation phase and day
+      determineAdaptationPhase()
 
       // Get diet timeline data
       const dietTimeline = localStorage.getItem("userDietTimeline")
@@ -403,7 +571,7 @@ export default function Dashboard() {
 
           // Store digestive symptoms
           if (loggedDay.digestiveSymptoms && Array.isArray(loggedDay.digestiveSymptoms)) {
-            setLoggedDigestiveSymptoms(loggedDay.digestiveSymptoms)
+            setLoggedDigestiveSymptoms(loggedDigestiveSymptoms)
           }
         } catch (e) {
           console.error("Error parsing logged day data:", e)
@@ -412,12 +580,25 @@ export default function Dashboard() {
     }
   }, [])
 
+  // Effect to generate to-do items when adaptation phase or day changes
+  useEffect(() => {
+    generateTodoItems()
+  }, [isAdaptationPhase, adaptationDay])
+
+  // Effect to load completed to-dos when to-do items change
+  useEffect(() => {
+    if (todoItems.length > 0) {
+      loadCompletedTodos()
+    }
+  }, [todoItems])
+
   // Add an effect to reload symptom data when the component is focused
   useEffect(() => {
     // Function to handle when the window gets focus
     const handleFocus = () => {
       loadSymptomData()
       loadUserProfile()
+      loadCompletedTodos()
     }
 
     // Add event listener for focus
@@ -1278,6 +1459,53 @@ export default function Dashboard() {
             </ul>
           )}
         </div>
+
+        {/* To Do List Module */}
+        {isAdaptationPhase && todoItems.length > 0 && (
+          <div className="glass-card p-6 mb-6">
+            <div className="flex items-center mb-4">
+              <ListChecks className="h-5 w-5 mr-2 text-blue-500" />
+              <h3 className="font-medium text-xl text-primary-color">Daily To-Do List</h3>
+            </div>
+
+            <div className="mb-2">
+              <p className="text-sm text-secondary-color">Adaptation Phase - Day {adaptationDay}</p>
+            </div>
+
+            <ul className="space-y-3">
+              {todoItems.map((item) => (
+                <li key={item.id} className={`flex items-start ${item.isSpecial ? "bg-pink-50 p-3 rounded-lg" : ""}`}>
+                  <button
+                    onClick={() => toggleTodoCompletion(item.id)}
+                    className="mt-0.5 mr-3 flex-shrink-0 text-primary-color hover:text-accent-color transition-colors"
+                    aria-label={completedTodoIds.includes(item.id) ? "Mark as incomplete" : "Mark as complete"}
+                  >
+                    {completedTodoIds.includes(item.id) ? (
+                      <CheckCircle2 className="h-5 w-5 text-green-500" />
+                    ) : (
+                      <Circle className="h-5 w-5" />
+                    )}
+                  </button>
+                  <span
+                    className={`text-sm ${
+                      completedTodoIds.includes(item.id)
+                        ? "text-gray-400 line-through"
+                        : item.isSpecial
+                          ? "text-pink-700 font-medium"
+                          : "text-primary-color"
+                    }`}
+                  >
+                    {item.text}
+                  </span>
+                </li>
+              ))}
+            </ul>
+
+            <div className="mt-4 text-center">
+              <p className="text-xs text-secondary-color">Check off items as you complete them throughout the day</p>
+            </div>
+          </div>
+        )}
       </main>
 
       {/* Bottom Navigation */}
