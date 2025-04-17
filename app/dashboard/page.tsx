@@ -15,6 +15,8 @@ import {
   LightbulbIcon,
   HelpCircle,
   ExternalLink,
+  Scale,
+  Check,
 } from "lucide-react"
 import Logo from "@/components/Logo"
 
@@ -53,6 +55,17 @@ interface LoggedWellness {
   digestiveSymptoms?: string[]
 }
 
+// Interface for user profile data
+interface UserProfile {
+  gender: string
+  age: number
+  weight: number
+  weightUnit: "kg" | "lb"
+  height: number
+  heightUnit: string
+  weightHistory?: Array<{ date: string; weight: number }>
+}
+
 export default function Dashboard() {
   const router = useRouter()
   const [conditions, setConditions] = useState<string[]>([])
@@ -72,6 +85,13 @@ export default function Dashboard() {
   const [loggedPeriodSymptoms, setLoggedPeriodSymptoms] = useState<string[]>([])
   const [loggedDigestiveSymptoms, setLoggedDigestiveSymptoms] = useState<string[]>([])
   const [isOnPeriod, setIsOnPeriod] = useState<boolean>(false)
+
+  // Weight tracking states
+  const [currentWeight, setCurrentWeight] = useState<string>("")
+  const [weightUnit, setWeightUnit] = useState<"kg" | "lb">("kg")
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
+  const [isUpdatingWeight, setIsUpdatingWeight] = useState(false)
+  const [weightUpdateSuccess, setWeightUpdateSuccess] = useState(false)
 
   // Function to handle symptom selection
   const handleSymptomSelect = (symptomName: string) => {
@@ -224,6 +244,66 @@ export default function Dashboard() {
     setSymptomData(userSymptomData)
   }
 
+  // Function to load user profile data
+  const loadUserProfile = () => {
+    if (typeof window === "undefined") return
+
+    const profileData = localStorage.getItem("userProfile")
+    if (profileData) {
+      const profile = JSON.parse(profileData) as UserProfile
+      setUserProfile(profile)
+      setWeightUnit(profile.weightUnit)
+
+      // Set current weight from profile
+      if (profile.weight) {
+        setCurrentWeight(profile.weight.toString())
+      }
+    }
+  }
+
+  // Function to update user weight
+  const updateWeight = () => {
+    if (!currentWeight || isNaN(Number(currentWeight)) || Number(currentWeight) <= 0) {
+      return
+    }
+
+    setIsUpdatingWeight(true)
+
+    // Get current profile data
+    const profileData = localStorage.getItem("userProfile")
+    if (profileData) {
+      const profile = JSON.parse(profileData) as UserProfile
+
+      // Update weight
+      profile.weight = Number(currentWeight)
+      profile.weightUnit = weightUnit
+
+      // Add to weight history if it doesn't exist
+      if (!profile.weightHistory) {
+        profile.weightHistory = []
+      }
+
+      // Add current weight to history
+      profile.weightHistory.push({
+        date: new Date().toISOString(),
+        weight: Number(currentWeight),
+      })
+
+      // Save updated profile
+      localStorage.setItem("userProfile", JSON.stringify(profile))
+      setUserProfile(profile)
+
+      // Show success message
+      setWeightUpdateSuccess(true)
+      setTimeout(() => {
+        setWeightUpdateSuccess(false)
+        setIsUpdatingWeight(false)
+      }, 2000)
+    } else {
+      setIsUpdatingWeight(false)
+    }
+  }
+
   useEffect(() => {
     // Format current date
     const date = new Date()
@@ -234,6 +314,9 @@ export default function Dashboard() {
     const isFirstLoad = sessionStorage.getItem("dashboardFirstLoad") !== "false"
 
     if (typeof window !== "undefined") {
+      // Load user profile data
+      loadUserProfile()
+
       // Get diet timeline data
       const dietTimeline = localStorage.getItem("userDietTimeline")
       const startDate = localStorage.getItem("dietStartDate")
@@ -334,6 +417,7 @@ export default function Dashboard() {
     // Function to handle when the window gets focus
     const handleFocus = () => {
       loadSymptomData()
+      loadUserProfile()
     }
 
     // Add event listener for focus
@@ -1116,6 +1200,85 @@ export default function Dashboard() {
           )}
         </div>
 
+        {/* Weight Tracking Module */}
+        <div className="glass-card p-6 mb-6">
+          <div className="flex items-center mb-4">
+            <Scale className="h-5 w-5 mr-2 text-pink-500" />
+            <h3 className="font-medium text-xl text-primary-color">Weight Tracking</h3>
+          </div>
+
+          <div className="flex flex-col">
+            {userProfile && (
+              <div className="mb-4">
+                <p className="text-sm text-secondary-color mb-1">Current Weight</p>
+                <p className="font-bold text-primary-color">
+                  {userProfile.weight} {userProfile.weightUnit}
+                </p>
+              </div>
+            )}
+
+            <div className="flex items-end gap-2 mb-4">
+              <div className="flex-1">
+                <label htmlFor="weight" className="block text-sm text-secondary-color mb-1">
+                  Update Weight
+                </label>
+                <input
+                  type="number"
+                  id="weight"
+                  value={currentWeight}
+                  onChange={(e) => setCurrentWeight(e.target.value)}
+                  placeholder="Enter weight"
+                  className="w-full p-3 rounded-xl bg-white/80 border border-brand-dark/20 focus:outline-none focus:ring-2 focus:ring-pink-400"
+                  min="1"
+                />
+              </div>
+              <div className="w-24">
+                <select
+                  value={weightUnit}
+                  onChange={(e) => setWeightUnit(e.target.value as "kg" | "lb")}
+                  className="w-full p-3 rounded-xl bg-white/80 border border-brand-dark/20 focus:outline-none focus:ring-2 focus:ring-pink-400"
+                >
+                  <option value="kg">kg</option>
+                  <option value="lb">lb</option>
+                </select>
+              </div>
+              <button
+                onClick={updateWeight}
+                disabled={isUpdatingWeight || !currentWeight}
+                className="p-3 rounded-xl gradient-button flex items-center justify-center min-w-[80px]"
+              >
+                {isUpdatingWeight ? "Saving..." : weightUpdateSuccess ? <Check className="h-5 w-5" /> : "Update"}
+              </button>
+            </div>
+
+            {userProfile?.weightHistory && userProfile.weightHistory.length > 0 && (
+              <div>
+                <p className="text-sm text-secondary-color mb-2">Weight History</p>
+                <div className="max-h-32 overflow-y-auto">
+                  {userProfile.weightHistory
+                    .slice()
+                    .reverse()
+                    .slice(0, 5)
+                    .map((entry, index) => (
+                      <div key={index} className="flex justify-between items-center py-2 border-b border-brand-dark/10">
+                        <span className="text-sm text-primary-color">
+                          {new Date(entry.date).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })}
+                        </span>
+                        <span className="font-medium text-primary-color">
+                          {entry.weight} {userProfile.weightUnit}
+                        </span>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Daily Observations Module */}
         <div className="glass-card p-6 mb-6">
           <div className="flex items-center mb-4">
@@ -1156,7 +1319,8 @@ export default function Dashboard() {
           )}
         </div>
       </main>
-      ;
+
+      {/* Bottom Navigation */}
       <nav className="grid grid-cols-5 border-t border-[#e4e0f0] bg-white/80 backdrop-blur-sm">
         <button
           className="flex flex-col items-center justify-center py-3 text-xs"
