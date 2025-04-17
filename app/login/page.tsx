@@ -1,7 +1,18 @@
+"use client"
+
 import Link from "next/link"
 import Logo from "@/components/Logo"
+import { useRouter } from "next/navigation"
+import { setupTestData } from "../utils/test-utils"
 
 export default function Login() {
+  const router = useRouter()
+
+  const handleSkip = () => {
+    setupTestData()
+    router.push("/dashboard")
+  }
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center app-gradient p-6">
       <div className="w-full max-w-md flex flex-col items-center gap-8">
@@ -38,6 +49,14 @@ export default function Login() {
             </div>
 
             <button className="w-full gradient-button py-4 rounded-full">Log In</button>
+
+            {/* Skip button for testing */}
+            <button
+              onClick={handleSkip}
+              className="w-full py-4 rounded-full border-2 border-dashed border-pink-300 bg-transparent text-pink-500 hover:bg-pink-50"
+            >
+              Skip (Testing)
+            </button>
           </div>
 
           <div className="text-center space-y-3">
