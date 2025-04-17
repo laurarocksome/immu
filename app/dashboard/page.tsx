@@ -22,6 +22,7 @@ import {
   ListChecks,
 } from "lucide-react"
 import Logo from "@/app/components/logo"
+import ConfettiCelebration from "@/app/components/confetti-celebration"
 
 // Update the chart dates to show daily data
 const chartDates = ["Day 1", "Day 2", "Day 3", "Day 4", "Day 5", "Day 6", "Day 7"]
@@ -114,6 +115,7 @@ export default function Dashboard() {
   const [adaptationDay, setAdaptationDay] = useState(1)
   const [todoItems, setTodoItems] = useState<TodoItem[]>([])
   const [completedTodoIds, setCompletedTodoIds] = useState<string[]>([])
+  const [showConfetti, setShowConfetti] = useState(false)
 
   // Function to handle symptom selection
   const handleSymptomSelect = (symptomName: string) => {
@@ -444,6 +446,11 @@ export default function Dashboard() {
     } else {
       // Add to completed
       newCompletedIds = [...completedTodoIds, id]
+
+      // Check if all items are now completed
+      if (newCompletedIds.length === todoItems.length && todoItems.length > 0) {
+        setShowConfetti(true)
+      }
     }
 
     setCompletedTodoIds(newCompletedIds)
@@ -1507,6 +1514,9 @@ export default function Dashboard() {
           </div>
         )}
       </main>
+
+      {/* Confetti celebration */}
+      <ConfettiCelebration active={showConfetti} onComplete={() => setShowConfetti(false)} duration={4000} />
 
       {/* Bottom Navigation */}
       <nav className="grid grid-cols-5 border-t border-[#e4e0f0] bg-white/80 backdrop-blur-sm">
