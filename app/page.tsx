@@ -5,9 +5,12 @@ import { Button } from "@/components/ui/button"
 import Logo from "@/components/Logo"
 import { useRouter } from "next/navigation"
 import { setupTestData } from "./utils/test-utils"
+import TestUsers from "./components/test-users"
+import { useState } from "react"
 
 export default function Home() {
   const router = useRouter()
+  const [showTestUsers, setShowTestUsers] = useState(false)
 
   const handleSkip = () => {
     setupTestData()
@@ -35,13 +38,26 @@ export default function Home() {
               <Button className="w-full h-12 text-lg secondary-button">Get Started</Button>
             </Link>
 
-            {/* Skip button for testing */}
-            <Button
-              onClick={handleSkip}
-              className="w-full h-12 text-lg border-2 border-dashed border-pink-300 bg-transparent text-pink-500 hover:bg-pink-50"
+            {/* Toggle test users section */}
+            <button
+              onClick={() => setShowTestUsers(!showTestUsers)}
+              className="w-full py-2 text-pink-500 text-sm hover:underline"
             >
-              Skip (Testing)
-            </Button>
+              {showTestUsers ? "Hide Test Users" : "Show Test Users"}
+            </button>
+
+            {/* Test Users Section */}
+            {showTestUsers && <TestUsers />}
+
+            {/* Skip button for testing */}
+            {!showTestUsers && (
+              <Button
+                onClick={handleSkip}
+                className="w-full h-12 text-lg border-2 border-dashed border-pink-300 bg-transparent text-pink-500 hover:bg-pink-50"
+              >
+                Skip (Testing)
+              </Button>
+            )}
           </div>
         </div>
       </div>

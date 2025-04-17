@@ -1981,6 +1981,8 @@ const sortedProducts = [...allProductsWithout5HourEnergy].sort((a, b) => a.name.
 const allTags = Array.from(new Set(allProducts.flatMap((item) => item.tags))).sort()
 
 export default function FoodList() {
+  // Add a new state to track how many items to show
+  const [itemsToShow, setItemsToShow] = useState(12)
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [showFilters, setShowFilters] = useState(false)
@@ -2189,6 +2191,13 @@ export default function FoodList() {
     }
   }
 
+  // Add a function to handle showing more items
+  const handleShowMore = () => {
+    setItemsToShow((prevCount) => prevCount + 12)
+  }
+
+  // Modify the Products List - Alphabetical View section to limit items and add Show More button
+  // Replace the existing alphabetical view with this:
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-brand-lightest to-white text-brand-dark">
       {/* Header */}
@@ -2233,120 +2242,114 @@ export default function FoodList() {
           </div>
 
           {/* Filter Options */}
-          {showFilters && (
-            <div className="glass-card rounded-xl p-4 mb-4 space-y-4">
-              {/* Category Filter */}
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <h3 className="font-medium">Filter by category</h3>
+          <div className="glass-card rounded-xl p-4 mb-4 space-y-4">
+            {/* Category Filter */}
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="font-medium">Filter by category</h3>
+                <button
+                  onClick={() => setShowTagDropdown(!showTagDropdown)}
+                  className="text-sm text-pink-500 flex items-center"
+                >
+                  {selectedTags.length > 0 ? `${selectedTags.length} selected` : "Select categories"}
+                  {showTagDropdown ? <ChevronUp className="ml-1 h-4 w-4" /> : <ChevronDown className="ml-1 h-4 w-4" />}
+                </button>
+              </div>
+
+              {showTagDropdown && (
+                <div className="max-h-40 overflow-y-auto p-2 border border-brand-dark/10 rounded-lg bg-white/90 mb-3">
+                  {allTags.map((tag) => (
+                    <div key={tag} className="flex items-center mb-1">
+                      <input
+                        type="checkbox"
+                        id={`tag-${tag}`}
+                        checked={selectedTags.includes(tag)}
+                        onChange={() => toggleTag(tag)}
+                        className="mr-2 h-4 w-4 rounded border-brand-dark/30 text-pink-400 focus:ring-pink-400"
+                      />
+                      <label htmlFor={`tag-${tag}`} className="text-sm">
+                        {tag}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Selected Tags Display */}
+              {selectedTags.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {selectedTags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="px-2 py-1 rounded-full bg-pink-100 text-pink-800 text-xs flex items-center"
+                    >
+                      {tag}
+                      <button onClick={() => toggleTag(tag)} className="ml-1 text-pink-800 hover:text-pink-900">
+                        ×
+                      </button>
+                    </span>
+                  ))}
                   <button
-                    onClick={() => setShowTagDropdown(!showTagDropdown)}
-                    className="text-sm text-pink-500 flex items-center"
+                    onClick={() => setSelectedTags([])}
+                    className="px-2 py-1 text-xs text-brand-dark/70 hover:text-brand-dark"
                   >
-                    {selectedTags.length > 0 ? `${selectedTags.length} selected` : "Select categories"}
-                    {showTagDropdown ? (
-                      <ChevronUp className="ml-1 h-4 w-4" />
-                    ) : (
-                      <ChevronDown className="ml-1 h-4 w-4" />
-                    )}
+                    Clear all
                   </button>
                 </div>
-
-                {showTagDropdown && (
-                  <div className="max-h-40 overflow-y-auto p-2 border border-brand-dark/10 rounded-lg bg-white/90 mb-3">
-                    {allTags.map((tag) => (
-                      <div key={tag} className="flex items-center mb-1">
-                        <input
-                          type="checkbox"
-                          id={`tag-${tag}`}
-                          checked={selectedTags.includes(tag)}
-                          onChange={() => toggleTag(tag)}
-                          className="mr-2 h-4 w-4 rounded border-brand-dark/30 text-pink-400 focus:ring-pink-400"
-                        />
-                        <label htmlFor={`tag-${tag}`} className="text-sm">
-                          {tag}
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Selected Tags Display */}
-                {selectedTags.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-2">
-                    {selectedTags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="px-2 py-1 rounded-full bg-pink-100 text-pink-800 text-xs flex items-center"
-                      >
-                        {tag}
-                        <button onClick={() => toggleTag(tag)} className="ml-1 text-pink-800 hover:text-pink-900">
-                          ×
-                        </button>
-                      </span>
-                    ))}
-                    <button
-                      onClick={() => setSelectedTags([])}
-                      className="px-2 py-1 text-xs text-brand-dark/70 hover:text-brand-dark"
-                    >
-                      Clear all
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {/* Sort and Favorites Options */}
-              <div className="flex flex-wrap gap-3 justify-between">
-                <div>
-                  <label className="block text-sm mb-1">Sort by</label>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setSortBy("name")}
-                      className={`px-3 py-1 rounded-full text-sm ${
-                        sortBy === "name" ? "bg-pink-400 text-white" : "bg-white border border-brand-dark/20"
-                      }`}
-                    >
-                      Name
-                    </button>
-                    <button
-                      onClick={() => setSortBy("status")}
-                      className={`px-3 py-1 rounded-full text-sm ${
-                        sortBy === "status" ? "bg-pink-400 text-white" : "bg-white border border-brand-dark/20"
-                      }`}
-                    >
-                      Status
-                    </button>
-                  </div>
-                </div>
-
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="favorites-only"
-                    checked={showOnlyFavorites}
-                    onChange={() => setShowOnlyFavorites(!showOnlyFavorites)}
-                    className="mr-2 h-4 w-4 rounded border-brand-dark/30 text-pink-400 focus:ring-pink-400"
-                  />
-                  <label htmlFor="favorites-only" className="text-sm">
-                    Show favorites only
-                  </label>
-                </div>
-              </div>
-
-              {/* Clear All Filters Button */}
-              <button
-                onClick={clearFilters}
-                className="w-full text-center py-2 border border-pink-300 text-pink-500 rounded-lg hover:bg-pink-50"
-              >
-                Clear All Filters
-              </button>
+              )}
             </div>
-          )}
+
+            {/* Sort and Favorites Options */}
+            <div className="flex flex-wrap gap-3 justify-between">
+              <div>
+                <label className="block text-sm mb-1">Sort by</label>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setSortBy("name")}
+                    className={`px-3 py-1 rounded-full text-sm ${
+                      sortBy === "name" ? "bg-pink-400 text-white" : "bg-white border border-brand-dark/20"
+                    }`}
+                  >
+                    Name
+                  </button>
+                  <button
+                    onClick={() => setSortBy("status")}
+                    className={`px-3 py-1 rounded-full text-sm ${
+                      sortBy === "status" ? "bg-pink-400 text-white" : "bg-white border border-brand-dark/20"
+                    }`}
+                  >
+                    Status
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="favorites-only"
+                  checked={showOnlyFavorites}
+                  onChange={() => setShowOnlyFavorites(!showOnlyFavorites)}
+                  className="mr-2 h-4 w-4 rounded border-brand-dark/30 text-pink-400 focus:ring-pink-400"
+                />
+                <label htmlFor="favorites-only" className="text-sm">
+                  Show favorites only
+                </label>
+              </div>
+            </div>
+
+            {/* Clear All Filters Button */}
+            <button
+              onClick={clearFilters}
+              className="w-full text-center py-2 border border-pink-300 text-pink-500 rounded-lg hover:bg-pink-50"
+            >
+              Clear All Filters
+            </button>
+          </div>
         </div>
 
         {/* Products List */}
         {sortBy === "status" ? (
-          <div className="space-y-6">
+          <div className="space-y-6 pb-20">
             {Object.entries(productsByStatus).map(
               ([status, products]) =>
                 products.length > 0 && (
@@ -2356,7 +2359,7 @@ export default function FoodList() {
                     </h3>
 
                     <div className="space-y-2">
-                      {products.map((product) => (
+                      {products.slice(0, itemsToShow).map((product) => (
                         <div key={product.name} className="glass-card p-3 rounded-xl flex items-center justify-between">
                           <div>
                             <h4 className="font-medium">{product.name}</h4>
@@ -2412,6 +2415,15 @@ export default function FoodList() {
                           </div>
                         </div>
                       ))}
+
+                      {products.length > itemsToShow && (
+                        <button
+                          onClick={handleShowMore}
+                          className="w-full py-3 mt-4 text-pink-500 border border-pink-300 rounded-lg hover:bg-pink-50"
+                        >
+                          Show More ({products.length - itemsToShow} remaining)
+                        </button>
+                      )}
                     </div>
                   </div>
                 ),
@@ -2419,8 +2431,8 @@ export default function FoodList() {
           </div>
         ) : (
           // Products List - Alphabetical View
-          <div className="space-y-2">
-            {filteredProducts.map((product) => (
+          <div className="space-y-2 pb-20">
+            {filteredProducts.slice(0, itemsToShow).map((product) => (
               <div key={product.name} className="glass-card p-3 rounded-xl flex items-center justify-between">
                 <div>
                   <h4 className="font-medium">{product.name}</h4>
@@ -2471,6 +2483,15 @@ export default function FoodList() {
                 </div>
               </div>
             ))}
+
+            {filteredProducts.length > itemsToShow && (
+              <button
+                onClick={handleShowMore}
+                className="w-full py-3 mt-4 text-pink-500 border border-pink-300 rounded-lg hover:bg-pink-50"
+              >
+                Show More ({filteredProducts.length - itemsToShow} remaining)
+              </button>
+            )}
           </div>
         )}
 
@@ -2489,7 +2510,7 @@ export default function FoodList() {
       </main>
 
       {/* Bottom Navigation */}
-      <nav className="grid grid-cols-5 border-t border-brand-dark/10 bg-white/80 backdrop-blur-sm">
+      <nav className="fixed bottom-0 left-0 right-0 grid grid-cols-5 border-t border-brand-dark/10 bg-white/90 backdrop-blur-sm z-10">
         <button className="flex flex-col items-center justify-center py-3 text-xs text-pink-400">
           <List className="h-5 w-5 mb-1 text-pink-400" />
           <span>Products</span>

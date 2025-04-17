@@ -4,9 +4,12 @@ import Link from "next/link"
 import Logo from "@/components/Logo"
 import { useRouter } from "next/navigation"
 import { setupTestData } from "../utils/test-utils"
+import TestUsers from "../components/test-users"
+import { useState } from "react"
 
 export default function Login() {
   const router = useRouter()
+  const [showTestUsers, setShowTestUsers] = useState(false)
 
   const handleSkip = () => {
     setupTestData()
@@ -50,13 +53,26 @@ export default function Login() {
 
             <button className="w-full gradient-button py-4 rounded-full">Log In</button>
 
-            {/* Skip button for testing */}
+            {/* Toggle test users section */}
             <button
-              onClick={handleSkip}
-              className="w-full py-4 rounded-full border-2 border-dashed border-pink-300 bg-transparent text-pink-500 hover:bg-pink-50"
+              onClick={() => setShowTestUsers(!showTestUsers)}
+              className="w-full py-2 text-pink-500 text-sm hover:underline"
             >
-              Skip (Testing)
+              {showTestUsers ? "Hide Test Users" : "Show Test Users"}
             </button>
+
+            {/* Test Users Section */}
+            {showTestUsers && <TestUsers />}
+
+            {/* Skip button for testing */}
+            {!showTestUsers && (
+              <button
+                onClick={handleSkip}
+                className="w-full py-4 rounded-full border-2 border-dashed border-pink-300 bg-transparent text-pink-500 hover:bg-pink-50"
+              >
+                Skip (Testing)
+              </button>
+            )}
           </div>
 
           <div className="text-center space-y-3">
