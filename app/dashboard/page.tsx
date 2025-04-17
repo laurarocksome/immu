@@ -742,13 +742,18 @@ export default function Dashboard() {
 
     const observations = []
 
-    // Add period-related observations
-    if (isOnPeriod) {
-      if (loggedPeriodSymptoms.length > 0) {
-        const symptomNames = loggedPeriodSymptoms.map(getPeriodSymptomName).join(", ")
-        observations.push(`Your period symptoms (${symptomNames}) may affect your overall wellness score today.`)
-      } else {
-        observations.push("You're on your period today, which may affect your energy levels and comfort.")
+    // Add period-related observations only for female users
+    const userProfile = JSON.parse(localStorage.getItem("userProfile") || "{}")
+    const userGender = userProfile.gender?.toLowerCase()
+
+    if (userGender === "female") {
+      if (isOnPeriod) {
+        if (loggedPeriodSymptoms.length > 0) {
+          const symptomNames = loggedPeriodSymptoms.map(getPeriodSymptomName).join(", ")
+          observations.push(`Your period symptoms (${symptomNames}) may affect your overall wellness score today.`)
+        } else {
+          observations.push("You're on your period today, which may affect your energy levels and comfort.")
+        }
       }
     }
 

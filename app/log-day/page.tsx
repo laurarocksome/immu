@@ -99,6 +99,9 @@ export default function LogDayPage() {
   const [customDigestiveSymptom, setCustomDigestiveSymptom] = useState("")
   const [showCustomDigestiveSymptomInput, setShowCustomDigestiveSymptomInput] = useState(false)
 
+  // Add userGender state near the top of the component with other state variables
+  const [userGender, setUserGender] = useState<string | null>(null)
+
   useEffect(() => {
     // Load user symptoms from localStorage
     const loadUserSymptoms = () => {
@@ -178,6 +181,17 @@ export default function LogDayPage() {
 
     // Check if the user has already logged their diet success today
     checkIfDietSuccessLoggedToday()
+
+    // Load user profile to get gender
+    const profileData = localStorage.getItem("userProfile")
+    if (profileData) {
+      try {
+        const profile = JSON.parse(profileData)
+        setUserGender(profile.gender?.toLowerCase() || null)
+      } catch (e) {
+        console.error("Error parsing user profile:", e)
+      }
+    }
   }, [])
 
   const checkIfDietSuccessLoggedToday = () => {
@@ -477,106 +491,108 @@ export default function LogDayPage() {
               />
             </div>
 
-            {/* Period Tracking */}
-            <div className="glass-card rounded-2xl p-4 mb-6">
-              <h3 className="font-medium mb-4">Period</h3>
-              <p className="text-sm text-brand-dark/70 mb-3">Are you currently on your period?</p>
-              <div className="flex gap-4">
-                <button
-                  onClick={() => setOnPeriod(true)}
-                  className={`flex-1 py-3 px-6 rounded-full ${
-                    onPeriod === true
-                      ? "bg-pink-400 text-white"
-                      : "bg-white/80 border border-brand-dark/20 hover:bg-white"
-                  }`}
-                >
-                  Yes
-                </button>
-                <button
-                  onClick={() => setOnPeriod(false)}
-                  className={`flex-1 py-3 px-6 rounded-full ${
-                    onPeriod === false
-                      ? "bg-pink-400 text-white"
-                      : "bg-white/80 border border-brand-dark/20 hover:bg-white"
-                  }`}
-                >
-                  No
-                </button>
-              </div>
+            {/* Period Tracking (shown only for female users) */}
+            {userGender === "female" && (
+              <div className="glass-card rounded-2xl p-4 mb-6">
+                <h3 className="font-medium mb-4">Period</h3>
+                <p className="text-sm text-brand-dark/70 mb-3">Are you currently on your period?</p>
+                <div className="flex gap-4">
+                  <button
+                    onClick={() => setOnPeriod(true)}
+                    className={`flex-1 py-3 px-6 rounded-full ${
+                      onPeriod === true
+                        ? "bg-pink-400 text-white"
+                        : "bg-white/80 border border-brand-dark/20 hover:bg-white"
+                    }`}
+                  >
+                    Yes
+                  </button>
+                  <button
+                    onClick={() => setOnPeriod(false)}
+                    className={`flex-1 py-3 px-6 rounded-full ${
+                      onPeriod === false
+                        ? "bg-pink-400 text-white"
+                        : "bg-white/80 border border-brand-dark/20 hover:bg-white"
+                    }`}
+                  >
+                    No
+                  </button>
+                </div>
 
-              {/* Period Symptoms (shown only if on period) */}
-              {onPeriod && (
-                <div className="mt-4">
-                  <p className="text-sm text-brand-dark/70 mb-3">Select any symptoms you're experiencing:</p>
+                {/* Period Symptoms (shown only if on period) */}
+                {onPeriod && (
+                  <div className="mt-4">
+                    <p className="text-sm text-brand-dark/70 mb-3">Select any symptoms you're experiencing:</p>
 
-                  <div className="flex flex-wrap gap-3 mb-4">
-                    {periodSymptoms.map((symptom) => (
-                      <button
-                        key={symptom.id}
-                        onClick={() => togglePeriodSymptom(symptom.id)}
-                        className={`py-2 px-4 rounded-full ${
-                          selectedPeriodSymptoms.includes(symptom.id)
-                            ? "bg-pink-400 text-white"
-                            : "bg-white/80 border border-brand-dark/20 hover:bg-white"
-                        }`}
-                      >
-                        {symptom.name}
-                      </button>
-                    ))}
-
-                    {/* Custom symptoms that user has added */}
-                    {selectedPeriodSymptoms
-                      .filter((id) => id.startsWith("custom_"))
-                      .map((customId) => (
+                    <div className="flex flex-wrap gap-3 mb-4">
+                      {periodSymptoms.map((symptom) => (
                         <button
-                          key={customId}
-                          onClick={() => togglePeriodSymptom(customId)}
-                          className="py-2 px-4 rounded-full bg-pink-400 text-white"
+                          key={symptom.id}
+                          onClick={() => togglePeriodSymptom(symptom.id)}
+                          className={`py-2 px-4 rounded-full ${
+                            selectedPeriodSymptoms.includes(symptom.id)
+                              ? "bg-pink-400 text-white"
+                              : "bg-white/80 border border-brand-dark/20 hover:bg-white"
+                          }`}
                         >
-                          {customId.replace("custom_", "")}
+                          {symptom.name}
                         </button>
                       ))}
 
-                    {/* Add custom symptom button */}
-                    {!showCustomSymptomInput && (
-                      <button
-                        onClick={() => setShowCustomSymptomInput(true)}
-                        className="py-2 px-4 rounded-full bg-white/80 border border-brand-dark/20 hover:bg-white flex items-center"
-                      >
-                        <Plus className="h-4 w-4 mr-1" />
-                        Add your symptom
-                      </button>
+                      {/* Custom symptoms that user has added */}
+                      {selectedPeriodSymptoms
+                        .filter((id) => id.startsWith("custom_"))
+                        .map((customId) => (
+                          <button
+                            key={customId}
+                            onClick={() => togglePeriodSymptom(customId)}
+                            className="py-2 px-4 rounded-full bg-pink-400 text-white"
+                          >
+                            {customId.replace("custom_", "")}
+                          </button>
+                        ))}
+
+                      {/* Add custom symptom button */}
+                      {!showCustomSymptomInput && (
+                        <button
+                          onClick={() => setShowCustomSymptomInput(true)}
+                          className="py-2 px-4 rounded-full bg-white/80 border border-brand-dark/20 hover:bg-white flex items-center"
+                        >
+                          <Plus className="h-4 w-4 mr-1" />
+                          Add your symptom
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Custom symptom input */}
+                    {showCustomSymptomInput && (
+                      <div className="flex gap-2 mb-4">
+                        <input
+                          type="text"
+                          value={customPeriodSymptom}
+                          onChange={(e) => setCustomPeriodSymptom(e.target.value)}
+                          placeholder="Enter symptom name"
+                          className="flex-1 p-2 rounded-lg border border-brand-dark/20 focus:outline-none focus:ring-2 focus:ring-pink-400"
+                        />
+                        <button
+                          onClick={handleAddCustomSymptom}
+                          className="py-2 px-4 rounded-lg bg-pink-400 text-white disabled:opacity-50"
+                          disabled={!customPeriodSymptom.trim()}
+                        >
+                          Add
+                        </button>
+                        <button
+                          onClick={() => setShowCustomSymptomInput(false)}
+                          className="py-2 px-4 rounded-lg bg-gray-200"
+                        >
+                          Cancel
+                        </button>
+                      </div>
                     )}
                   </div>
-
-                  {/* Custom symptom input */}
-                  {showCustomSymptomInput && (
-                    <div className="flex gap-2 mb-4">
-                      <input
-                        type="text"
-                        value={customPeriodSymptom}
-                        onChange={(e) => setCustomPeriodSymptom(e.target.value)}
-                        placeholder="Enter symptom name"
-                        className="flex-1 p-2 rounded-lg border border-brand-dark/20 focus:outline-none focus:ring-2 focus:ring-pink-400"
-                      />
-                      <button
-                        onClick={handleAddCustomSymptom}
-                        className="py-2 px-4 rounded-lg bg-pink-400 text-white disabled:opacity-50"
-                        disabled={!customPeriodSymptom.trim()}
-                      >
-                        Add
-                      </button>
-                      <button
-                        onClick={() => setShowCustomSymptomInput(false)}
-                        className="py-2 px-4 rounded-lg bg-gray-200"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
 
             {/* Symptoms Tracking */}
             <div className="glass-card rounded-2xl p-4 mb-6">
