@@ -1,33 +1,15 @@
 "use client"
 
-import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Logo from "@/app/components/logo"
 import { setupTestData } from "../utils/test-utils"
 
 export default function GetStartedPage() {
   const router = useRouter()
-  const [email, setEmail] = useState("")
-  const [error, setError] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
 
-  const handleSubmit = () => {
-    // Validate email
-    if (!email.trim() || !email.includes("@")) {
-      setError("Please enter a valid email address")
-      return
-    }
-
-    setIsLoading(true)
-
-    // Store email in localStorage for later use
-    localStorage.setItem("userEmail", email)
-
-    // Navigate to first onboarding step
-    setTimeout(() => {
-      router.push("/onboarding/conditions")
-      setIsLoading(false)
-    }, 500)
+  const handleGetStarted = () => {
+    // Navigate directly to first onboarding step
+    router.push("/onboarding/conditions")
   }
 
   const handleSkip = () => {
@@ -46,42 +28,20 @@ export default function GetStartedPage() {
       <main className="flex-1 px-4 pb-8 overflow-auto">
         <div className="max-w-md mx-auto">
           <div className="mb-6">
-            <h2 className="text-2xl font-bold mb-2">Get Started</h2>
-            <p className="text-brand-dark/70">Enter your email to begin your personalized AIP journey.</p>
+            <h2 className="text-2xl font-bold mb-2 text-center">Get Started with IMMU</h2>
+            <p className="text-brand-dark/70 text-center">Your personalized AIP journey begins here.</p>
           </div>
 
-          {/* Error message */}
-          {error && (
-            <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-xl text-center text-red-700">
-              {error}
-            </div>
-          )}
-
-          {/* Form */}
+          {/* Get Started Button */}
           <div className="glass-card rounded-2xl p-6 space-y-4 mb-6">
-            <div>
-              <label htmlFor="email" className="block mb-2">
-                Email
-              </label>
-              <input
-                type="email"
-                id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-3 rounded-xl bg-white/80 border border-brand-dark/20 focus:outline-none focus:ring-2 focus:ring-pink-400"
-                placeholder="Enter your email"
-              />
-            </div>
+            <p className="text-center mb-4">
+              IMMU will guide you through the Autoimmune Protocol diet with personalized recommendations based on your
+              needs.
+            </p>
+            <button onClick={handleGetStarted} className="w-full gradient-button py-4 rounded-full mb-4">
+              Get Started
+            </button>
           </div>
-
-          {/* Next button */}
-          <button
-            onClick={handleSubmit}
-            disabled={isLoading}
-            className={`w-full gradient-button py-4 rounded-full mb-4 ${isLoading ? "opacity-70 cursor-not-allowed" : ""}`}
-          >
-            {isLoading ? "Loading..." : "Next"}
-          </button>
 
           {/* Skip button for testing */}
           <button
