@@ -389,11 +389,33 @@ export default function FAQPage() {
       id: "pasta-substitute",
       question: "I really love pasta. Is there any substitute on AIP?",
       answer: (
-        <p className="text-brand-dark/80">
-          Absolutely! While traditional pasta is off-limits, you've got some creative options. Try spiralized carrots or
-          zucchini for a veggie-based spaghetti alternative. You can also look for cassava flour pasta, which is
-          AIP-friendly and great for heartier dishes.
-        </p>
+        <div>
+          <p className="text-brand-dark/80 mb-3">
+            While traditional wheat pasta is eliminated on the AIP diet, there are several delicious alternatives:
+          </p>
+          <ul className="list-disc pl-5 text-brand-dark/80 mb-3">
+            <li>
+              <strong>Vegetable noodles:</strong> Spiralized zucchini, sweet potato, or carrots make excellent pasta
+              alternatives. They're light, nutritious, and work well with most sauces.
+            </li>
+            <li>
+              <strong>Cassava pasta:</strong> Made from cassava (yuca) root, this is the closest to traditional pasta in
+              texture and is completely AIP-compliant.
+            </li>
+            <li>
+              <strong>Plantain pasta:</strong> Some companies make pasta from green plantains, which is another
+              AIP-friendly option.
+            </li>
+            <li>
+              <strong>Spaghetti squash:</strong> When cooked, the flesh separates into spaghetti-like strands, making it
+              a natural pasta alternative.
+            </li>
+          </ul>
+          <p className="text-brand-dark/80">
+            Check out our recipes section for our AIP-friendly Shrimp Pesto Pasta that uses either zucchini noodles or
+            cassava pasta!
+          </p>
+        </div>
       ),
     },
   ]

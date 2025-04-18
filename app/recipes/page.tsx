@@ -61,6 +61,16 @@ const sampleRecipes = [
     tags: ["Protein-rich", "One-pan"],
     image: "/placeholder.svg?height=200&width=300",
   },
+  {
+    id: 7,
+    title: "Shrimp Pesto Pasta",
+    category: "Dinner",
+    prepTime: "15 min",
+    cookTime: "15 min",
+    tags: ["AIP-Friendly", "Seafood", "Pasta Alternative"],
+    image:
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/ChatGPT%20Image%20Apr%2018%2C%202025%2C%2011_14_18%20AM-fS3VCmaWCk9CtuFgUAGmJxj2EazeJW.png",
+  },
 ]
 
 // Categories for filtering
@@ -77,7 +87,11 @@ export default function RecipesPage() {
   }
 
   const handleRecipeClick = (id: number) => {
-    router.push(`/recipes/${id}`)
+    if (id === 7) {
+      router.push(`/recipes/aip-shrimp-pesto-pasta`)
+    } else {
+      router.push(`/recipes/${id}`)
+    }
   }
 
   const handleNavigation = (path: string) => {
