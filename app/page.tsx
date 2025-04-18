@@ -34,7 +34,7 @@ export default function Home() {
               <Button className="w-full h-12 text-lg gradient-button">Login</Button>
             </Link>
 
-            <Link href="/get-started" passHref>
+            <Link href="/onboarding/conditions" passHref>
               <Button className="w-full h-12 text-lg secondary-button">Get Started</Button>
             </Link>
 

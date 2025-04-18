@@ -83,7 +83,7 @@ export default function Login() {
             </p>
             <p className="text-sm text-secondary-color">
               Don't have an account?{" "}
-              <Link href="/get-started" className="text-accent-color hover:underline">
+              <Link href="/onboarding/conditions" className="text-accent-color hover:underline">
                 Sign up
               </Link>
             </p>
