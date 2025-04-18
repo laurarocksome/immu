@@ -395,7 +395,7 @@ export default function LogDayPage() {
     // Save the user's symptoms for future use
     localStorage.setItem("userSymptoms", JSON.stringify(userSymptoms.map((s) => s.name)))
 
-    // Modify the loggedDay object in the handleSaveLog function to include digestive symptoms
+    // Make sure to include digestive symptoms in the logged day
     const loggedDay = {
       mood,
       sleep,
@@ -404,7 +404,7 @@ export default function LogDayPage() {
       date: selectedDate.toISOString().split("T")[0],
       onPeriod: onPeriod || false,
       periodSymptoms: onPeriod ? selectedPeriodSymptoms : [],
-      digestiveSymptoms: selectedDigestiveSymptoms, // Add this line
+      digestiveSymptoms: selectedDigestiveSymptoms, // Ensure this is included
     }
 
     // Save wellness data to localStorage

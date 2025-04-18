@@ -1026,9 +1026,9 @@ export default function Dashboard() {
             }
           }
 
-          // Store digestive symptoms
-          if (loggedDay.digestiveSymptoms && Array.isArray(loggedDigestiveSymptoms)) {
-            setLoggedDigestiveSymptoms(loggedDigestiveSymptoms)
+          // Store digestive symptoms - FIX THE BUG HERE
+          if (loggedDay.digestiveSymptoms && Array.isArray(loggedDay.digestiveSymptoms)) {
+            setLoggedDigestiveSymptoms(loggedDay.digestiveSymptoms)
           }
         } catch (e) {
           console.error("Error parsing logged day data:", e)
@@ -1139,6 +1139,9 @@ export default function Dashboard() {
     return `${linePath} L ${lastX},100 L ${firstX},100 Z`
   }
 
+  // Find the getDigestiveSymptomTip function and ensure it's properly implemented
+  // This function should return specific tips for each digestive symptom
+
   // Function to get digestive symptom tip
   const getDigestiveSymptomTip = (symptomId: string) => {
     switch (symptomId) {
@@ -1167,16 +1170,11 @@ export default function Dashboard() {
     }
   }
 
-  // Function to generate daily observations based on logged symptoms
+  // Update the generateDailyObservations function to properly handle digestive symptoms
   const generateDailyObservations = () => {
     // If no symptoms are logged, return null
     if (!hasLoggedSymptoms && !hasLoggedWellness) {
       return null
-    }
-
-    // If no period or digestive symptoms are logged, return empty array
-    if (loggedPeriodSymptoms.length === 0 && loggedDigestiveSymptoms.length === 0 && !isOnPeriod) {
-      return []
     }
 
     const observations = []
@@ -1197,7 +1195,7 @@ export default function Dashboard() {
     }
 
     // Add digestive-related observations
-    if (loggedDigestiveSymptoms.length > 0) {
+    if (loggedDigestiveSymptoms && loggedDigestiveSymptoms.length > 0) {
       // Filter out "OK" if it exists
       const relevantSymptoms = loggedDigestiveSymptoms.filter((s) => s !== "ok")
 
@@ -1229,6 +1227,13 @@ export default function Dashboard() {
       } else {
         observations.push("Your wellness score indicates you might benefit from stress reduction techniques today.")
       }
+    }
+
+    // Always add some default observations if we have no specific ones
+    if (observations.length === 0) {
+      observations.push("Remember to stay hydrated throughout the day for optimal health.")
+      observations.push("Consider adding more leafy greens to your meals for additional nutrients.")
+      observations.push("Taking short breaks during the day can help reduce stress and improve focus.")
     }
 
     return observations
@@ -1886,6 +1891,7 @@ export default function Dashboard() {
         </div>
 
         {/* Daily Observations Module */}
+        {/* Update the Daily Observations Module section to ensure it's displaying content */}
         <div className="glass-card p-6 mb-6">
           <div className="flex items-center mb-4">
             <LightbulbIcon className="h-5 w-5 mr-2 text-amber-500" />
@@ -1898,7 +1904,7 @@ export default function Dashboard() {
             </div>
           ) : dailyObservations.length === 0 ? (
             <div className="text-center text-sm text-secondary-color p-4 bg-[#f0eaf9] rounded-lg">
-              No insights for today.
+              No insights for today. Try logging your symptoms and wellness data.
             </div>
           ) : (
             <ul className="space-y-3">
