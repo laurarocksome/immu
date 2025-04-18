@@ -1027,7 +1027,7 @@ export default function Dashboard() {
           }
 
           // Store digestive symptoms
-          if (loggedDay.digestiveSymptoms && Array.isArray(loggedDay.digestiveSymptoms)) {
+          if (loggedDay.digestiveSymptoms && Array.isArray(loggedDigestiveSymptoms)) {
             setLoggedDigestiveSymptoms(loggedDigestiveSymptoms)
           }
         } catch (e) {
@@ -1126,17 +1126,6 @@ export default function Dashboard() {
     }
 
     return path
-  }
-
-  // Function to create area path (for filled area below the line)
-  const createAreaPath = (values: number[]) => {
-    const linePath = createSmoothCurvePath(values)
-    const lastPoint = values.length - 1
-    const lastX = 100 // 100% width
-    const firstX = 0 // 0% width
-
-    // Add line to bottom right, then to bottom left, then close path
-    return `${linePath} L ${lastX},100 L ${firstX},100 Z`
   }
 
   // Function to create wellness area path (for filled area below the line)
@@ -1573,6 +1562,14 @@ export default function Dashboard() {
 
                 {/* Chart area */}
                 <div className="absolute left-12 right-0 top-0 bottom-8 px-4 pt-4">
+                  {/* Grid lines */}
+                  <div className="absolute inset-0">
+                    <div className="border-b border-[#f0eaf9] absolute top-[20%] left-0 right-0"></div>
+                    <div className="border-b border-[#f0eaf9] absolute top-[40%] left-0 right-0"></div>
+                    <div className="border-b border-[#f0eaf9] absolute top-[60%] left-0 right-0"></div>
+                    <div className="border-b border-[#f0eaf9] absolute top-[80%] left-0 right-0"></div>
+                  </div>
+
                   {/* Only show the selected symptom or all if none selected */}
                   {symptomData.map((symptom, index) => {
                     // Only render if this is the selected symptom or no selection
@@ -1587,23 +1584,12 @@ export default function Dashboard() {
                         viewBox="0 0 100 100"
                         preserveAspectRatio="none"
                       >
-                        {/* Filled area */}
-                        <defs>
-                          <linearGradient id={`gradient-${index}`} x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" stopColor={symptom.gradient[0]} />
-                            <stop offset="100%" stopColor={symptom.gradient[1]} />
-                          </linearGradient>
-                        </defs>
-
-                        {/* Area fill */}
-                        <path d={createAreaPath(symptom.values)} fill={`url(#gradient-${index})`} opacity="0.8" />
-
-                        {/* Line on top */}
+                        {/* Line */}
                         <path
                           d={createSmoothCurvePath(symptom.values)}
                           fill="none"
                           stroke={symptom.color}
-                          strokeWidth="2"
+                          strokeWidth="2.5"
                           strokeLinecap="round"
                           strokeLinejoin="round"
                         />
@@ -1616,7 +1602,15 @@ export default function Dashboard() {
                           const y = 100 - (value / 5) * 100
 
                           return (
-                            <circle key={i} cx={x} cy={y} r="3" fill="white" stroke={symptom.color} strokeWidth="2" />
+                            <circle
+                              key={i}
+                              cx={x}
+                              cy={y}
+                              r="3.5"
+                              fill={symptom.color}
+                              stroke="white"
+                              strokeWidth="1.5"
+                            />
                           )
                         })}
                       </svg>
