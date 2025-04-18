@@ -374,6 +374,28 @@ export default function FAQPage() {
         </div>
       ),
     },
+    {
+      id: "nuts-seeds",
+      question: "Can I eat any nuts or seeds on AIP?",
+      answer: (
+        <p className="text-brand-dark/80">
+          Most nuts and seeds are eliminated on the AIP diet, but there's one exception: tigernuts. Despite the name,
+          tigernuts aren't actually nuts—they're tubers—and are AIP-approved. They're a great option if you're craving
+          that nutty crunch.
+        </p>
+      ),
+    },
+    {
+      id: "pasta-substitute",
+      question: "I really love pasta. Is there any substitute on AIP?",
+      answer: (
+        <p className="text-brand-dark/80">
+          Absolutely! While traditional pasta is off-limits, you've got some creative options. Try spiralized carrots or
+          zucchini for a veggie-based spaghetti alternative. You can also look for cassava flour pasta, which is
+          AIP-friendly and great for heartier dishes.
+        </p>
+      ),
+    },
   ]
 
   return (
