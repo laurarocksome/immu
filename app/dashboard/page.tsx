@@ -1825,26 +1825,24 @@ export default function Dashboard() {
               </div>
             )}
 
-            <div className="flex items-end gap-2 mb-4">
-              <div className="flex-1">
-                <label htmlFor="weight" className="block text-sm text-secondary-color mb-1">
-                  Update Weight
-                </label>
+            <div className="mb-4">
+              <label htmlFor="weight" className="block text-sm text-secondary-color mb-2">
+                Update Weight
+              </label>
+              <div className="flex gap-2">
                 <input
                   type="number"
                   id="weight"
                   value={currentWeight}
                   onChange={(e) => setCurrentWeight(e.target.value)}
                   placeholder="Enter weight"
-                  className="w-full p-3 rounded-xl bg-white/80 border border-brand-dark/20 focus:outline-none focus:ring-2 focus:ring-pink-400"
+                  className="flex-1 p-3 h-12 rounded-xl bg-white/80 border border-brand-dark/20 focus:outline-none focus:ring-2 focus:ring-pink-400"
                   min="1"
                 />
-              </div>
-              <div className="w-24">
                 <select
                   value={weightUnit}
                   onChange={(e) => setWeightUnit(e.target.value as "kg" | "lb")}
-                  className="w-full p-3 rounded-xl bg-white/80 border border-brand-dark/20 focus:outline-none focus:ring-2 focus:ring-pink-400"
+                  className="w-24 h-12 rounded-xl bg-white/80 border border-brand-dark/20 focus:outline-none focus:ring-2 focus:ring-pink-400"
                 >
                   <option value="kg">kg</option>
                   <option value="lb">lb</option>
@@ -1853,7 +1851,7 @@ export default function Dashboard() {
               <button
                 onClick={updateWeight}
                 disabled={isUpdatingWeight || !currentWeight}
-                className="p-3 rounded-xl gradient-button flex items-center justify-center min-w-[80px]"
+                className="mt-3 py-3 px-6 w-full sm:w-auto rounded-xl gradient-button flex items-center justify-center"
               >
                 {isUpdatingWeight ? "Saving..." : weightUpdateSuccess ? <Check className="h-5 w-5" /> : "Update"}
               </button>
