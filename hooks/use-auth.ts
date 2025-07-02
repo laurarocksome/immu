@@ -32,9 +32,5 @@ export function useAuth() {
     return () => subscription.unsubscribe()
   }, [supabase.auth])
 
-  return {
-    user,
-    loading,
-    isAuthenticated: !!user,
-  }
+  return { user, loading }
 }

@@ -1,172 +1,191 @@
 "use client"
 
-import type React from "react"
-
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+import Logo from "@/app/components/logo"
 import { createClient } from "@/utils/supabase/client"
-import Link from "next/link"
 
 export default function CreateAccountPage() {
+  const router = useRouter()
+  const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
-  const [loading, setLoading] = useState(false)
+  const [agreedToTerms, setAgreedToTerms] = useState(false)
   const [error, setError] = useState("")
-  const [success, setSuccess] = useState("")
-  const router = useRouter()
+  const [isLoading, setIsLoading] = useState(false)
   const supabase = createClient()
 
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
+  const handleSubmit = async () => {
+    // Validate inputs
+    if (!name.trim()) {
+      setError("Please enter your name")
+      return
+    }
+
+    if (!email.trim()) {
+      setError("Please enter your email")
+      return
+    }
+
+    if (!password.trim() || password.length < 6) {
+      setError("Please enter a password (minimum 6 characters)")
+      return
+    }
+
+    if (!agreedToTerms) {
+      setError("Please agree to the terms and conditions")
+      return
+    }
+
+    setIsLoading(true)
     setError("")
-    setSuccess("")
-
-    if (password !== confirmPassword) {
-      setError("Passwords do not match")
-      setLoading(false)
-      return
-    }
-
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters long")
-      setLoading(false)
-      return
-    }
 
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`,
+          data: {
+            full_name: name,
+          },
         },
       })
 
       if (error) {
         setError(error.message)
+        setIsLoading(false)
         return
       }
 
-      if (data.user) {
-        if (data.user.email_confirmed_at) {
-          // User is immediately confirmed
-          router.push("/dashboard")
-        } else {
-          // User needs to confirm email
-          setSuccess("Please check your email and click the confirmation link to complete your registration.")
-        }
+      // Save account info to local storage for backward compatibility
+      const accountInfo = {
+        name,
+        email,
+        createdAt: new Date().toISOString(),
       }
+
+      localStorage.setItem("userAccount", JSON.stringify(accountInfo))
+
+      // Set the diet start date to today
+      localStorage.setItem("dietStartDate", new Date().toISOString())
+
+      // Navigate to dashboard
+      router.push("/dashboard")
     } catch (err) {
       setError("An unexpected error occurred")
-    } finally {
-      setLoading(false)
+      setIsLoading(false)
     }
   }
 
-  const handleTestSignUp = () => {
-    // Keep existing test functionality
-    localStorage.setItem("isLoggedIn", "true")
-    localStorage.setItem("userEmail", email || "test@example.com")
-    router.push("/onboarding/user-profile")
-  }
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-green-800">Create Account</CardTitle>
-          <CardDescription>Join ImmuHealth to start your AIP journey</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-brand-lightest to-white text-brand-dark">
+      {/* Header */}
+      <header className="p-4 flex justify-center items-center bg-brand-dark text-white">
+        <Logo />
+      </header>
+
+      {/* Main Content */}
+      <main className="flex-1 px-4 pb-8 overflow-auto">
+        <div className="max-w-md mx-auto">
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold mb-2">Create Your Account</h2>
+            <p className="text-brand-dark/70">Register to save your data and track progress.</p>
+          </div>
+
+          {/* Error message */}
           {error && (
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
+            <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-xl text-center text-red-700">
+              {error}
+            </div>
           )}
 
-          {success && (
-            <Alert>
-              <AlertDescription>{success}</AlertDescription>
-            </Alert>
-          )}
+          {/* Form */}
+          <div className="glass-card rounded-2xl p-6 space-y-4 mb-6">
+            <div>
+              <label htmlFor="name" className="block mb-2">
+                Name
+              </label>
+              <input
+                type="text"
+                id="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full p-3 rounded-xl bg-white/80 border border-brand-dark/20 focus:outline-none focus:ring-2 focus:ring-pink-400"
+                placeholder="Enter your name"
+              />
+            </div>
 
-          <form onSubmit={handleSignUp} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
+            <div>
+              <label htmlFor="email" className="block mb-2">
+                Email
+              </label>
+              <input
                 type="email"
+                id="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                className="w-full p-3 rounded-xl bg-white/80 border border-brand-dark/20 focus:outline-none focus:ring-2 focus:ring-pink-400"
                 placeholder="Enter your email"
-                required
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
+            <div>
+              <label htmlFor="password" className="block mb-2">
+                Password
+              </label>
+              <input
                 type="password"
+                id="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Create a password (min 6 characters)"
-                required
-                minLength={6}
+                className="w-full p-3 rounded-xl bg-white/80 border border-brand-dark/20 focus:outline-none focus:ring-2 focus:ring-pink-400"
+                placeholder="Create a password"
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Confirm your password"
-                required
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="terms"
+                checked={agreedToTerms}
+                onChange={() => setAgreedToTerms(!agreedToTerms)}
+                className="h-5 w-5 rounded border-brand-dark/30 bg-white/80 text-pink-400 focus:ring-pink-400"
               />
+              <label htmlFor="terms" className="ml-2 text-brand-dark">
+                I agree to{" "}
+                <a href="/terms" className="text-pink-500 hover:underline">
+                  terms and conditions
+                </a>
+              </label>
             </div>
-
-            <Button type="submit" className="w-full bg-green-600 hover:bg-green-700" disabled={loading}>
-              {loading ? "Creating Account..." : "Create Account"}
-            </Button>
-          </form>
-
-          <div className="text-center">
-            <p className="text-sm text-gray-600">
-              Already have an account?{" "}
-              <Link href="/login" className="text-green-600 hover:underline">
-                Sign in
-              </Link>
-            </p>
           </div>
 
-          <div className="border-t pt-4">
-            <Button onClick={handleTestSignUp} variant="outline" className="w-full bg-transparent">
-              Continue as Test User
-            </Button>
-          </div>
+          {/* Next button */}
+          <button
+            onClick={handleSubmit}
+            disabled={isLoading}
+            className={`w-full gradient-button py-4 rounded-full ${isLoading ? "opacity-70 cursor-not-allowed" : ""}`}
+          >
+            {isLoading ? "Creating Account..." : "Next"}
+          </button>
+        </div>
+      </main>
 
-          <div className="text-xs text-gray-500 text-center">
-            By creating an account, you agree to our{" "}
-            <Link href="/terms" className="underline">
-              Terms of Service
-            </Link>{" "}
-            and{" "}
-            <Link href="/privacy" className="underline">
-              Privacy Policy
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Progress indicator */}
+      <div className="p-4 flex justify-center">
+        <div className="flex space-x-2">
+          <div className="w-2 h-2 rounded-full bg-pink-400"></div>
+          <div className="w-2 h-2 rounded-full bg-pink-400"></div>
+          <div className="w-2 h-2 rounded-full bg-pink-400"></div>
+          <div className="w-2 h-2 rounded-full bg-pink-400"></div>
+          <div className="w-2 h-2 rounded-full bg-pink-400"></div>
+          <div className="w-2 h-2 rounded-full bg-pink-400"></div>
+          <div className="w-2 h-2 rounded-full bg-pink-400"></div>
+          <div className="w-2 h-2 rounded-full bg-pink-400"></div>
+          <div className="w-2 h-2 rounded-full bg-pink-400"></div>
+          <div className="w-2 h-2 rounded-full bg-pink-400"></div>
+        </div>
+      </div>
     </div>
   )
 }
