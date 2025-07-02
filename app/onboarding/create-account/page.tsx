@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Logo from "@/app/components/logo"
+import { createClient } from "@/utils/supabase/client"
 
 export default function CreateAccountPage() {
   const router = useRouter()
@@ -12,8 +13,9 @@ export default function CreateAccountPage() {
   const [agreedToTerms, setAgreedToTerms] = useState(false)
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const supabase = createClient()
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // Validate inputs
     if (!name.trim()) {
       setError("Please enter your name")
@@ -36,25 +38,43 @@ export default function CreateAccountPage() {
     }
 
     setIsLoading(true)
+    setError("")
 
-    // Save account info to local storage
-    const accountInfo = {
-      name,
-      email,
-      createdAt: new Date().toISOString(),
-    }
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: name,
+          },
+        },
+      })
 
-    localStorage.setItem("userAccount", JSON.stringify(accountInfo))
+      if (error) {
+        setError(error.message)
+        setIsLoading(false)
+        return
+      }
 
-    // Set the diet start date to today
-    localStorage.setItem("dietStartDate", new Date().toISOString())
+      // Save account info to local storage for backward compatibility
+      const accountInfo = {
+        name,
+        email,
+        createdAt: new Date().toISOString(),
+      }
 
-    // Simulate API call delay
-    setTimeout(() => {
+      localStorage.setItem("userAccount", JSON.stringify(accountInfo))
+
+      // Set the diet start date to today
+      localStorage.setItem("dietStartDate", new Date().toISOString())
+
       // Navigate to dashboard
       router.push("/dashboard")
+    } catch (err) {
+      setError("An unexpected error occurred")
       setIsLoading(false)
-    }, 1000)
+    }
   }
 
   return (

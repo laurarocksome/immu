@@ -1305,13 +1305,15 @@ export default function Dashboard() {
           >
             <HelpCircle className="h-5 w-5 text-white" />
           </button>
-          <button
-            className="w-10 h-10 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 transition-colors"
-            onClick={handleProfileClick}
-            aria-label="Profile"
-          >
-            <User className="h-5 w-5 text-white" />
-          </button>
+          <div className="relative">
+            <button
+              className="w-10 h-10 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 transition-colors"
+              onClick={handleProfileClick}
+              aria-label="Profile"
+            >
+              <User className="h-5 w-5 text-white" />
+            </button>
+          </div>
         </div>
       </header>
       {/* Main Content */}
