@@ -85,7 +85,7 @@ export default function CreateAccountPage() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 px-4 pb-8 overflow-auto">
+      <main className="flex-1 px-4 pb-8 overflow-auto mt-1.5">
         <div className="max-w-md mx-auto">
           <div className="mb-6">
             <h2 className="text-2xl font-bold mb-2">Create Your Account</h2>
