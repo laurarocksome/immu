@@ -1,27 +1,36 @@
-"use client"
-
 import * as React from "react"
-import { AspectRatio as RadixAspectRatio } from "@radix-ui/react-aspect-ratio"
 import { cn } from "@/lib/utils"
 
 /**
- * A thin wrapper around `@radix-ui/react-aspect-ratio`
- * plus the legacy alias **AspectRadio** required by older code.
+ * Keeps its children inside a fixed aspect-ratio box.
+ *
+ * ratio = width / height.  Example: 16 / 9 = 1.777…
  */
-export interface AspectRatioProps extends React.ComponentPropsWithoutRef<typeof RadixAspectRatio> {}
+export interface AspectRatioProps extends React.HTMLAttributes<HTMLDivElement> {
+  ratio?: number
+}
 
-const AspectRatio = React.forwardRef<HTMLDivElement, AspectRatioProps>(({ className, ...props }, ref) => (
-  <RadixAspectRatio ref={ref} className={cn(className)} {...props} />
-))
-
+const AspectRatio = React.forwardRef<HTMLDivElement, AspectRatioProps>(
+  ({ ratio = 1, style, className, children, ...props }, ref) => (
+    <div
+      ref={ref}
+      style={{
+        ...style,
+        position: "relative",
+        width: "100%",
+        paddingBottom: `${100 / ratio}%`,
+      }}
+      className={cn("relative w-full overflow-hidden", className)}
+      {...props}
+    >
+      <div className="absolute inset-0">{children}</div>
+    </div>
+  ),
+)
 AspectRatio.displayName = "AspectRatio"
 
-/**
- * Legacy miss-spelling kept for backwards compatibility.
- *
- * Example usage elsewhere in the codebase:
- *   import { AspectRadio } from "@/components/ui/aspect-ratio"
- */
-const AspectRadio = AspectRatio
-
-export { AspectRatio, AspectRadio }
+export { AspectRatio }
+/* ------------------------------------------------------------------ */
+/* Some code still (incorrectly) asks for `AspectRadio`.               */
+/* Re-exporting keeps compatibility while you clean up other files.    */
+export { AspectRatio as AspectRadio }
