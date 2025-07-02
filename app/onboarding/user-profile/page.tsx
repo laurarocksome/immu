@@ -4,12 +4,15 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { ChevronDown, ArrowLeft } from "lucide-react"
 import Logo from "@/app/components/logo"
+import { useAuth } from "@/hooks/use-auth"
+import { upsertProfile } from "@/utils/supabase/profiles"
 
 type WeightUnit = "kg" | "lb"
 type HeightUnit = "cm" | "ft"
 
 export default function UserProfilePage() {
   const router = useRouter()
+  const { user } = useAuth()
   const [gender, setGender] = useState<string | null>(null)
   const [age, setAge] = useState<string>("")
   const [weight, setWeight] = useState<string>("")
@@ -69,29 +72,55 @@ export default function UserProfilePage() {
     return true
   }
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (!validateInputs()) return
 
     setIsLoading(true)
+    setError("")
 
-    // Save user profile data to localStorage
-    const userProfile = {
-      gender,
-      age: Number(age),
-      weight: Number(weight),
-      weightUnit,
-      height: Number(height),
-      heightUnit,
-    }
+    try {
+      // Create user profile data
+      const userProfile = {
+        gender,
+        age: Number(age),
+        weight: Number(weight),
+        weight_unit: weightUnit,
+        height: Number(height),
+        height_unit: heightUnit,
+      }
 
-    localStorage.setItem("userProfile", JSON.stringify(userProfile))
+      // Save to localStorage for backward compatibility
+      localStorage.setItem("userProfile", JSON.stringify(userProfile))
 
-    // Simulate a brief loading period
-    setTimeout(() => {
-      // Continue to the account creation page
+      // Save to Supabase if user is authenticated
+      if (user) {
+        const profileData = {
+          id: user.id,
+          email: user.email,
+          gender,
+          age: Number(age),
+          weight: Number(weight),
+          weight_unit: weightUnit,
+          height: Number(height),
+          height_unit: heightUnit,
+        }
+
+        const result = await upsertProfile(profileData)
+        if (!result) {
+          setError("Failed to save profile. Please try again.")
+          setIsLoading(false)
+          return
+        }
+      }
+
+      // Continue to the next page
       router.push("/onboarding/create-account")
+    } catch (err) {
+      console.error("Error saving profile:", err)
+      setError("Failed to save profile. Please try again.")
+    } finally {
       setIsLoading(false)
-    }, 800)
+    }
   }
 
   const handleBack = () => {

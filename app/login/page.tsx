@@ -2,26 +2,27 @@
 
 import type React from "react"
 
-import Link from "next/link"
-import Logo from "@/components/Logo"
-import { useRouter } from "next/navigation"
-import { setupTestData } from "../utils/test-utils"
-import TestUsers from "../components/test-users"
 import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { createClient } from "@/utils/supabase/client"
+import Link from "next/link"
 
-export default function Login() {
-  const router = useRouter()
-  const [showTestUsers, setShowTestUsers] = useState(false)
+export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+  const router = useRouter()
   const supabase = createClient()
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsLoading(true)
+    setLoading(true)
     setError("")
 
     try {
@@ -32,115 +33,86 @@ export default function Login() {
 
       if (error) {
         setError(error.message)
-      } else {
+        return
+      }
+
+      if (data.user) {
         router.push("/dashboard")
       }
     } catch (err) {
       setError("An unexpected error occurred")
     } finally {
-      setIsLoading(false)
+      setLoading(false)
     }
   }
 
-  const handleSkip = () => {
-    setupTestData()
+  const handleTestLogin = () => {
+    // Keep existing test functionality
+    localStorage.setItem("isLoggedIn", "true")
+    localStorage.setItem("userEmail", "test@example.com")
     router.push("/dashboard")
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center app-gradient p-6">
-      <div className="w-full max-w-md flex flex-col items-center gap-8">
-        {/* Logo */}
-        <Logo />
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl font-bold text-green-800">Welcome Back</CardTitle>
+          <CardDescription>Sign in to your ImmuHealth account</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {error && (
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
 
-        {/* Main content */}
-        <div className="w-full space-y-6">
-          <h2 className="text-2xl font-semibold text-center text-primary-color">Welcome Back</h2>
-
-          <form onSubmit={handleLogin} className="glass-card p-6 space-y-5">
-            {error && (
-              <div className="p-3 bg-red-500/20 border border-red-500/50 rounded-xl text-center text-red-700">
-                {error}
-              </div>
-            )}
-
-            <div className="space-y-3">
-              <label htmlFor="email" className="text-sm text-secondary-color">
-                Email
-              </label>
-              <input
-                type="email"
+          <form onSubmit={handleSignIn} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
                 id="email"
+                type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-3 rounded-xl bg-white border border-[#e4e0f0] focus:outline-none focus:ring-2 focus:ring-[#da83d2]"
                 placeholder="Enter your email"
                 required
               />
             </div>
 
-            <div className="space-y-3">
-              <label htmlFor="password" className="text-sm text-secondary-color">
-                Password
-              </label>
-              <input
-                type="password"
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
                 id="password"
+                type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full p-3 rounded-xl bg-white border border-[#e4e0f0] focus:outline-none focus:ring-2 focus:ring-[#da83d2]"
                 placeholder="Enter your password"
                 required
               />
             </div>
 
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full gradient-button py-4 rounded-full disabled:opacity-50"
-            >
-              {isLoading ? "Logging in..." : "Log In"}
-            </button>
-
-            {/* Toggle test users section */}
-            <button
-              type="button"
-              onClick={() => setShowTestUsers(!showTestUsers)}
-              className="w-full py-2 text-pink-500 text-sm hover:underline"
-            >
-              {showTestUsers ? "Hide Test Users" : "Show Test Users"}
-            </button>
-
-            {/* Test Users Section */}
-            {showTestUsers && <TestUsers />}
-
-            {/* Skip button for testing */}
-            {!showTestUsers && (
-              <button
-                type="button"
-                onClick={handleSkip}
-                className="w-full py-4 rounded-full border-2 border-dashed border-pink-300 bg-transparent text-pink-500 hover:bg-pink-50"
-              >
-                Skip (Testing)
-              </button>
-            )}
+            <Button type="submit" className="w-full bg-green-600 hover:bg-green-700" disabled={loading}>
+              {loading ? "Signing In..." : "Sign In"}
+            </Button>
           </form>
 
-          <div className="text-center space-y-3">
-            <p className="text-sm text-secondary-color">
-              <Link href="/forgot-password" className="text-accent-color hover:underline">
-                Forgot password?
-              </Link>
-            </p>
-            <p className="text-sm text-secondary-color">
+          <div className="text-center">
+            <p className="text-sm text-gray-600">
               Don't have an account?{" "}
-              <Link href="/onboarding/conditions" className="text-accent-color hover:underline">
+              <Link href="/onboarding/create-account" className="text-green-600 hover:underline">
                 Sign up
               </Link>
             </p>
           </div>
-        </div>
-      </div>
+
+          <div className="border-t pt-4">
+            <Button onClick={handleTestLogin} variant="outline" className="w-full bg-transparent">
+              Continue as Test User
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }

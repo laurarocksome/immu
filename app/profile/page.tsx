@@ -4,45 +4,75 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { List, Home, Plus, BookOpen, UtensilsCrossed, ArrowLeft, Edit } from "lucide-react"
 import Logo from "@/app/components/logo"
-
-type UserProfile = {
-  gender: string
-  age: number
-  weight: number
-  weightUnit: string
-  height: number
-  heightUnit: string
-}
+import { useAuth } from "@/hooks/use-auth"
+import { getProfile, type Profile } from "@/utils/supabase/profiles"
 
 export default function ProfilePage() {
   const router = useRouter()
-  const [profile, setProfile] = useState<UserProfile | null>(null)
+  const { user, loading: authLoading } = useAuth()
+  const [profile, setProfile] = useState<Profile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // Load profile data
-    const profileData = JSON.parse(localStorage.getItem("userProfile") || "null")
-    setProfile(profileData)
+    const loadProfile = async () => {
+      if (authLoading) return
 
-    // Try to load conditions from both possible localStorage keys
-    const conditions = JSON.parse(localStorage.getItem("userConditions") || "[]")
-    if (conditions.length === 0) {
-      // If userConditions is empty, try selectedConditions
-      const selectedConditions = JSON.parse(localStorage.getItem("selectedConditions") || "[]")
-      if (selectedConditions.length > 0) {
-        // If found in selectedConditions, save to userConditions for future use
-        localStorage.setItem("userConditions", JSON.stringify(selectedConditions))
+      if (user) {
+        // Load from Supabase if authenticated
+        const supabaseProfile = await getProfile(user.id)
+        if (supabaseProfile) {
+          setProfile(supabaseProfile)
+        }
+      } else {
+        // Fallback to localStorage for test users
+        const localProfile = localStorage.getItem("userProfile")
+        if (localProfile) {
+          const parsedProfile = JSON.parse(localProfile)
+          setProfile({
+            id: "test-user",
+            email: "test@example.com",
+            gender: parsedProfile.gender,
+            age: parsedProfile.age,
+            weight: parsedProfile.weight,
+            weight_unit: parsedProfile.weightUnit,
+            height: parsedProfile.height,
+            height_unit: parsedProfile.heightUnit,
+            diet_timeline: null,
+            adaptation_period: null,
+            conditions: null,
+            stress_level: null,
+            activity_level: null,
+            caffeine_habits: null,
+            alcohol_habits: null,
+            sugar_habits: null,
+            vegetable_habits: null,
+            athlete_info: null,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          })
+        }
       }
+
+      setIsLoading(false)
     }
 
-    setIsLoading(false)
-  }, [])
+    loadProfile()
+  }, [user, authLoading])
 
   const handleBackToDashboard = () => {
     router.push("/dashboard")
   }
 
-  if (isLoading) {
+  const handleLogout = async () => {
+    if (user) {
+      const { createClient } = await import("@/utils/supabase/client")
+      const supabase = createClient()
+      await supabase.auth.signOut()
+    }
+    router.push("/")
+  }
+
+  if (authLoading || isLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-brand-lightest to-white text-brand-dark">
         <p>Loading profile...</p>
@@ -67,6 +97,7 @@ export default function ProfilePage() {
         <div className="max-w-md mx-auto">
           <div className="mb-6 text-center">
             <h2 className="text-2xl font-bold mb-2">Your Profile</h2>
+            {user && <p className="text-brand-dark/60 text-sm">Authenticated User</p>}
           </div>
 
           {/* Personal Information */}
@@ -74,7 +105,10 @@ export default function ProfilePage() {
             <div className="glass-card rounded-2xl p-6 mb-6">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="font-semibold text-lg">Personal Information</h3>
-                <button className="text-pink-400 flex items-center">
+                <button
+                  className="text-pink-400 flex items-center"
+                  onClick={() => router.push("/onboarding/user-profile")}
+                >
                   <Edit className="h-4 w-4 mr-1" />
                   Edit
                 </button>
@@ -82,23 +116,31 @@ export default function ProfilePage() {
 
               <div className="space-y-3">
                 <div>
+                  <p className="text-brand-dark/60 text-sm">Email</p>
+                  <p>{profile.email || "Not provided"}</p>
+                </div>
+                <div>
                   <p className="text-brand-dark/60 text-sm">Gender</p>
-                  <p>{profile.gender}</p>
+                  <p>{profile.gender || "Not provided"}</p>
                 </div>
                 <div>
                   <p className="text-brand-dark/60 text-sm">Age</p>
-                  <p>{profile.age} years</p>
+                  <p>{profile.age ? `${profile.age} years` : "Not provided"}</p>
                 </div>
                 <div>
                   <p className="text-brand-dark/60 text-sm">Weight</p>
                   <p>
-                    {profile.weight} {profile.weightUnit}
+                    {profile.weight && profile.weight_unit
+                      ? `${profile.weight} ${profile.weight_unit}`
+                      : "Not provided"}
                   </p>
                 </div>
                 <div>
                   <p className="text-brand-dark/60 text-sm">Height</p>
                   <p>
-                    {profile.height} {profile.heightUnit}
+                    {profile.height && profile.height_unit
+                      ? `${profile.height} ${profile.height_unit}`
+                      : "Not provided"}
                   </p>
                 </div>
               </div>
@@ -118,11 +160,11 @@ export default function ProfilePage() {
             <div className="space-y-3">
               <div>
                 <p className="text-brand-dark/60 text-sm">Diet Timeline</p>
-                <p>{localStorage.getItem("userDietTimeline") || "Not set"} days</p>
+                <p>{profile?.diet_timeline ? `${profile.diet_timeline} days` : "Not set"}</p>
               </div>
               <div>
                 <p className="text-brand-dark/60 text-sm">Adaptation Period</p>
-                <p>{localStorage.getItem("userAdaptationChoice") === "Yes" ? "Yes" : "No"}</p>
+                <p>{profile?.adaptation_period ? "Yes" : "No"}</p>
               </div>
             </div>
           </div>
@@ -138,35 +180,26 @@ export default function ProfilePage() {
             </div>
 
             <div>
-              {(() => {
-                // Try to get conditions from both possible localStorage keys
-                const conditions = JSON.parse(localStorage.getItem("userConditions") || "[]")
-                const selectedConditions = JSON.parse(localStorage.getItem("selectedConditions") || "[]")
-
-                // Use whichever has data, preferring userConditions
-                const displayConditions = conditions.length > 0 ? conditions : selectedConditions
-
-                return displayConditions.length > 0 ? (
-                  <div className="flex flex-wrap gap-2">
-                    {displayConditions.map((condition, index) => (
-                      <span key={index} className="bg-pink-200/70 text-brand-dark px-3 py-1 rounded-full text-sm">
-                        {condition}
-                      </span>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-brand-dark/60">No conditions selected</p>
-                )
-              })()}
+              {profile?.conditions && profile.conditions.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {profile.conditions.map((condition, index) => (
+                    <span key={index} className="bg-pink-200/70 text-brand-dark px-3 py-1 rounded-full text-sm">
+                      {condition}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-brand-dark/60">No conditions selected</p>
+              )}
             </div>
           </div>
 
           {/* Logout Button */}
           <button
-            onClick={() => router.push("/")}
+            onClick={handleLogout}
             className="w-full border border-brand-dark/30 text-brand-dark hover:bg-white/50 py-3 rounded-full transition-colors"
           >
-            Log Out
+            {user ? "Log Out" : "Back to Home"}
           </button>
         </div>
       </main>

@@ -1,2023 +1,3333 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { Button } from "@/components/ui/button"
 import {
-  List,
-  Home,
-  Plus,
-  BookOpen,
-  UtensilsCrossed,
-  User,
-  ArrowRight,
-  ChevronRight,
-  ChevronLeft,
-  LightbulbIcon,
-  HelpCircle,
-  ExternalLink,
-  Scale,
-  Check,
-  CheckCircle2,
-  Circle,
-  ListChecks,
-} from "lucide-react"
-import Logo from "@/app/components/logo"
-import ConfettiCelebration from "@/app/components/confetti-celebration"
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableFooter,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card"
+import {
+  Menubar,
+  MenubarContent,
+  MenubarMenu,
+  MenubarItem,
+  MenubarTrigger,
+} from "@/components/ui/menubar"
+import { Progress } from "@/components/ui/progress"
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
+import { Separator } from "@/components/ui/separator"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Slider } from "@/components/ui/slider"
+import { Switch } from "@/components/ui/switch"
+import { Textarea } from "@/components/ui/textarea"
+import { Toaster } from "@/components/ui/toaster"
+import { useToast } from "@/components/ui/use-toast"
+import { Calendar } from "@/components/ui/calendar"
+import {
+  Command,
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandList,
+  CommandSeparator,
+  CommandShortcut,
+  CommandItem,
+} from "@/components/ui/command"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import * as z from "zod"
+import { Checkbox } from "@/components/ui/checkbox"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
+import { InputGroup, InputLeftAddon, InputRightAddon } from "@/components/ui/input-group"
+import { MultiSelect } from "@/components/ui/multi-select"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { useSearchParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { User } from 'lucide-react'
+import { Icons } from "@/components/icons"
+import { cn } from "@/lib/utils"
+import { ModeToggle } from "@/components/mode-toggle"
+import { CalendarIcon } from "@radix-ui/react-icons"
+import { format } from "date-fns"
+import { DatePicker } from "@/components/date-picker"
+import { Label as ShadcnLabel } from "@/components/ui/label"
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
+import {
+  AlertDialog as ShadcnAlertDialog,
+  AlertDialogAction as ShadcnAlertDialogAction,
+  AlertDialogCancel as ShadcnAlertDialogCancel,
+  AlertDialogContent as ShadcnAlertDialogContent,
+  AlertDialogDescription as ShadcnAlertDialogDescription,
+  AlertDialogFooter as ShadcnAlertDialogFooter,
+  AlertDialogHeader as ShadcnAlertDialogHeader,
+  AlertDialogTitle as ShadcnAlertDialogTitle,
+  AlertDialogTrigger as ShadcnAlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import {
+  AspectRadio as ShadcnAspectRadio,
+} from "@/components/ui/aspect-ratio"
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  navigationMenuTriggerStyle,
+} from "@/components/ui/navigation-menu"
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+  ResizableSeparator,
+} from "@/components/ui/resizable"
+import {
+  Command as ShadcnCommand,
+  CommandDialog as ShadcnCommandDialog,
+  CommandEmpty as ShadcnCommandEmpty,
+  CommandGroup as ShadcnCommandGroup,
+  CommandInput as ShadcnCommandInput,
+  CommandList as ShadcnCommandList,
+  CommandSeparator as ShadcnCommandSeparator,
+  CommandShortcut as ShadcnCommandShortcut,
+  CommandItem as ShadcnCommandItem,
+} from "@/components/ui/command"
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel"
+import * as React from "react"
+import {
+  Card as ShadcnCard,
+  CardContent as ShadcnCardContent,
+  CardDescription as ShadcnCardDescription,
+  CardFooter as ShadcnCardFooter,
+  CardHeader as ShadcnCardHeader,
+  CardTitle as ShadcnCardTitle,
+} from "@/components/ui/card"
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible"
+import {
+  ContextMenu,
+  ContextMenuCheckboxItem,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuLabel,
+  ContextMenuRadioGroup,
+  ContextMenuRadioItem,
+  ContextMenuSeparator,
+  ContextMenuSub,
+  ContextMenuSubContent,
+  ContextMenuSubTrigger,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu"
+import {
+  Dialog as ShadcnDialog,
+  DialogContent as ShadcnDialogContent,
+  DialogDescription as ShadcnDialogDescription,
+  DialogHeader as ShadcnDialogHeader,
+  DialogTitle as ShadcnDialogTitle,
+  DialogTrigger as ShadcnDialogTrigger,
+} from "@/components/ui/dialog"
+import {
+  DropdownMenu as ShadcnDropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent as ShadcnDropdownMenuContent,
+  DropdownMenuItem as ShadcnDropdownMenuItem,
+  DropdownMenuLabel as ShadcnDropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator as ShadcnDropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger as ShadcnDropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  Form as ShadcnForm,
+  FormControl as ShadcnFormControl,
+  FormDescription as ShadcnFormDescription,
+  FormField as ShadcnFormField,
+  FormItem as ShadcnFormItem,
+  FormLabel as ShadcnFormLabel,
+  FormMessage as ShadcnFormMessage,
+} from "@/components/ui/form"
+import {
+  HoverCard as ShadcnHoverCard,
+  HoverCardContent as ShadcnHoverCardContent,
+  HoverCardTrigger as ShadcnHoverCardTrigger,
+} from "@/components/ui/hover-card"
+import {
+  Input as ShadcnInput,
+} from "@/components/ui/input"
+import {
+  Label as ShadcnLabel2,
+} from "@/components/ui/label"
+import {
+  Menubar as ShadcnMenubar,
+  MenubarCheckboxItem,
+  MenubarContent as ShadcnMenubarContent,
+  MenubarItem as ShadcnMenubarItem,
+  MenubarMenu as ShadcnMenubarMenu,
+  MenubarRadioGroup,
+  MenubarRadioItem,
+  MenubarSeparator as ShadcnMenubarSeparator,
+  MenubarShortcut,
+  MenubarSub,
+  MenubarSubContent,
+  MenubarSubTrigger,
+  MenubarTrigger as ShadcnMenubarTrigger,
+} from "@/components/ui/menubar"
+import {
+  Popover as ShadcnPopover,
+  PopoverContent as ShadcnPopoverContent,
+  PopoverTrigger as ShadcnPopoverTrigger,
+} from "@/components/ui/popover"
+import {
+  Progress as ShadcnProgress,
+} from "@/components/ui/progress"
+import {
+  ScrollArea as ShadcnScrollArea,
+  ScrollBar as ShadcnScrollBar,
+} from "@/components/ui/scroll-area"
+import {
+  Select as ShadcnSelect,
+  SelectContent as ShadcnSelectContent,
+  SelectItem as ShadcnSelectItem,
+  SelectTrigger as ShadcnSelectTrigger,
+  SelectValue as ShadcnSelectValue,
+} from "@/components/ui/select"
+import {
+  Separator as ShadcnSeparator,
+} from "@/components/ui/separator"
+import {
+  Sheet as ShadcnSheet,
+  SheetClose as ShadcnSheetClose,
+  SheetContent as ShadcnSheetContent,
+  SheetDescription as ShadcnSheetDescription,
+  SheetFooter as ShadcnSheetFooter,
+  SheetHeader as ShadcnSheetHeader,
+  SheetTitle as ShadcnSheetTitle,
+  SheetTrigger as ShadcnSheetTrigger,
+} from "@/components/ui/sheet"
+import {
+  Slider as ShadcnSlider,
+} from "@/components/ui/slider"
+import {
+  Switch as ShadcnSwitch,
+} from "@/components/ui/switch"
+import {
+  Table as ShadcnTable,
+  TableBody as ShadcnTableBody,
+  TableCaption as ShadcnTableCaption,
+  TableCell as ShadcnTableCell,
+  TableFooter as ShadcnTableFooter,
+  TableHead as ShadcnTableHead,
+  TableHeader as ShadcnTableHeader,
+  TableRow as ShadcnTableRow,
+} from "@/components/ui/table"
+import {
+  Textarea as ShadcnTextarea,
+} from "@/components/ui/textarea"
+import {
+  Tooltip as ShadcnTooltip,
+  TooltipContent as ShadcnTooltipContent,
+  TooltipProvider as ShadcnTooltipProvider,
+  TooltipTrigger as ShadcnTooltipTrigger,
+} from "@/components/ui/tooltip"
+import {
+  useToast as ShadcnUseToast,
+} from "@/components/ui/use-toast"
+import {
+  RadioGroup as ShadcnRadioGroup,
+  RadioGroupItem as ShadcnRadioGroupItem,
+} from "@/components/ui/radio-group"
+import {
+  Skeleton as ShadcnSkeleton,
+} from "@/components/ui/skeleton"
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs"
+import {
+  ResizableHandle as ShadcnResizableHandle,
+  ResizablePanel as ShadcnResizablePanel,
+  ResizablePanelGroup as ShadcnResizablePanelGroup,
+  ResizableSeparator as ShadcnResizableSeparator,
+} from "@/components/ui/resizable"
+import {
+  Carousel as ShadcnCarousel,
+  CarouselContent as ShadcnCarouselContent,
+  CarouselItem as ShadcnCarouselItem,
+  CarouselNext as ShadcnCarouselNext,
+  CarouselPrevious as ShadcnCarouselPrevious,
+} from "@/components/ui/carousel"
+import {
+  Calendar as ShadcnCalendar,
+} from "@/components/ui/calendar"
+import {
+  Command as CmdkCommand,
+  CommandDialog as CmdkCommandDialog,
+  CommandEmpty as CmdkCommandEmpty,
+  CommandGroup as CmdkCommandGroup,
+  CommandInput as CmdkCommandInput,
+  CommandList as CmdkCommandList,
+  CommandSeparator as CmdkCommandSeparator,
+  CommandShortcut as CmdkCommandShortcut,
+  CommandItem as CmdkCommandItem,
+} from "@/components/ui/command"
+import {
+  Dialog as CldDialog,
+  DialogContent as CldDialogContent,
+  DialogDescription as CldDialogDescription,
+  DialogHeader as CldDialogHeader,
+  DialogTitle as CldDialogTitle,
+  DialogTrigger as CldDialogTrigger,
+} from "@/components/ui/dialog"
+import {
+  DropdownMenu as CldDropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent as CldDropdownMenuContent,
+  DropdownMenuItem as CldDropdownMenuItem,
+  DropdownMenuLabel as CldDropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator as CldDropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger as CldDropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  Form as CldForm,
+  FormControl as CldFormControl,
+  FormDescription as CldFormDescription,
+  FormField as CldFormField,
+  FormItem as CldFormItem,
+  FormLabel as CldFormLabel,
+  FormMessage as CldFormMessage,
+} from "@/components/ui/form"
+import {
+  HoverCard as CldHoverCard,
+  HoverCardContent as CldHoverCardContent,
+  HoverCardTrigger as CldHoverCardTrigger,
+} from "@/components/ui/hover-card"
+import {
+  Input as CldInput,
+} from "@/components/ui/input"
+import {
+  Label as CldLabel,
+} from "@/components/ui/label"
+import {
+  Menubar as CldMenubar,
+  MenubarCheckboxItem,
+  MenubarContent as CldMenubarContent,
+  MenubarItem as CldMenubarItem,
+  MenubarMenu as CldMenubarMenu,
+  MenubarRadioGroup,
+  MenubarRadioItem,
+  MenubarSeparator as CldMenubarSeparator,
+  MenubarShortcut,
+  MenubarSub,
+  MenubarSubContent,
+  MenubarSubTrigger,
+  MenubarTrigger as CldMenubarTrigger,
+} from "@/components/ui/menubar"
+import {
+  Popover as CldPopover,
+  PopoverContent as CldPopoverContent,
+  PopoverTrigger as CldPopoverTrigger,
+} from "@/components/ui/popover"
+import {
+  Progress as CldProgress,
+} from "@/components/ui/progress"
+import {
+  ScrollArea as CldScrollArea,
+  ScrollBar as CldScrollBar,
+} from "@/components/ui/scroll-area"
+import {
+  Select as CldSelect,
+  SelectContent as CldSelectContent,
+  SelectItem as CldSelectItem,
+  SelectTrigger as CldSelectTrigger,
+  SelectValue as CldSelectValue,
+} from "@/components/ui/select"
+import {
+  Separator as CldSeparator,
+} from "@/components/ui/separator"
+import {
+  Sheet as CldSheet,
+  SheetClose as CldSheetClose,
+  SheetContent as CldSheetContent,
+  SheetDescription as CldSheetDescription,
+  SheetFooter as CldSheetFooter,
+  SheetHeader as CldSheetHeader,
+  SheetTitle as CldSheetTitle,
+  SheetTrigger as CldSheetTrigger,
+} from "@/components/ui/sheet"
+import {
+  Slider as CldSlider,
+} from "@/components/ui/slider"
+import {
+  Switch as CldSwitch,
+} from "@/components/ui/switch"
+import {
+  Table as CldTable,
+  TableBody as CldTableBody,
+  TableCaption as CldTableCaption,
+  TableCell as CldTableCell,
+  TableFooter as CldTableFooter,
+  TableHead as CldTableHead,
+  TableHeader as CldTableHeader,
+  TableRow as CldTableRow,
+} from "@/components/ui/table"
+import {
+  Textarea as CldTextarea,
+} from "@/components/ui/textarea"
+import {
+  Tooltip as CldTooltip,
+  TooltipContent as CldTooltipContent,
+  TooltipProvider as CldTooltipProvider,
+  TooltipTrigger as CldTooltipTrigger,
+} from "@/components/ui/tooltip"
+import {
+  useToast as CldUseToast,
+} from "@/components/ui/use-toast"
+import {
+  RadioGroup as CldRadioGroup,
+  RadioGroupItem as CldRadioGroupItem,
+} from "@/components/ui/radio-group"
+import {
+  Skeleton as CldSkeleton,
+} from "@/components/ui/skeleton"
+import {
+  Tabs as CldTabs,
+  TabsContent as CldTabsContent,
+  TabsList as CldTabsList,
+  TabsTrigger as CldTabsTrigger,
+} from "@/components/ui/tabs"
+import {
+  ResizableHandle as CldResizableHandle,
+  ResizablePanel as CldResizablePanel,
+  ResizablePanelGroup as CldResizablePanelGroup,
+  ResizableSeparator as CldResizableSeparator,
+} from "@/components/ui/resizable"
+import {
+  Carousel as CldCarousel,
+  CarouselContent as CldCarouselContent,
+  CarouselItem as CldCarouselItem,
+  CarouselNext as CldCarouselNext,
+  CarouselPrevious as CldCarouselPrevious,
+} from "@/components/ui/carousel"
+import {
+  Calendar as CldCalendar,
+} from "@/components/ui/calendar"
+import {
+  Command as SonnerCommand,
+  CommandDialog as SonnerCommandDialog,
+  CommandEmpty as SonnerCommandEmpty,
+  CommandGroup as SonnerCommandGroup,
+  CommandInput as SonnerCommandInput,
+  CommandList as SonnerCommandList,
+  CommandSeparator as SonnerCommandSeparator,
+  CommandShortcut as SonnerCommandShortcut,
+  CommandItem as SonnerCommandItem,
+} from "@/components/ui/command"
+import {
+  Dialog as SonnerDialog,
+  DialogContent as SonnerDialogContent,
+  DialogDescription as SonnerDialogDescription,
+  DialogHeader as SonnerDialogHeader,
+  DialogTitle as SonnerDialogTitle,
+  DialogTrigger as SonnerDialogTrigger,
+} from "@/components/ui/dialog"
+import {
+  DropdownMenu as SonnerDropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent as SonnerDropdownMenuContent,
+  DropdownMenuItem as SonnerDropdownMenuItem,
+  DropdownMenuLabel as SonnerDropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator as SonnerDropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger as SonnerDropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  Form as SonnerForm,
+  FormControl as SonnerFormControl,
+  FormDescription as SonnerFormDescription,
+  FormField as SonnerFormField,
+  FormItem as SonnerFormItem,
+  FormLabel as SonnerFormLabel,
+  FormMessage as SonnerFormMessage,
+} from "@/components/ui/form"
+import {
+  HoverCard as SonnerHoverCard,
+  HoverCardContent as SonnerHoverCardContent,
+  HoverCardTrigger as SonnerHoverCardTrigger,
+} from "@/components/ui/hover-card"
+import {
+  Input as SonnerInput,
+} from "@/components/ui/input"
+import {
+  Label as SonnerLabel,
+} from "@/components/ui/label"
+import {
+  Menubar as SonnerMenubar,
+  MenubarCheckboxItem,
+  MenubarContent as SonnerMenubarContent,
+  MenubarItem as SonnerMenubarItem,
+  MenubarMenu as SonnerMenubarMenu,
+  MenubarRadioGroup,
+  MenubarRadioItem,
+  MenubarSeparator as SonnerMenubarSeparator,
+  MenubarShortcut,
+  MenubarSub,
+  MenubarSubContent,
+  MenubarSubTrigger,
+  MenubarTrigger as SonnerMenubarTrigger,
+} from "@/components/ui/menubar"
+import {
+  Popover as SonnerPopover,
+  PopoverContent as SonnerPopoverContent,
+  PopoverTrigger as SonnerPopoverTrigger,
+} from "@/components/ui/popover"
+import {
+  Progress as SonnerProgress,
+} from "@/components/ui/progress"
+import {
+  ScrollArea as SonnerScrollArea,
+  ScrollBar as SonnerScrollBar,
+} from "@/components/ui/scroll-area"
+import {
+  Select as SonnerSelect,
+  SelectContent as SonnerSelectContent,
+  SelectItem as SonnerSelectItem,
+  SelectTrigger as SonnerSelectTrigger,
+  SelectValue as SonnerSelectValue,
+} from "@/components/ui/select"
+import {
+  Separator as SonnerSeparator,
+} from "@/components/ui/separator"
+import {
+  Sheet as SonnerSheet,
+  SheetClose as SonnerSheetClose,
+  SheetContent as SonnerSheetContent,
+  SheetDescription as SonnerSheetDescription,
+  SheetFooter as SonnerSheetFooter,
+  SheetHeader as SonnerSheetHeader,
+  SheetTitle as SonnerSheetTitle,
+  SheetTrigger as SonnerSheetTrigger,
+} from "@/components/ui/sheet"
+import {
+  Slider as SonnerSlider,
+} from "@/components/ui/slider"
+import {
+  Switch as SonnerSwitch,
+} from "@/components/ui/switch"
+import {
+  Table as SonnerTable,
+  TableBody as SonnerTableBody,
+  TableCaption as SonnerTableCaption,
+  TableCell as SonnerTableCell,
+  TableFooter as SonnerTableFooter,
+  TableHead as SonnerTableHead,
+  TableHeader as SonnerTableHeader,
+  TableRow as SonnerTableRow,
+} from "@/components/ui/table"
+import {
+  Textarea as SonnerTextarea,
+} from "@/components/ui/textarea"
+import {
+  Tooltip as SonnerTooltip,
+  TooltipContent as SonnerTooltipContent,
+  TooltipProvider as SonnerTooltipProvider,
+  TooltipTrigger as SonnerTooltipTrigger,
+} from "@/components/ui/tooltip"
+import {
+  useToast as SonnerUseToast,
+} from "@/components/ui/use-toast"
+import {
+  RadioGroup as SonnerRadioGroup,
+  RadioGroupItem as SonnerRadioGroupItem,
+} from "@/components/ui/radio-group"
+import {
+  Skeleton as SonnerSkeleton,
+} from "@/components/ui/skeleton"
+import {
+  Tabs as SonnerTabs,
+  TabsContent as SonnerTabsContent,
+  TabsList as SonnerTabsList,
+  TabsTrigger as SonnerTabsTrigger,
+} from "@/components/ui/tabs"
+import {
+  ResizableHandle as SonnerResizableHandle,
+  ResizablePanel as SonnerResizablePanel,
+  ResizablePanelGroup as SonnerResizablePanelGroup,
+  ResizableSeparator as SonnerResizableSeparator,
+} from "@/components/ui/resizable"
+import {
+  Carousel as SonnerCarousel,
+  CarouselContent as SonnerCarouselContent,
+  CarouselItem as SonnerCarouselItem,
+  CarouselNext as SonnerCarouselNext,
+  CarouselPrevious as SonnerCarouselPrevious,
+} from "@/components/ui/carousel"
+import {
+  Calendar as SonnerCalendar,
+} from "@/components/ui/calendar"
+import {
+  Command as UIOpenCommand,
+  CommandDialog as UIOpenCommandDialog,
+  CommandEmpty as UIOpenCommandEmpty,
+  CommandGroup as UIOpenCommandGroup,
+  CommandInput as UIOpenCommandInput,
+  CommandList as UIOpenCommandList,
+  CommandSeparator as UIOpenCommandSeparator,
+  CommandShortcut as UIOpenCommandShortcut,
+  CommandItem as UIOpenCommandItem,
+} from "@/components/ui/command"
+import {
+  Dialog as UIOpenDialog,
+  DialogContent as UIOpenDialogContent,
+  DialogDescription as UIOpenDialogDescription,
+  DialogHeader as UIOpenDialogHeader,
+  DialogTitle as UIOpenDialogTitle,
+  DialogTrigger as UIOpenDialogTrigger,
+} from "@/components/ui/dialog"
+import {
+  DropdownMenu as UIOpenDropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent as UIOpenDropdownMenuContent,
+  DropdownMenuItem as UIOpenDropdownMenuItem,
+  DropdownMenuLabel as UIOpenDropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator as UIOpenDropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger as UIOpenDropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  Form as UIOpenForm,
+  FormControl as UIOpenFormControl,
+  FormDescription as UIOpenFormDescription,
+  FormField as UIOpenFormField,
+  FormItem as UIOpenFormItem,
+  FormLabel as UIOpenFormLabel,
+  FormMessage as UIOpenFormMessage,
+} from "@/components/ui/form"
+import {
+  HoverCard as UIOpenHoverCard,
+  HoverCardContent as UIOpenHoverCardContent,
+  HoverCardTrigger as UIOpenHoverCardTrigger,
+} from "@/components/ui/hover-card"
+import {
+  Input as UIOpenInput,
+} from "@/components/ui/input"
+import {
+  Label as UIOpenLabel,
+} from "@/components/ui/label"
+import {
+  Menubar as UIOpenMenubar,
+  MenubarCheckboxItem,
+  MenubarContent as UIOpenMenubarContent,
+  MenubarItem as UIOpenMenubarItem,
+  MenubarMenu as UIOpenMenubarMenu,
+  MenubarRadioGroup,
+  MenubarRadioItem,
+  MenubarSeparator as UIOpenMenubarSeparator,
+  MenubarShortcut,
+  MenubarSub,
+  MenubarSubContent,
+  MenubarSubTrigger,
+  MenubarTrigger as UIOpenMenubarTrigger,
+} from "@/components/ui/menubar"
+import {
+  Popover as UIOpenPopover,
+  PopoverContent as UIOpenPopoverContent,
+  PopoverTrigger as UIOpenPopoverTrigger,
+} from "@/components/ui/popover"
+import {
+  Progress as UIOpenProgress,
+} from "@/components/ui/progress"
+import {
+  ScrollArea as UIOpenScrollArea,
+  ScrollBar as UIOpenScrollBar,
+} from "@/components/ui/scroll-area"
+import {
+  Select as UIOpenSelect,
+  SelectContent as UIOpenSelectContent,
+  SelectItem as UIOpenSelectItem,
+  SelectTrigger as UIOpenSelectTrigger,
+  SelectValue as UIOpenSelectValue,
+} from "@/components/ui/select"
+import {
+  Separator as UIOpenSeparator,
+} from "@/components/ui/separator"
+import {
+  Sheet as UIOpenSheet,
+  SheetClose as UIOpenSheetClose,
+  SheetContent as UIOpenSheetContent,
+  SheetDescription as UIOpenSheetDescription,
+  SheetFooter as UIOpenSheetFooter,
+  SheetHeader as UIOpenSheetHeader,
+  SheetTitle as UIOpenSheetTitle,
+  SheetTrigger as UIOpenSheetTrigger,
+} from "@/components/ui/sheet"
+import {
+  Slider as UIOpenSlider,
+} from "@/components/ui/slider"
+import {
+  Switch as UIOpenSwitch,
+} from "@/components/ui/switch"
+import {
+  Table as UIOpenTable,
+  TableBody as UIOpenTableBody,
+  TableCaption as UIOpenTableCaption,
+  TableCell as UIOpenTableCell,
+  TableFooter as UIOpenTableFooter,
+  TableHead as UIOpenTableHead,
+  TableHeader as UIOpenTableHeader,
+  TableRow as UIOpenTableRow,
+} from "@/components/ui/table"
+import {
+  Textarea as UIOpenTextarea,
+} from "@/components/ui/textarea"
+import {
+  Tooltip as UIOpenTooltip,
+  TooltipContent as UIOpenTooltipContent,
+  TooltipProvider as UIOpenTooltipProvider,
+  TooltipTrigger as UIOpenTooltipTrigger,
+} from "@/components/ui/tooltip"
+import {
+  useToast as UIOpenUseToast,
+} from "@/components/ui/use-toast"
+import {
+  RadioGroup as UIOpenRadioGroup,
+  RadioGroupItem as UIOpenRadioGroupItem,
+} from "@/components/ui/radio-group"
+import {
+  Skeleton as UIOpenSkeleton,
+} from "@/components/ui/skeleton"
+import {
+  Tabs as UIOpenTabs,
+  TabsContent as UIOpenTabsContent,
+  TabsList as UIOpenTabsList,
+  TabsTrigger as UIOpenTabsTrigger,
+} from "@/components/ui/tabs"
+import {
+  ResizableHandle as UIOpenResizableHandle,
+  ResizablePanel as UIOpenResizablePanel,
+  ResizablePanelGroup as UIOpenResizablePanelGroup,
+  ResizableSeparator as UIOpenResizableSeparator,
+} from "@/components/ui/resizable"
+import {
+  Carousel as UIOpenCarousel,
+  CarouselContent as UIOpenCarouselContent,
+  CarouselItem as UIOpenCarouselItem,
+  CarouselNext as UIOpenCarouselNext,
+  CarouselPrevious as UIOpenCarouselPrevious,
+} from "@/components/ui/carousel"
+import {
+  Calendar as UIOpenCalendar,
+} from "@/components/ui/calendar"
+import {
+  Command as RadixUICommand,
+  CommandDialog as RadixUICommandDialog,
+  CommandEmpty as RadixUICommandEmpty,
+  CommandGroup as RadixUICommandGroup,
+  CommandInput as RadixUICommandInput,
+  CommandList as RadixUICommandList,
+  CommandSeparator as RadixUICommandSeparator,
+  CommandShortcut as RadixUICommandShortcut,
+  CommandItem as RadixUICommandItem,
+} from "@/components/ui/command"
+import {
+  Dialog as RadixUIDialog,
+  DialogContent as RadixUIDialogContent,
+  DialogDescription as RadixUIDialogDescription,
+  DialogHeader as RadixUIDialogHeader,
+  DialogTitle as RadixUIDialogTitle,
+  DialogTrigger as RadixUIDialogTrigger,
+} from "@/components/ui/dialog"
+import {
+  DropdownMenu as RadixUIDropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent as RadixUIDropdownMenuContent,
+  DropdownMenuItem as RadixUIDropdownMenuItem,
+  DropdownMenuLabel as RadixUIDropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator as RadixUIDropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger as RadixUIDropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  Form as RadixUIForm,
+  FormControl as RadixUIFormControl,
+  FormDescription as RadixUIFormDescription,
+  FormField as RadixUIFormField,
+  FormItem as RadixUIFormItem,
+  FormLabel as RadixUIFormLabel,
+  FormMessage as RadixUIFormMessage,
+} from "@/components/ui/form"
+import {
+  HoverCard as RadixUIHoverCard,
+  HoverCardContent as RadixUIHoverCardContent,
+  HoverCardTrigger as RadixUIHoverCardTrigger,
+} from "@/components/ui/hover-card"
+import {
+  Input as RadixUIInput,
+} from "@/components/ui/input"
+import {
+  Label as RadixUILabel,
+} from "@/components/ui/label"
+import {
+  Menubar as RadixUIMenubar,
+  MenubarCheckboxItem,
+  MenubarContent as RadixUIMenubarContent,
+  MenubarItem as RadixUIMenubarItem,
+  MenubarMenu as RadixUIMenubarMenu,
+  MenubarRadioGroup,
+  MenubarRadioItem,
+  MenubarSeparator as RadixUIMenubarSeparator,
+  MenubarShortcut,
+  MenubarSub,
+  MenubarSubContent,
+  MenubarSubTrigger,
+  MenubarTrigger as RadixUIMenubarTrigger,
+} from "@/components/ui/menubar"
+import {
+  Popover as RadixUIPopover,
+  PopoverContent as RadixUIPopoverContent,
+  PopoverTrigger as RadixUIPopoverTrigger,
+} from "@/components/ui/popover"
+import {
+  Progress as RadixUIProgress,
+} from "@/components/ui/progress"
+import {
+  ScrollArea as RadixUIScrollArea,
+  ScrollBar as RadixUIScrollBar,
+} from "@/components/ui/scroll-area"
+import {
+  Select as RadixUISelect,
+  SelectContent as RadixUISelectContent,
+  SelectItem as RadixUISelectItem,
+  SelectTrigger as RadixUISelectTrigger,
+  SelectValue as RadixUISelectValue,
+} from "@/components/ui/select"
+import {
+  Separator as RadixUISeparator,
+} from "@/components/ui/separator"
+import {
+  Sheet as RadixUISheet,
+  SheetClose as RadixUISheetClose,
+  SheetContent as RadixUISheetContent,
+  SheetDescription as RadixUISheetDescription,
+  SheetFooter as RadixUISheetFooter,
+  SheetHeader as RadixUISheetHeader,
+  SheetTitle as RadixUISheetTitle,
+  SheetTrigger as RadixUISheetTrigger,
+} from "@/components/ui/sheet"
+import {
+  Slider as RadixUISlider,
+} from "@/components/ui/slider"
+import {
+  Switch as RadixUISwitch,
+} from "@/components/ui/switch"
+import {
+  Table as RadixUITable,
+  TableBody as RadixUITableBody,
+  TableCaption as RadixUITableCaption,
+  TableCell as RadixUITableCell,
+  TableFooter as RadixUITableFooter,
+  TableHead as RadixUITableHead,
+  TableHeader as RadixUITableHeader,
+  TableRow as RadixUITableRow,
+} from "@/components/ui/table"
+import {
+  Textarea as RadixUITextarea,
+} from "@/components/ui/textarea"
+import {
+  Tooltip as RadixUITooltip,
+  TooltipContent as RadixUITooltipContent,
+  TooltipProvider as RadixUITooltipProvider,
+  TooltipTrigger as RadixUITooltipTrigger,
+} from "@/components/ui/tooltip"
+import {
+  useToast as RadixUIUseToast,
+} from "@/components/ui/use-toast"
+import {
+  RadioGroup as RadixUIRadioGroup,
+  RadioGroupItem as RadixUIRadioGroupItem,
+} from "@/components/ui/radio-group"
+import {
+  Skeleton as RadixUISkeleton,
+} from "@/components/ui/skeleton"
+import {
+  Tabs as RadixUITabs,
+  TabsContent as RadixUITabsContent,
+  TabsList as RadixUITabsList,
+  TabsTrigger as RadixUITabsTrigger,
+} from "@/components/ui/tabs"
+import {
+  ResizableHandle as RadixUIResizableHandle,
+  ResizablePanel as RadixUIResizablePanel,
+  ResizablePanelGroup as RadixUIResizablePanelGroup,
+  ResizableSeparator as RadixUIResizableSeparator,
+} from "@/components/ui/resizable"
+import {
+  Carousel as RadixUICarousel,
+  CarouselContent as RadixUICarouselContent,
+  CarouselItem as RadixUICarouselItem,
+  CarouselNext as RadixUICarouselNext,
+  CarouselPrevious as RadixUICarouselPrevious,
+} from "@/components/ui/carousel"
+import {
+  Calendar as RadixUICalendar,
+} from "@/components/ui/calendar"
+import {
+  Command as ReactAriaCommand,
+  CommandDialog as ReactAriaCommandDialog,
+  CommandEmpty as ReactAriaCommandEmpty,
+  CommandGroup as ReactAriaCommandGroup,
+  CommandInput as ReactAriaCommandInput,
+  CommandList as ReactAriaCommandList,
+  CommandSeparator as ReactAriaCommandSeparator,
+  CommandShortcut as ReactAriaCommandShortcut,
+  CommandItem as ReactAriaCommandItem,
+} from "@/components/ui/command"
+import {
+  Dialog as ReactAriaDialog,
+  DialogContent as ReactAriaDialogContent,
+  DialogDescription as ReactAriaDialogDescription,
+  DialogHeader as ReactAriaDialogHeader,
+  DialogTitle as ReactAriaDialogTitle,
+  DialogTrigger as ReactAriaDialogTrigger,
+} from "@/components/ui/dialog"
+import {
+  DropdownMenu as ReactAriaDropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent as ReactAriaDropdownMenuContent,
+  DropdownMenuItem as ReactAriaDropdownMenuItem,
+  DropdownMenuLabel as ReactAriaDropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator as ReactAriaDropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger as ReactAriaDropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  Form as ReactAriaForm,
+  FormControl as ReactAriaFormControl,
+  FormDescription as ReactAriaFormDescription,
+  FormField as ReactAriaFormField,
+  FormItem as ReactAriaFormItem,
+  FormLabel as ReactAriaFormLabel,
+  FormMessage as ReactAriaFormMessage,
+} from "@/components/ui/form"
+import {
+  HoverCard as ReactAriaHoverCard,
+  HoverCardContent as ReactAriaHoverCardContent,
+  HoverCardTrigger as ReactAriaHoverCardTrigger,
+} from "@/components/ui/hover-card"
+import {
+  Input as ReactAriaInput,
+} from "@/components/ui/input"
+import {
+  Label as ReactAriaLabel,
+} from "@/components/ui/label"
+import {
+  Menubar as ReactAriaMenubar,
+  MenubarCheckboxItem,
+  MenubarContent as ReactAriaMenubarContent,
+  MenubarItem as ReactAriaMenubarItem,
+  MenubarMenu as ReactAriaMenubarMenu,
+  MenubarRadioGroup,
+  MenubarRadioItem,
+  MenubarSeparator as ReactAriaMenubarSeparator,
+  MenubarShortcut,
+  MenubarSub,
+  MenubarSubContent,
+  MenubarSubTrigger,
+  MenubarTrigger as ReactAriaMenubarTrigger,
+} from "@/components/ui/menubar"
+import {
+  Popover as ReactAriaPopover,
+  PopoverContent as ReactAriaPopoverContent,
+  PopoverTrigger as ReactAriaPopoverTrigger,
+} from "@/components/ui/popover"
+import {
+  Progress as ReactAriaProgress,
+} from "@/components/ui/progress"
+import {
+  ScrollArea as ReactAriaScrollArea,
+  ScrollBar as ReactAriaScrollBar,
+} from "@/components/ui/scroll-area"
+import {
+  Select as ReactAriaSelect,
+  SelectContent as ReactAriaSelectContent,
+  SelectItem as ReactAriaSelectItem,
+  SelectTrigger as ReactAriaSelectTrigger,
+  SelectValue as ReactAriaSelectValue,
+} from "@/components/ui/select"
+import {
+  Separator as ReactAriaSeparator,
+} from "@/components/ui/separator"
+import {
+  Sheet as ReactAriaSheet,
+  SheetClose as ReactAriaSheetClose,
+  SheetContent as ReactAriaSheetContent,
+  SheetDescription as ReactAriaSheetDescription,
+  SheetFooter as ReactAriaSheetFooter,
+  SheetHeader as ReactAriaSheetHeader,
+  SheetTitle as ReactAriaSheetTitle,
+  SheetTrigger as ReactAriaSheetTrigger,
+} from "@/components/ui/sheet"
+import {
+  Slider as ReactAriaSlider,
+} from "@/components/ui/slider"
+import {
+  Switch as ReactAriaSwitch,
+} from "@/components/ui/switch"
+import {
+  Table as ReactAriaTable,
+  TableBody as ReactAriaTableBody,
+  TableCaption as ReactAriaTableCaption,
+  TableCell as ReactAriaTableCell,
+  TableFooter as ReactAriaTableFooter,
+  TableHead as ReactAriaTableHead,
+  TableHeader as ReactAriaTableHeader,
+  TableRow as ReactAriaTableRow,
+} from "@/components/ui/table"
+import {
+  Textarea as ReactAriaTextarea,
+} from "@/components/ui/textarea"
+import {
+  Tooltip as ReactAriaTooltip,
+  TooltipContent as ReactAriaTooltipContent,
+  TooltipProvider as ReactAriaTooltipProvider,
+  TooltipTrigger as ReactAriaTooltipTrigger,
+} from "@/components/ui/tooltip"
+import {
+  useToast as ReactAriaUseToast,
+} from "@/components/ui/use-toast"
+import {
+  RadioGroup as ReactAriaRadioGroup,
+  RadioGroupItem as ReactAriaRadioGroupItem,
+} from "@/components/ui/radio-group"
+import {
+  Skeleton as ReactAriaSkeleton,
+} from "@/components/ui/skeleton"
+import {
+  Tabs as ReactAriaTabs,
+  TabsContent as ReactAriaTabsContent,
+  TabsList as ReactAriaTabsList,
+  TabsTrigger as ReactAriaTabsTrigger,
+} from "@/components/ui/tabs"
+import {
+  ResizableHandle as ReactAriaResizableHandle,
+  ResizablePanel as ReactAriaResizablePanel,
+  ResizablePanelGroup as ReactAriaResizablePanelGroup,
+  ResizableSeparator as ReactAriaResizableSeparator,
+} from "@/components/ui/resizable"
+import {
+  Carousel as ReactAriaCarousel,
+  CarouselContent as ReactAriaCarouselContent,
+  CarouselItem as ReactAriaCarouselItem,
+  CarouselNext as ReactAriaCarouselNext,
+  CarouselPrevious as ReactAriaCarouselPrevious,
+} from "@/components/ui/carousel"
+import {
+  Calendar as ReactAriaCalendar,
+} from "@/components/ui/calendar"
+import {
+  Command as HeadlessUICommand,
+  CommandDialog as HeadlessUICommandDialog,
+  CommandEmpty as HeadlessUICommandEmpty,
+  CommandGroup as HeadlessUICommandGroup,
+  CommandInput as HeadlessUICommandInput,
+  CommandList as HeadlessUICommandList,
+  CommandSeparator as HeadlessUICommandSeparator,
+  CommandShortcut as HeadlessUICommandShortcut,
+  CommandItem as HeadlessUICommandItem,
+} from "@/components/ui/command"
+import {
+  Dialog as HeadlessUIDialog,
+  DialogContent as HeadlessUIDialogContent,
+  DialogDescription as HeadlessUIDialogDescription,
+  DialogHeader as HeadlessUIDialogHeader,
+  DialogTitle as HeadlessUIDialogTitle,
+  DialogTrigger as HeadlessUIDialogTrigger,
+} from "@/components/ui/dialog"
+import {
+  DropdownMenu as HeadlessUIDropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent as HeadlessUIDropdownMenuContent,
+  DropdownMenuItem as HeadlessUIDropdownMenuItem,
+  DropdownMenuLabel as HeadlessUIDropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator as HeadlessUIDropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger as HeadlessUIDropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  Form as HeadlessUIForm,
+  FormControl as HeadlessUIFormControl,
+  FormDescription as HeadlessUIFormDescription,
+  FormField as HeadlessUIFormField,
+  FormItem as HeadlessUIFormItem,
+  FormLabel as HeadlessUIFormLabel,
+  FormMessage as HeadlessUIFormMessage,
+} from "@/components/ui/form"
+import {
+  HoverCard as HeadlessUIHoverCard,
+  HoverCardContent as HeadlessUIHoverCardContent,
+  HoverCardTrigger as HeadlessUIHoverCardTrigger,
+} from "@/components/ui/hover-card"
+import {
+  Input as HeadlessUIInput,
+} from "@/components/ui/input"
+import {
+  Label as HeadlessUILabel,
+} from "@/components/ui/label"
+import {
+  Menubar as HeadlessUIMenubar,
+  MenubarCheckboxItem,
+  MenubarContent as HeadlessUIMenubarContent,
+  MenubarItem as HeadlessUIMenubarItem,
+  MenubarMenu as HeadlessUIMenubarMenu,
+  MenubarRadioGroup,
+  MenubarRadioItem,
+  MenubarSeparator as HeadlessUIMenubarSeparator,
+  MenubarShortcut,
+  MenubarSub,
+  MenubarSubContent,
+  MenubarSubTrigger,
+  MenubarTrigger as HeadlessUIMenubarTrigger,
+} from "@/components/ui/menubar"
+import {
+  Popover as HeadlessUIPopover,
+  PopoverContent as HeadlessUIPopoverContent,
+  PopoverTrigger as HeadlessUIPopoverTrigger,
+} from "@/components/ui/popover"
+import {
+  Progress as HeadlessUIProgress,
+} from "@/components/ui/progress"
+import {
+  ScrollArea as HeadlessUIScrollArea,
+  ScrollBar as HeadlessUIScrollBar,
+} from "@/components/ui/scroll-area"
+import {
+  Select as HeadlessUISelect,
+  SelectContent as HeadlessUISelectContent,
+  SelectItem as HeadlessUISelectItem,
+  SelectTrigger as HeadlessUISelectTrigger,
+  SelectValue as HeadlessUISelectValue,
+} from "@/components/ui/select"
+import {
+  Separator as HeadlessUISeparator,
+} from "@/components/ui/separator"
+import {
+  Sheet as HeadlessUISheet,
+  SheetClose as HeadlessUISheetClose,
+  SheetContent as HeadlessUISheetContent,
+  SheetDescription as HeadlessUISheetDescription,
+  SheetFooter as HeadlessUISheetFooter,
+  SheetHeader as HeadlessUISheetHeader,
+  SheetTitle as HeadlessUISheetTitle,
+  SheetTrigger as HeadlessUISheetTrigger,
+} from "@/components/ui/sheet"
+import {
+  Slider as HeadlessUISlider,
+} from "@/components/ui/slider"
+import {
+  Switch as HeadlessUISwitch,
+} from "@/components/ui/switch"
+import {
+  Table as HeadlessUITable,
+  TableBody as HeadlessUITableBody,
+  TableCaption as HeadlessUITableCaption,
+  TableCell as HeadlessUITableCell,
+  TableFooter as HeadlessUITableFooter,
+  TableHead as HeadlessUITableHead,
+  TableHeader as HeadlessUITableHeader,
+  TableRow as HeadlessUITableRow,
+} from "@/components/ui/table"
+import {
+  Textarea as HeadlessUITextarea,
+} from "@/components/ui/textarea"
+import {
+  Tooltip as HeadlessUITooltip,
+  TooltipContent as HeadlessUITooltipContent,
+  TooltipProvider as HeadlessUITooltipProvider,
+  TooltipTrigger as HeadlessUITooltipTrigger,
+} from "@/components/ui/tooltip"
+import {
+  useToast as HeadlessUIUseToast,
+} from "@/components/ui/use-toast"
+import {
+  RadioGroup as HeadlessUIRadioGroup,
+  RadioGroupItem as HeadlessUIRadioGroupItem,
+} from "@/components/ui/radio-group"
+import {
+  Skeleton as HeadlessUISkeleton,
+} from "@/components/ui/skeleton"
+import {
+  Tabs as HeadlessUITabs,
+  TabsContent as HeadlessUITabsContent,
+  TabsList as HeadlessUITabsList,
+  TabsTrigger as HeadlessUITabsTrigger,
+} from "@/components/ui/tabs"
+import {
+  ResizableHandle as HeadlessUIResizableHandle,
+  ResizablePanel as HeadlessUIResizablePanel,
+  ResizablePanelGroup as HeadlessUIResizablePanelGroup,
+  ResizableSeparator as HeadlessUIResizableSeparator,
+} from "@/components/ui/resizable"
+import {
+  Carousel as HeadlessUICarousel,
+  CarouselContent as HeadlessUICarouselContent,
+  CarouselItem as HeadlessUICarouselItem,
+  CarouselNext as HeadlessUICarouselNext,
+  CarouselPrevious as HeadlessUICarouselPrevious,
+} from "@/components/ui/carousel"
+import {
+  Calendar as HeadlessUICalendar,
+} from "@/components/ui/calendar"
+import {
+  Command as ReachUICommand,
+  CommandDialog as ReachUICommandDialog,
+  CommandEmpty as ReachUICommandEmpty,
+  CommandGroup as ReachUICommandGroup,
+  CommandInput as ReachUICommandInput,
+  CommandList as ReachUICommandList,
+  CommandSeparator as ReachUICommandSeparator,
+  CommandShortcut as ReachUICommandShortcut,
+  CommandItem as ReachUICommandItem,
+} from "@/components/ui/command"
+import {
+  Dialog as ReachUIDialog,
+  DialogContent as ReachUIDialogContent,
+  DialogDescription as ReachUIDialogDescription,
+  DialogHeader as ReachUIDialogHeader,
+  DialogTitle as ReachUIDialogTitle,
+  DialogTrigger as ReachUIDialogTrigger,
+} from "@/components/ui/dialog"
+import {
+  DropdownMenu as ReachUIDropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent as ReachUIDropdownMenuContent,
+  DropdownMenuItem as ReachUIDropdownMenuItem,
+  DropdownMenuLabel as ReachUIDropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator as ReachUIDropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger as ReachUIDropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  Form as ReachUIForm,
+  FormControl as ReachUIFormControl,
+  FormDescription as ReachUIFormDescription,
+  FormField as ReachUIFormField,
+  FormItem as ReachUIFormItem,
+  FormLabel as ReachUIFormLabel,
+  FormMessage as ReachUIFormMessage,
+} from "@/components/ui/form"
+import {
+  HoverCard as ReachUIHoverCard,
+  HoverCardContent as ReachUIHoverCardContent,
+  HoverCardTrigger as ReachUIHoverCardTrigger,
+} from "@/components/ui/hover-card"
+import {
+  Input as ReachUIInput,
+} from "@/components/ui/input"
+import {
+  Label as ReachUILabel,
+} from "@/components/ui/label"
+import {
+  Menubar as ReachUIMenubar,
+  MenubarCheckboxItem,
+  MenubarContent as ReachUIMenubarContent,
+  MenubarItem as ReachUIMenubarItem,
+  MenubarMenu as ReachUIMenubarMenu,
+  MenubarRadioGroup,
+  MenubarRadioItem,
+  MenubarSeparator as ReachUIMenubarSeparator,
+  MenubarShortcut,
+  MenubarSub,
+  MenubarSubContent,
+  MenubarSubTrigger,
+  MenubarTrigger as ReachUIMenubarTrigger,
+} from "@/components/ui/menubar"
+import {
+  Popover as ReachUIPopover,
+  PopoverContent as ReachUIPopoverContent,
+  PopoverTrigger as ReachUIPopoverTrigger,
+} from "@/components/ui/popover"
+import {
+  Progress as ReachUIProgress,
+} from "@/components/ui/progress"
+import {
+  ScrollArea as ReachUIScrollArea,
+  ScrollBar as ReachUIScrollBar,
+} from "@/components/ui/scroll-area"
+import {
+  Select as ReachUISelect,
+  SelectContent as ReachUISelectContent,
+  SelectItem as ReachUISelectItem,
+  SelectTrigger as ReachUISelectTrigger,
+  SelectValue as ReachUISelectValue,
+} from "@/components/ui/select"
+import {
+  Separator as ReachUISeparator,
+} from "@/components/ui/separator"
+import {
+  Sheet as ReachUISheet,
+  SheetClose as ReachUISheetClose,
+  SheetContent as ReachUISheetContent,
+  SheetDescription as ReachUISheetDescription,
+  SheetFooter as ReachUISheetFooter,
+  SheetHeader as ReachUISheetHeader,
+  SheetTitle as ReachUISheetTitle,
+  SheetTrigger as ReachUISheetTrigger,
+} from "@/components/ui/sheet"
+import {
+  Slider as ReachUISlider,
+} from "@/components/ui/slider"
+import {
+  Switch as ReachUISwitch,
+} from "@/components/ui/switch"
+import {
+  Table as ReachUITable,
+  TableBody as ReachUITableBody,
+  TableCaption as ReachUITableCaption,
+  TableCell as ReachUITableCell,
+  TableFooter as ReachUITableFooter,
+  TableHead as ReachUITableHead,
+  TableHeader as ReachUITableHeader,
+  TableRow as ReachUITableRow,
+} from "@/components/ui/table"
+import {
+  Textarea as ReachUITextarea,
+} from "@/components/ui/textarea"
+import {
+  Tooltip as ReachUITooltip,
+  TooltipContent as ReachUITooltipContent,
+  TooltipProvider as ReachUITooltipProvider,
+  TooltipTrigger as ReachUITooltipTrigger,
+} from "@/components/ui/tooltip"
+import {
+  useToast as ReachUIUseToast,
+} from "@/components/ui/use-toast"
+import {
+  RadioGroup as ReachUIRadioGroup,
+  RadioGroupItem as ReachUIRadioGroupItem,
+} from "@/components/ui/radio-group"
+import {
+  Skeleton as ReachUISkeleton,
+} from "@/components/ui/skeleton"
+import {
+  Tabs as ReachUITabs,
+  TabsContent as ReachUITabsContent,
+  TabsList as ReachUITabsList,
+  TabsTrigger as ReachUITabsTrigger,
+} from "@/components/ui/tabs"
+import {
+  ResizableHandle as ReachUIResizableHandle,
+  ResizablePanel as ReachUIResizablePanel,
+  ResizablePanelGroup as ReachUIResizablePanelGroup,
+  ResizableSeparator as ReachUIResizableSeparator,
+} from "@/components/ui/resizable"
+import {
+  Carousel as ReachUICarousel,
+  CarouselContent as ReachUICarouselContent,
+  CarouselItem as ReachUICarouselItem,
+  CarouselNext as ReachUICarouselNext,
+  CarouselPrevious as ReachUICarouselPrevious,
+} from "@/components/ui/carousel"
+import {
+  Calendar as ReachUICalendar,
+} from "@/components/ui/calendar"
+import {
+  Command as ReakitCommand,
+  CommandDialog as ReakitCommandDialog,
+  CommandEmpty as ReakitCommandEmpty,
+  CommandGroup as ReakitCommandGroup,
+  CommandInput as ReakitCommandInput,
+  CommandList as ReakitCommandList,
+  CommandSeparator as ReakitCommandSeparator,
+  CommandShortcut as ReakitCommandShortcut,
+  CommandItem as ReakitCommandItem,
+} from "@/components/ui/command"
+import {
+  Dialog as ReakitDialog,
+  DialogContent as ReakitDialogContent,
+  DialogDescription as ReakitDialogDescription,
+  DialogHeader as ReakitDialogHeader,
+  DialogTitle as ReakitDialogTitle,
+  DialogTrigger as ReakitDialogTrigger,
+} from "@/components/ui/dialog"
+import {
+  DropdownMenu as ReakitDropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent as ReakitDropdownMenuContent,
+  DropdownMenuItem as ReakitDropdownMenuItem,
+  DropdownMenuLabel as ReakitDropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator as ReakitDropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger as ReakitDropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  Form as ReakitForm,
+  FormControl as ReakitFormControl,
+  FormDescription as ReakitFormDescription,
+  FormField as ReakitFormField,
+  FormItem as ReakitFormItem,
+  FormLabel as ReakitFormLabel,
+  FormMessage as ReakitFormMessage,
+} from "@/components/ui/form"
+import {
+  HoverCard as ReakitHoverCard,
+  HoverCardContent as ReakitHoverCardContent,
+  HoverCardTrigger as ReakitHoverCardTrigger,
+} from "@/components/ui/hover-card"
+import {
+  Input as ReakitInput,
+} from "@/components/ui/input"
+import {
+  Label as ReakitLabel,
+} from "@/components/ui/label"
+import {
+  Menubar as ReakitMenubar,
+  MenubarCheckboxItem,
+  MenubarContent as ReakitMenubarContent,
+  MenubarItem as ReakitMenubarItem,
+  MenubarMenu as ReakitMenubarMenu,
+  MenubarRadioGroup,
+  MenubarRadioItem,
+  MenubarSeparator as ReakitMenubarSeparator,
+  MenubarShortcut,
+  MenubarSub,
+  MenubarSubContent,
+  MenubarSubTrigger,
+  MenubarTrigger as ReakitMenubarTrigger,
+} from "@/components/ui/menubar"
+import {
+  Popover as ReakitPopover,
+  PopoverContent as ReakitPopoverContent,
+  PopoverTrigger as ReakitPopoverTrigger,
+} from "@/components/ui/popover"
+import {
+  Progress as ReakitProgress,
+} from "@/components/ui/progress"
+import {
+  ScrollArea as ReakitScrollArea,
+  ScrollBar as ReakitScrollBar,
+} from "@/components/ui/scroll-area"
+import {
+  Select as ReakitSelect,
+  SelectContent as ReakitSelectContent,
+  SelectItem as ReakitSelectItem,
+  SelectTrigger as ReakitSelectTrigger,
+  SelectValue as ReakitSelectValue,
+} from "@/components/ui/select"
+import {
+  Separator as ReakitSeparator,
+} from "@/components/ui/separator"
+import {
+  Sheet as ReakitSheet,
+  SheetClose as ReakitSheetClose,
+  SheetContent as ReakitSheetContent,
+  SheetDescription as ReakitSheetDescription,
+  SheetFooter as ReakitSheetFooter,
+  SheetHeader as ReakitSheetHeader,
+  SheetTitle as ReakitSheetTitle,
+  SheetTrigger as ReakitSheetTrigger,
+} from "@/components/ui/sheet"
+import {
+  Slider as ReakitSlider,
+} from "@/components/ui/slider"
+import {
+  Switch as ReakitSwitch,
+} from "@/components/ui/switch"
+import {
+  Table as ReakitTable,
+  TableBody as ReakitTableBody,
+  TableCaption as ReakitTableCaption,
+  TableCell as ReakitTableCell,
+  TableFooter as ReakitTableFooter,
+  TableHead as ReakitTableHead,
+  TableHeader as ReakitTableHeader,
+  TableRow as ReakitTableRow,
+} from "@/components/ui/table"
+import {
+  Textarea as ReakitTextarea,
+} from "@/components/ui/textarea"
+import {
+  Tooltip as ReakitTooltip,
+  TooltipContent as ReakitTooltipContent,
+  TooltipProvider as ReakitTooltipProvider,
+  TooltipTrigger as ReakitTooltipTrigger,
+} from "@/components/ui/tooltip"
+import {
+  useToast as ReakitUseToast,
+} from "@/components/ui/use-toast"
+import {
+  RadioGroup as ReakitRadioGroup,
+  RadioGroupItem as ReakitRadioGroupItem,
+} from "@/components/ui/radio-group"
+import {
+  Skeleton as ReakitSkeleton,
+} from "@/components/ui/skeleton"
+import {
+  Tabs as ReakitTabs,
+  TabsContent as ReakitTabsContent,
+  TabsList as ReakitTabsList,
+  TabsTrigger as ReakitTabsTrigger,
+} from "@/components/ui/tabs"
+import {
+  ResizableHandle as ReakitResizableHandle,
+  ResizablePanel as ReakitResizablePanel,
+  ResizablePanelGroup as ReakitResizablePanelGroup,
+  ResizableSeparator as ReakitResizableSeparator,
+} from "@/components/ui/resizable"
+import {
+  Carousel as ReakitCarousel,
+  CarouselContent as ReakitCarouselContent,
+  CarouselItem as ReakitCarouselItem,
+  CarouselNext as ReakitCarouselNext,
+  CarouselPrevious as ReakitCarouselPrevious,
+} from "@/components/ui/carousel"
+import {
+  Calendar as ReakitCalendar,
+} from "@/components/ui/calendar"
+import {
+  Command as DownshiftCommand,
+  CommandDialog as DownshiftCommandDialog,
+  CommandEmpty as DownshiftCommandEmpty,
+  CommandGroup as DownshiftCommandGroup,
+  CommandInput as DownshiftCommandInput,
+  CommandList as DownshiftCommandList,
+  CommandSeparator as DownshiftCommandSeparator,
+  CommandShortcut as DownshiftCommandShortcut,
+  CommandItem as DownshiftCommandItem,
+} from "@/components/ui/command"
+import {
+  Dialog as DownshiftDialog,
+  DialogContent as DownshiftDialogContent,
+  DialogDescription as DownshiftDialogDescription,
+  DialogHeader as DownshiftDialogHeader,
+  DialogTitle as DownshiftDialogTitle,
+  DialogTrigger as DownshiftDialogTrigger,
+} from "@/components/ui/dialog"
+import {
+  DropdownMenu as DownshiftDropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent as DownshiftDropdownMenuContent,
+  DropdownMenuItem as DownshiftDropdownMenuItem,
+  DropdownMenuLabel as DownshiftDropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator as DownshiftDropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger as DownshiftDropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  Form as DownshiftForm,
+  FormControl as DownshiftFormControl,
+  FormDescription as DownshiftFormDescription,
+  FormField as DownshiftFormField,
+  FormItem as DownshiftFormItem,
+  FormLabel as DownshiftFormLabel,
+  FormMessage as DownshiftFormMessage,
+} from "@/components/ui/form"
+import {
+  HoverCard as DownshiftHoverCard,
+  HoverCardContent as DownshiftHoverCardContent,
+  HoverCardTrigger as DownshiftHoverCardTrigger,
+} from "@/components/ui/hover-card"
+import {
+  Input as DownshiftInput,
+} from "@/components/ui/input"
+import {
+  Label as DownshiftLabel,
+} from "@/components/ui/label"
+import {
+  Menubar as DownshiftMenubar,
+  MenubarCheckboxItem,
+  MenubarContent as DownshiftMenubarContent,
+  MenubarItem as DownshiftMenubarItem,
+  MenubarMenu as DownshiftMenubarMenu,
+  MenubarRadioGroup,
+  MenubarRadioItem,
+  MenubarSeparator as DownshiftMenubarSeparator,
+  MenubarShortcut,
+  MenubarSub,
+  MenubarSubContent,
+  MenubarSubTrigger,
+  MenubarTrigger as DownshiftMenubarTrigger,
+} from "@/components/ui/menubar"
+import {
+  Popover as DownshiftPopover,
+  PopoverContent as DownshiftPopoverContent,
+  PopoverTrigger as DownshiftPopoverTrigger,
+} from "@/components/ui/popover"
+import {
+  Progress as DownshiftProgress,
+} from "@/components/ui/progress"
+import {
+  ScrollArea as DownshiftScrollArea,
+  ScrollBar as DownshiftScrollBar,
+} from "@/components/ui/scroll-area"
+import {
+  Select as DownshiftSelect,
+  SelectContent as DownshiftSelectContent,
+  SelectItem as DownshiftSelectItem,
+  SelectTrigger as DownshiftSelectTrigger,
+  SelectValue as DownshiftSelectValue,
+} from "@/components/ui/select"
+import {
+  Separator as DownshiftSeparator,
+} from "@/components/ui/separator"
+import {
+  Sheet as DownshiftSheet,
+  SheetClose as DownshiftSheetClose,
+  SheetContent as DownshiftSheetContent,
+  SheetDescription as DownshiftSheetDescription,
+  SheetFooter as DownshiftSheetFooter,
+  SheetHeader as DownshiftSheetHeader,
+  SheetTitle as DownshiftSheetTitle,
+  SheetTrigger as DownshiftSheetTrigger,
+} from "@/components/ui/sheet"
+import {
+  Slider as DownshiftSlider,
+} from "@/components/ui/slider"
+import {
+  Switch as DownshiftSwitch,
+} from "@/components/ui/switch"
+import {
+  Table as DownshiftTable,
+  TableBody as DownshiftTableBody,
+  TableCaption as DownshiftTableCaption,
+  TableCell as DownshiftTableCell,
+  TableFooter as DownshiftTableFooter,
+  TableHead as DownshiftTableHead,
+  TableHeader as DownshiftTableHeader,
+  TableRow as DownshiftTableRow,
+} from "@/components/ui/table"
+import {
+  Textarea as DownshiftTextarea,
+} from "@/components/ui/textarea"
+import {
+  Tooltip as DownshiftTooltip,
+  TooltipContent as DownshiftTooltipContent,
+  TooltipProvider as DownshiftTooltipProvider,
+  TooltipTrigger as DownshiftTooltipTrigger,
+} from "@/components/ui/tooltip"
+import {
+  useToast as DownshiftUseToast,
+} from "@/components/ui/use-toast"
+import {
+  RadioGroup as DownshiftRadioGroup,
+  RadioGroupItem as DownshiftRadioGroupItem,
+} from "@/components/ui/radio-group"
+import {
+  Skeleton as DownshiftSkeleton,
+} from "@/components/ui/skeleton"
+import {
+  Tabs as DownshiftTabs,
+  TabsContent as DownshiftTabsContent,
+  TabsList as DownshiftTabsList,
+  TabsTrigger as DownshiftTabsTrigger,
+} from "@/components/ui/tabs"
+import {
+  ResizableHandle as DownshiftResizableHandle,
+  ResizablePanel as DownshiftResizablePanel,
+  ResizablePanelGroup as DownshiftResizablePanelGroup,
+  ResizableSeparator as DownshiftResizableSeparator,
+} from "@/components/ui/resizable"
+import {
+  Carousel as DownshiftCarousel,
+  CarouselContent as DownshiftCarouselContent,
+  CarouselItem as DownshiftCarouselItem,
+  CarouselNext as DownshiftCarouselNext,
+  CarouselPrevious as DownshiftCarouselPrevious,
+} from "@/components/ui/carousel"
+import {
+  Calendar as DownshiftCalendar,
+} from "@/components/ui/calendar"
+import {
+  Command as BlueprintJSCommand,
+  CommandDialog as BlueprintJSCommandDialog,
+  CommandEmpty as BlueprintJSCommandEmpty,
+  CommandGroup as BlueprintJSCommandGroup,
+  CommandInput as BlueprintJSCommandInput,
+  CommandList as BlueprintJSCommandList,
+  CommandSeparator as BlueprintJSCommandSeparator,
+  CommandShortcut as BlueprintJSCommandShortcut,
+  CommandItem as BlueprintJSCommandItem,
+} from "@/components/ui/command"
+import {
+  Dialog as BlueprintJSDialog,
+  DialogContent as BlueprintJSDialogContent,
+  DialogDescription as BlueprintJSDialogDescription,
+  DialogHeader as BlueprintJSDialogHeader,
+  DialogTitle as BlueprintJSDialogTitle,
+  DialogTrigger as BlueprintJSDialogTrigger,
+} from "@/components/ui/dialog"
+import {
+  DropdownMenu as BlueprintJSDropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent as BlueprintJSDropdownMenuContent,
+  DropdownMenuItem as BlueprintJSDropdownMenuItem,
+  DropdownMenuLabel as BlueprintJSDropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator as BlueprintJSDropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger as BlueprintJSDropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  Form as BlueprintJSForm,
+  FormControl as BlueprintJSFormControl,
+  FormDescription as BlueprintJSFormDescription,
+  FormField as BlueprintJSFormField,
+  FormItem as BlueprintJSFormItem,
+  FormLabel as BlueprintJSFormLabel,
+  FormMessage as BlueprintJSFormMessage,
+} from "@/components/ui/form"
+import {
+  HoverCard as BlueprintJSHoverCard,
+  HoverCardContent as BlueprintJSHoverCardContent,
+  HoverCardTrigger as BlueprintJSHoverCardTrigger,
+} from "@/components/ui/hover-card"
+import {
+  Input as BlueprintJSInput,
+} from "@/components/ui/input"
+import {
+  Label as BlueprintJSLabel,
+} from "@/components/ui/label"
+import {
+  Menubar as BlueprintJSMenubar,
+  MenubarCheckboxItem,
+  MenubarContent as BlueprintJSMenubarContent,
+  MenubarItem as BlueprintJSMenubarItem,
+  MenubarMenu as BlueprintJSMenubarMenu,
+  MenubarRadioGroup,
+  MenubarRadioItem,
+  MenubarSeparator as BlueprintJSMenubarSeparator,
+  MenubarShortcut,
+  MenubarSub,
+  MenubarSubContent,
+  MenubarSubTrigger,
+  MenubarTrigger as BlueprintJSMenubarTrigger,
+} from "@/components/ui/menubar"
+import {
+  Popover as BlueprintJSPopover,
+  PopoverContent as BlueprintJSPopoverContent,
+  PopoverTrigger as BlueprintJSPopoverTrigger,
+} from "@/components/ui/popover"
+import {
+  Progress as BlueprintJSProgress,
+} from "@/components/ui/progress"
+import {
+  ScrollArea as BlueprintJSScrollArea,
+  ScrollBar as BlueprintJSScrollBar,
+} from "@/components/ui/scroll-area"
+import {
+  Select as BlueprintJSSelect,
+  SelectContent as BlueprintJSSelectContent,
+  SelectItem as BlueprintJSSelectItem,
+  SelectTrigger as BlueprintJSSelectTrigger,
+  SelectValue as BlueprintJSSelectValue,
+} from "@/components/ui/select"
+import {
+  Separator as BlueprintJSSeparator,
+} from "@/components/ui/separator"
+import {
+  Sheet as BlueprintJSSheet,
+  SheetClose as BlueprintJSSheetClose,
+  SheetContent as BlueprintJSSheetContent,
+  SheetDescription as BlueprintJSSheetDescription,
+  SheetFooter as BlueprintJSSheetFooter,
+  SheetHeader as BlueprintJSSheetHeader,
+  SheetTitle as BlueprintJSSheetTitle,
+  SheetTrigger as BlueprintJSSheetTrigger,
+} from "@/components/ui/sheet"
+import {
+  Slider as BlueprintJSSlider,
+} from "@/components/ui/slider"
+import {
+  Switch as BlueprintJSSwitch,
+} from "@/components/ui/switch"
+import {
+  Table as BlueprintJSTable,
+  TableBody as BlueprintJSTableBody,
+  TableCaption as BlueprintJSTableCaption,
+  TableCell as BlueprintJSTableCell,
+  TableFooter as BlueprintJSTableFooter,
+  TableHead as BlueprintJSTableHead,
+  TableHeader as BlueprintJSTableHeader,
+  TableRow as BlueprintJSTableRow,
+} from "@/components/ui/table"
+import {
+  Textarea as BlueprintJSTextarea,
+} from "@/components/ui/textarea"
+import {
+  Tooltip as BlueprintJSTooltip,
+  TooltipContent as BlueprintJSTooltipContent,
+  TooltipProvider as BlueprintJSTooltipProvider,
+  TooltipTrigger as BlueprintJSTooltipTrigger,
+} from "@/components/ui/tooltip"
+import {
+  useToast as BlueprintJSUseToast,
+} from "@/components/ui/use-toast"
+import {
+  RadioGroup as BlueprintJSRadioGroup,
+  RadioGroupItem as BlueprintJSRadioGroupItem,
+} from "@/components/ui/radio-group"
+import {
+  Skeleton as BlueprintJSSkeleton,
+} from "@/components/ui/skeleton"
+import {
+  Tabs as BlueprintJSTabs,
+  TabsContent as BlueprintJSTabsContent,
+  TabsList as BlueprintJSTabsList,
+  TabsTrigger as BlueprintJSTabsTrigger,
+} from "@/components/ui/tabs"
+import {
+  ResizableHandle as BlueprintJSResizableHandle,
+  ResizablePanel as BlueprintJSResizablePanel,
+  ResizablePanelGroup as BlueprintJSResizablePanelGroup,
+  ResizableSeparator as BlueprintJSResizableSeparator,
+} from "@/components/ui/resizable"
+import {
+  Carousel as BlueprintJSCarousel,
+  CarouselContent as BlueprintJSCarouselContent,
+  CarouselItem as BlueprintJSCarouselItem,
+  CarouselNext as BlueprintJSCarouselNext,
+  CarouselPrevious as BlueprintJSCarouselPrevious,
+} from "@/components/ui/carousel"
+import {
+  Calendar as BlueprintJSCalendar,
+} from "@/components/ui/calendar"
+import {
+  Command as GrommetCommand,
+  CommandDialog as GrommetCommandDialog,
+  CommandEmpty as GrommetCommandEmpty,
+  CommandGroup as GrommetCommandGroup,
+  CommandInput as GrommetCommandInput,
+  CommandList as GrommetCommandList,
+  CommandSeparator as GrommetCommandSeparator,
+  CommandShortcut as GrommetCommandShortcut,
+  CommandItem as GrommetCommandItem,
+} from "@/components/ui/command"
+import {
+  Dialog as GrommetDialog,
+  DialogContent as GrommetDialogContent,
+  DialogDescription as GrommetDialogDescription,
+  DialogHeader as GrommetDialogHeader,
+  DialogTitle as GrommetDialogTitle,
+  DialogTrigger as GrommetDialogTrigger,
+} from "@/components/ui/dialog"
+import {
+  DropdownMenu as GrommetDropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent as GrommetDropdownMenuContent,
+  DropdownMenuItem as GrommetDropdownMenuItem,
+  DropdownMenuLabel as GrommetDropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator as GrommetDropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger as GrommetDropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  Form as GrommetForm,
+  FormControl as GrommetFormControl,
+  FormDescription as GrommetFormDescription,
+  FormField as GrommetFormField,
+  FormItem as GrommetFormItem,
+  FormLabel as GrommetFormLabel,
+  FormMessage as GrommetFormMessage,
+} from "@/components/ui/form"
+import {
+  HoverCard as GrommetHoverCard,
+  HoverCardContent as GrommetHoverCardContent,
+  HoverCardTrigger as GrommetHoverCardTrigger,
+} from "@/components/ui/hover-card"
+import {
+  Input as GrommetInput,
+} from "@/components/ui/input"
+import {
+  Label as GrommetLabel,
+} from "@/components/ui/label"
+import {
+  Menubar as GrommetMenubar,
+  MenubarCheckboxItem,
+  MenubarContent as GrommetMenubarContent,
+  MenubarItem as GrommetMenubarItem,
+  MenubarMenu as GrommetMenubarMenu,
+  MenubarRadioGroup,
+  MenubarRadioItem,
+  MenubarSeparator as GrommetMenubarSeparator,
+  MenubarShortcut,
+  MenubarSub,
+  MenubarSubContent,
+  MenubarSubTrigger,
+  MenubarTrigger as GrommetMenubarTrigger,
+} from "@/components/ui/menubar"
+import {
+  Popover as GrommetPopover,
+  PopoverContent as GrommetPopoverContent,
+  PopoverTrigger as GrommetPopoverTrigger,
+} from "@/components/ui/popover"
+import {
+  Progress as GrommetProgress,
+} from "@/components/ui/progress"
+import {
+  ScrollArea as GrommetScrollArea,
+  ScrollBar as GrommetScrollBar,
+} from "@/components/ui/scroll-area"
+import {
+  Select as GrommetSelect,
+  SelectContent as GrommetSelectContent,
+  SelectItem as GrommetSelectItem,
+  SelectTrigger as GrommetSelectTrigger,
+  SelectValue as GrommetSelectValue,
+} from "@/components/ui/select"
+import {
+  Separator as GrommetSeparator,
+} from "@/components/ui/separator"
+import {
+  Sheet as GrommetSheet,
+  SheetClose as GrommetSheetClose,
+  SheetContent as GrommetSheetContent,
+  SheetDescription as GrommetSheetDescription,
+  SheetFooter as GrommetSheetFooter,
+  SheetHeader as GrommetSheetHeader,
+  SheetTitle as GrommetSheetTitle,
+  SheetTrigger as GrommetSheetTrigger,
+} from "@/components/ui/sheet"
+import {
+  Slider as GrommetSlider,
+} from "@/components/ui/slider"
+import {
+  Switch as GrommetSwitch,
+} from "@/components/ui/switch"
+import {
+  Table as GrommetTable,
+  TableBody as GrommetTableBody,
+  TableCaption as GrommetTableCaption,
+  TableCell as GrommetTableCell,
+  TableFooter as GrommetTableFooter,
+  TableHead as GrommetTableHead,
+  TableHeader as GrommetTableHeader,
+  TableRow as GrommetTableRow,
+} from "@/components/ui/table"
+import {
+  Textarea as GrommetTextarea,
+} from "@/components/ui/textarea"
+import {
+  Tooltip as GrommetTooltip,
+  TooltipContent as GrommetTooltipContent,
+  TooltipProvider as GrommetTooltipProvider,
+  TooltipTrigger as GrommetTooltipTrigger,
+} from "@/components/ui/tooltip"
+import {
+  useToast as GrommetUseToast,
+} from "@/components/ui/use-toast"
+import {
+  RadioGroup as GrommetRadioGroup,
+  RadioGroupItem as GrommetRadioGroupItem,
+} from "@/components/ui/radio-group"
+import {
+  Skeleton as GrommetSkeleton,
+} from "@/components/ui/skeleton"
+import {
+  Tabs as GrommetTabs,
+  TabsContent as GrommetTabsContent,
+  TabsList as GrommetTabsList,
+  TabsTrigger as GrommetTabsTrigger,
+} from "@/components/ui/tabs"
+import {
+  ResizableHandle as GrommetResizableHandle,
+  ResizablePanel as GrommetResizablePanel,
+  ResizablePanelGroup as GrommetResizablePanelGroup,
+  ResizableSeparator as GrommetResizableSeparator,
+} from "@/components/ui/resizable"
+import {
+  Carousel as GrommetCarousel,
+  CarouselContent as GrommetCarouselContent,
+  CarouselItem as GrommetCarouselItem,
+  CarouselNext as GrommetCarouselNext,
+  CarouselPrevious as GrommetCarouselPrevious,
+} from "@/components/ui/carousel"
+import {
+  Calendar as GrommetCalendar,
+} from "@/components/ui/calendar"
+import {
+  Command as SemanticUICommand,
+  CommandDialog as SemanticUICommandDialog,
+  CommandEmpty as SemanticUICommandEmpty,
+  CommandGroup as SemanticUICommandGroup,
+  CommandInput as SemanticUICommandInput,
+  CommandList as SemanticUICommandList,
+  CommandSeparator as SemanticUICommandSeparator,
+  CommandShortcut as SemanticUICommandShortcut,
+  CommandItem as SemanticUICommandItem,
+} from "@/components/ui/command"
+import {
+  Dialog as SemanticUIDialog,
+  DialogContent as SemanticUIDialogContent,
+  DialogDescription as SemanticUIDialogDescription,
+  DialogHeader as SemanticUIDialogHeader,
+  DialogTitle as SemanticUIDialogTitle,
+  DialogTrigger as SemanticUIDialogTrigger,
+} from "@/components/ui/dialog"
+import {
+  DropdownMenu as SemanticUIDropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent as SemanticUIDropdownMenuContent,
+  DropdownMenuItem as SemanticUIDropdownMenuItem,
+  DropdownMenuLabel as SemanticUIDropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator as SemanticUIDropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger as SemanticUIDropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  Form as SemanticUIForm,
+  FormControl as SemanticUIFormControl,
+  FormDescription as SemanticUIFormDescription,
+  FormField as SemanticUIFormField,
+  FormItem as SemanticUIFormItem,
+  FormLabel as SemanticUIFormLabel,
+  FormMessage as SemanticUIFormMessage,
+} from "@/components/ui/form"
+import {
+  HoverCard as SemanticUIHoverCard,
+  HoverCardContent as SemanticUIHoverCardContent,
+  HoverCardTrigger as SemanticUIHoverCardTrigger,
+} from "@/components/ui/hover-card"
+import {
+  Input as SemanticUIInput,
+} from "@/components/ui/input"
+import {
+  Label as SemanticUILabel,
+} from "@/components/ui/label"
+import {
+  Menubar as SemanticUIMenubar,
+  MenubarCheckboxItem,
+  MenubarContent as SemanticUIMenubarContent,
+  MenubarItem as SemanticUIMenubarItem,
+  MenubarMenu as SemanticUIMenubarMenu,
+  MenubarRadioGroup,
+  MenubarRadioItem,
+  MenubarSeparator as SemanticUIMenubarSeparator,
+  MenubarShortcut,
+  MenubarSub,
+  MenubarSubContent,
+  MenubarSubTrigger,
+  MenubarTrigger as SemanticUIMenubarTrigger,
+} from "@/components/ui/menubar"
+import {
+  Popover as SemanticUIPopover,
+  PopoverContent as SemanticUIPopoverContent,
+  PopoverTrigger as SemanticUIPopoverTrigger,
+} from "@/components/ui/popover"
+import {
+  Progress as SemanticUIProgress,
+} from "@/components/ui/progress"
+import {
+  ScrollArea as SemanticUIScrollArea,
+  ScrollBar as SemanticUIScrollBar,
+} from "@/components/ui/scroll-area"
+import {
+  Select as SemanticUISelect,
+  SelectContent as SemanticUISelectContent,
+  SelectItem as SemanticUISelectItem,
+  SelectTrigger as SemanticUISelectTrigger,
+  SelectValue as SemanticUISelectValue,
+} from "@/components/ui/select"
+import {
+  Separator as SemanticUISeparator,
+} from "@/components/ui/separator"
+import {
+  Sheet as SemanticUISheet,
+  SheetClose as SemanticUISheetClose,
+  SheetContent as SemanticUISheetContent,
+  SheetDescription as SemanticUISheetDescription,
+  SheetFooter as SemanticUISheetFooter,
+  SheetHeader as SemanticUISheetHeader,
+  SheetTitle as SemanticUISheetTitle,
+  SheetTrigger as SemanticUISheetTrigger,
+} from "@/components/ui/sheet"
+import {
+  Slider as SemanticUISlider,
+} from "@/components/ui/slider"
+import {
+  Switch as SemanticUISwitch,
+} from "@/components/ui/switch"
+import {
+  Table as SemanticUITable,
+  TableBody as SemanticUITableBody,
+  TableCaption as SemanticUITableCaption,
+  TableCell as SemanticUITableCell,
+  TableFooter as SemanticUITableFooter,
+  TableHead as SemanticUITableHead,
+  TableHeader as SemanticUITableHeader,
+  TableRow as SemanticUITableRow,
+} from "@/components/ui/table"
+import {
+  Textarea as SemanticUITextarea,
+} from "@/components/ui/textarea"
+import {
+  Tooltip as SemanticUITooltip,
+  TooltipContent as SemanticUITooltipContent,
+  TooltipProvider as SemanticUITooltipProvider,
+  TooltipTrigger as SemanticUITooltipTrigger,
+} from "@/components/ui/tooltip"
+import {
+  useToast as SemanticUIUseToast,
+} from "@/components/ui/use-toast"
+import {
+  RadioGroup as SemanticUIRadioGroup,
+  RadioGroupItem as SemanticUIRadioGroupItem,
+} from "@/components/ui/radio-group"
+import {
+  Skeleton as SemanticUISkeleton,
+} from "@/components/ui/skeleton"
+import {
+  Tabs as SemanticUITabs,
+  TabsContent as SemanticUITabsContent,
+  TabsList as SemanticUITabsList,
+  TabsTrigger as SemanticUITabsTrigger,
+} from "@/components/ui/tabs"
+import {
+  ResizableHandle as SemanticUIResizableHandle,
+  ResizablePanel as SemanticUIResizablePanel,
+  ResizablePanelGroup as SemanticUIResizablePanelGroup,
+  ResizableSeparator as SemanticUIResizableSeparator,
+} from "@/components/ui/resizable"
+import {
+  Carousel as SemanticUICarousel,
+  CarouselContent as SemanticUICarouselContent,
+  CarouselItem as SemanticUICarouselItem,
+  CarouselNext as SemanticUICarouselNext,
+  CarouselPrevious as SemanticUICarouselPrevious,
+} from "@/components/ui/carousel"
+import {
+  Calendar as SemanticUICalendar,
+} from "@/components/ui/calendar"
+import {
+  Command as AntDesignCommand,
+  CommandDialog as AntDesignCommandDialog,
+  CommandEmpty as AntDesignCommandEmpty,
+  CommandGroup as AntDesignCommandGroup,
+  CommandInput as AntDesignCommandInput,
+  CommandList as AntDesignCommandList,
+  CommandSeparator as AntDesignCommandSeparator,
+  CommandShortcut as AntDesignCommandShortcut,
+  CommandItem as AntDesignCommandItem,
+} from "@/components/ui/command"
+import {
+  Dialog as AntDesignDialog,
+  DialogContent as AntDesignDialogContent,
+  DialogDescription as AntDesignDialogDescription,
+  DialogHeader as AntDesignDialogHeader,
+  DialogTitle as AntDesignDialogTitle,
+  DialogTrigger as AntDesignDialogTrigger,
+} from "@/components/ui/dialog"
+import {
+  DropdownMenu as AntDesignDropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent as AntDesignDropdownMenuContent,
+  DropdownMenuItem as AntDesignDropdownMenuItem,
+  DropdownMenuLabel as AntDesignDropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator as AntDesignDropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger as AntDesignDropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  Form as AntDesignForm,
+  FormControl as AntDesignFormControl,
+  FormDescription as AntDesignFormDescription,
+  FormField as AntDesignFormField,
+  FormItem as AntDesignFormItem,
+  FormLabel as AntDesignFormLabel,
+  FormMessage as AntDesignFormMessage,
+} from "@/components/ui/form"
+import {
+  HoverCard as AntDesignHoverCard,
+  HoverCardContent as AntDesignHoverCardContent,
+  HoverCardTrigger as AntDesignHoverCardTrigger,
+} from "@/components/ui/hover-card"
+import {
+  Input as AntDesignInput,
+} from "@/components/ui/input"
+import {
+  Label as AntDesignLabel,
+} from "@/components/ui/label"
+import {
+  Menubar as AntDesignMenubar,
+  MenubarCheckboxItem,
+  MenubarContent as AntDesignMenubarContent,
+  MenubarItem as AntDesignMenubarItem,
+  MenubarMenu as AntDesignMenubarMenu,
+  MenubarRadioGroup,
+  MenubarRadioItem,
+  MenubarSeparator as AntDesignMenubarSeparator,
+  MenubarShortcut,
+  MenubarSub,
+  MenubarSubContent,
+  MenubarSubTrigger,
+  MenubarTrigger as AntDesignMenubarTrigger,
+} from "@/components/ui/menubar"
+import {
+  Popover as AntDesignPopover,
+  PopoverContent as AntDesignPopoverContent,
+  PopoverTrigger as AntDesignPopoverTrigger,
+} from "@/components/ui/popover"
+import {
+  Progress as AntDesignProgress,
+} from "@/components/ui/progress"
+import {
+  ScrollArea as AntDesignScrollArea,
+  ScrollBar as AntDesignScrollBar,
+} from "@/components/ui/scroll-area"
+import {
+  Select as AntDesignSelect,
+  SelectContent as AntDesignSelectContent,
+  SelectItem as AntDesignSelectItem,
+  SelectTrigger as AntDesignSelectTrigger,
+  SelectValue as AntDesignSelectValue,
+} from "@/components/ui/select"
+import {
+  Separator as AntDesignSeparator,
+} from "@/components/ui/separator"
+import {
+  Sheet as AntDesignSheet,
+  SheetClose as AntDesignSheetClose,
+  SheetContent as AntDesignSheetContent,
+  SheetDescription as AntDesignSheetDescription,
+  SheetFooter as AntDesignSheetFooter,
+  SheetHeader as AntDesignSheetHeader,
+  SheetTitle as AntDesignSheetTitle,
+  SheetTrigger as AntDesignSheetTrigger,
+} from "@/components/ui/sheet"
+import {
+  Slider as AntDesignSlider,
+} from "@/components/ui/slider"
+import {
+  Switch as AntDesignSwitch,
+} from "@/components/ui/switch"
+import {
+  Table as AntDesignTable,
+  TableBody as AntDesignTableBody,
+  TableCaption as AntDesignTableCaption,
+  TableCell as AntDesignTableCell,
+  TableFooter as AntDesignTableFooter,
+  TableHead as AntDesignTableHead,
+  TableHeader as AntDesignTableHeader,
+  TableRow as AntDesignTableRow,
+} from "@/components/ui/table"
+import {
+  Textarea as AntDesignTextarea,
+} from "@/components/ui/textarea"
+import {
+  Tooltip as AntDesignTooltip,
+  TooltipContent as AntDesignTooltipContent,
+  TooltipProvider as AntDesignTooltipProvider,
+  TooltipTrigger as AntDesignTooltipTrigger,
+} from "@/components/ui/tooltip"
+import {
+  useToast as AntDesignUseToast,
+} from "@/components/ui/use-toast"
+import {
+  RadioGroup as AntDesignRadioGroup,
+  RadioGroupItem as AntDesignRadioGroupItem,
+} from "@/components/ui/radio-group"
+import {
+  Skeleton as AntDesignSkeleton,
+} from "@/components/ui/skeleton"
+import {
+  Tabs as AntDesignTabs,
+  TabsContent as AntDesignTabsContent,
+  TabsList as AntDesignTabsList,
+  TabsTrigger as AntDesignTabsTrigger,
+} from "@/components/ui/tabs"
+import {
+  ResizableHandle as AntDesignResizableHandle,
+  ResizablePanel as AntDesignResizablePanel,
+  ResizablePanelGroup as AntDesignResizablePanelGroup,
+  ResizableSeparator as AntDesignResizableSeparator,
+} from "@/components/ui/resizable"
+import {
+  Carousel as AntDesignCarousel,
+  CarouselContent as AntDesignCarouselContent,
+  CarouselItem as AntDesignCarouselItem,
+  CarouselNext as AntDesignCarouselNext,
+  CarouselPrevious as AntDesignCarouselPrevious,
+} from "@/components/ui/carousel"
+import {
+  Calendar as AntDesignCalendar,
+} from "@/components/ui/calendar"
+import {
+  Command as MaterialUICommand,
+  CommandDialog as MaterialUICommandDialog,
+  CommandEmpty as MaterialUICommandEmpty,
+  CommandGroup as MaterialUICommandGroup,
+  CommandInput as MaterialUICommandInput,
+  CommandList as MaterialUICommandList,
+  CommandSeparator as MaterialUICommandSeparator,
+  CommandShortcut as MaterialUICommandShortcut,
+  CommandItem as MaterialUICommandItem,
+} from "@/components/ui/command"
+import {
+  Dialog as MaterialUIDialog,
+  DialogContent as MaterialUIDialogContent,
+  DialogDescription as MaterialUIDialogDescription,
+  DialogHeader as MaterialUIDialogHeader,
+  DialogTitle as MaterialUIDialogTitle,
+  DialogTrigger as MaterialUIDialogTrigger,
+} from "@/components/ui/dialog"
+import {
+  DropdownMenu as MaterialUIDropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent as MaterialUIDropdownMenuContent,
+  DropdownMenuItem as MaterialUIDropdownMenuItem,
+  DropdownMenuLabel as MaterialUIDropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator as MaterialUIDropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger as MaterialUIDropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  Form as MaterialUIForm,
+  FormControl as MaterialUIFormControl,
+  FormDescription as MaterialUIFormDescription,
+  FormField as MaterialUIFormField,
+  FormItem as MaterialUIFormItem,
+  FormLabel as MaterialUIFormLabel,
+  FormMessage as MaterialUIFormMessage,
+} from "@/components/ui/form"
+import {
+  HoverCard as MaterialUIHoverCard,
+  HoverCardContent as MaterialUIHoverCardContent,
+  HoverCardTrigger as MaterialUIHoverCardTrigger,
+} from "@/components/ui/hover-card"
+import {
+  Input as MaterialUIInput,
+} from "@/components/ui/input"
+import {
+  Label as MaterialUILabel,
+} from "@/components/ui/label"
+import {
+  Menubar as MaterialUIMenubar,
+  MenubarCheckboxItem,
+  MenubarContent as MaterialUIMenubarContent,
+  MenubarItem as MaterialUIMenubarItem,
+  MenubarMenu as MaterialUIMenubarMenu,
+  MenubarRadioGroup,
+  MenubarRadioItem,
+  MenubarSeparator as MaterialUIMenubarSeparator,
+  MenubarShortcut,
+  MenubarSub,
+  MenubarSubContent,
+  MenubarSubTrigger,
+  MenubarTrigger as MaterialUIMenubarTrigger,
+} from "@/components/ui/menubar"
+import {
+  Popover as MaterialUIPopover,
+  PopoverContent as MaterialUIPopoverContent,
+  PopoverTrigger as MaterialUIPopoverTrigger,
+} from "@/components/ui/popover"
+import {
+  Progress as MaterialUIProgress,
+} from "@/components/ui/progress"
+import {
+  ScrollArea as MaterialUIScrollArea,
+  ScrollBar as MaterialUIScrollBar,
+} from "@/components/ui/scroll-area"
+import {
+  Select as MaterialUISelect,
+  SelectContent as MaterialUISelectContent,
+  SelectItem as MaterialUISelectItem,
+  SelectTrigger as MaterialUISelectTrigger,
+  SelectValue as MaterialUISelectValue,
+} from "@/components/ui/select"
+import {
+  Separator as MaterialUISeparator,
+} from "@/components/ui/separator"
+import {
+  Sheet as MaterialUISheet,
+  SheetClose as MaterialUISheetClose,
+  SheetContent as MaterialUISheetContent,
+  SheetDescription as MaterialUISheetDescription,
+  SheetFooter as MaterialUISheetFooter,
+  SheetHeader as MaterialUISheetHeader,
+  SheetTitle as MaterialUISheetTitle,
+  SheetTrigger as MaterialUISheetTrigger,
+} from "@/components/ui/sheet"
+import {
+  Slider as MaterialUISlider,
+} from "@/components/ui/slider"
+import {
+  Switch as MaterialUISwitch,
+} from "@/components/ui/switch"
+import {
+  Table as MaterialUITable,
+  TableBody as MaterialUITableBody,
+  TableCaption as MaterialUITableCaption,
+  TableCell as MaterialUITableCell,
+  TableFooter as MaterialUITableFooter,
+  TableHead as MaterialUITableHead,
+  TableHeader as MaterialUITableHeader,
+  TableRow as MaterialUITableRow,
+} from "@/components/ui/table"
+import {
+  Textarea as MaterialUITextarea,
+} from "@/components/ui/textarea"
+import {
+  Tooltip as MaterialUITooltip,
+  TooltipContent as MaterialUITooltipContent,
+  TooltipProvider as MaterialUITooltipProvider,
+  TooltipTrigger as MaterialUITooltipTrigger,
+} from "@/components/ui/tooltip"
+import {
+  useToast as MaterialUIUseToast,
+} from "@/components/ui/use-toast"
+import {
+  RadioGroup as MaterialUIRadioGroup,
+  RadioGroupItem as MaterialUIRadioGroupItem,
+} from "@/components/ui/radio-group"
+import {
+  Skeleton as MaterialUISkeleton,
+} from "@/components/ui/skeleton"
+import {
+  Tabs as MaterialUITabs,
+  TabsContent as MaterialUITabsContent,
+  TabsList as MaterialUITabsList,
+  TabsTrigger as MaterialUITabsTrigger,
+} from "@/components/ui/tabs"
+import {
+  ResizableHandle as MaterialUIResizableHandle,
+  ResizablePanel as MaterialUIResizablePanel,
+  ResizablePanelGroup as MaterialUIResizablePanelGroup,
+  ResizableSeparator as MaterialUIResizableSeparator,
+} from "@/components/ui/resizable"
+import {
+  Carousel as MaterialUICarousel,
+  CarouselContent as MaterialUICarouselContent,
+  CarouselItem as MaterialUICarouselItem,
+  CarouselNext as MaterialUICarouselNext,
+  CarouselPrevious as MaterialUICarouselPrevious,
+} from "@/components/ui/carousel"
+import {
+  Calendar as MaterialUICalendar,
+} from "@/components/ui/calendar"
+import {
+  Command as BootstrapCommand,
+  CommandDialog as BootstrapCommandDialog,
+  CommandEmpty as BootstrapCommandEmpty,
+  CommandGroup as BootstrapCommandGroup,
+  CommandInput as BootstrapCommandInput,
+  CommandList as BootstrapCommandList,
+  CommandSeparator as BootstrapCommandSeparator,
+  CommandShortcut as BootstrapCommandShortcut,
+  CommandItem as BootstrapCommandItem,
+} from "@/components/ui/command"
+import {
+  Dialog as BootstrapDialog,
+  DialogContent as BootstrapDialogContent,
+  DialogDescription as BootstrapDialogDescription,
+  DialogHeader as BootstrapDialogHeader,
+  DialogTitle as BootstrapDialogTitle,
+  DialogTrigger as BootstrapDialogTrigger,
+} from "@/components/ui/dialog"
+import {
+  DropdownMenu as BootstrapDropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent as BootstrapDropdownMenuContent,
+  DropdownMenuItem as BootstrapDropdownMenuItem,
+  DropdownMenuLabel as BootstrapDropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator as BootstrapDropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger as BootstrapDropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  Form as BootstrapForm,
+  FormControl as BootstrapFormControl,
+  FormDescription as BootstrapFormDescription,
+  FormField as BootstrapFormField,
+  FormItem as BootstrapFormItem,
+  FormLabel as BootstrapFormLabel,
+  FormMessage as BootstrapFormMessage,
+} from "@/components/ui/form"
+import {
+  HoverCard as BootstrapHoverCard,
+  HoverCardContent as BootstrapHoverCardContent,
+  HoverCardTrigger as BootstrapHoverCardTrigger,
+} from "@/components/ui/hover-card"
+import {
+  Input as BootstrapInput,
+} from "@/components/ui/input"
+import {
+  Label as BootstrapLabel,
+} from "@/components/ui/label"
+import {
+  Menubar as BootstrapMenubar,
+  MenubarCheckboxItem,
+  MenubarContent as BootstrapMenubarContent,
+  MenubarItem as BootstrapMenubarItem,
+  MenubarMenu as BootstrapMenubarMenu,
+  MenubarRadioGroup,
+  MenubarRadioItem,
+  MenubarSeparator as BootstrapMenubarSeparator,
+  MenubarShortcut,
+  MenubarSub,
+  MenubarSubContent,
+  MenubarSubTrigger,
+  MenubarTrigger as BootstrapMenubarTrigger,
+} from "@/components/ui/menubar"
+import {
+  Popover as BootstrapPopover,
+  PopoverContent as BootstrapPopoverContent,
+  PopoverTrigger as BootstrapPopoverTrigger,
+} from "@/components/ui/popover"
+import {
+  Progress as BootstrapProgress,
+} from "@/components/ui/progress"
+import {
+  ScrollArea as BootstrapScrollArea,
+  ScrollBar as BootstrapScrollBar,
+} from "@/components/ui/scroll-area"
+import {
+  Select as BootstrapSelect,
+  SelectContent as BootstrapSelectContent,
+  SelectItem as BootstrapSelectItem,
+  SelectTrigger as BootstrapSelectTrigger,
+  SelectValue as BootstrapSelectValue,
+} from "@/components/ui/select"
+import {
+  Separator as BootstrapSeparator,
+} from "@/components/ui/separator"
+import {
+  Sheet as BootstrapSheet,
+  SheetClose as BootstrapSheetClose,
+  SheetContent as BootstrapSheetContent,
+  SheetDescription as BootstrapSheetDescription,
+  SheetFooter as BootstrapSheetFooter,
+  SheetHeader as BootstrapSheetHeader,
+  SheetTitle as BootstrapSheetTitle,
+  SheetTrigger as BootstrapSheetTrigger,
+} from "@/components/ui/sheet"
+import {
+  Slider as BootstrapSlider,
+} from "@/components/ui/slider"
+import {
+  Switch as BootstrapSwitch,
+} from "@/components/ui/switch"
+import {
+  Table as BootstrapTable,
+  TableBody as BootstrapTableBody,
+  TableCaption as BootstrapTableCaption,
+  TableCell as BootstrapTableCell,
+  TableFooter as BootstrapTableFooter,
+  TableHead as BootstrapTableHead,
+  TableHeader as BootstrapTableHeader,
+  TableRow as BootstrapTableRow,
+} from "@/components/ui/table"
+import {
+  Textarea as BootstrapTextarea,
+} from "@/components/ui/textarea"
+import {
+  Tooltip as BootstrapTooltip,
+  TooltipContent as BootstrapTooltipContent,
+  TooltipProvider as BootstrapTooltipProvider,
+  TooltipTrigger as BootstrapTooltipTrigger,
+} from "@/components/ui/tooltip"
+import {
+  useToast as BootstrapUseToast,
+} from "@/components/ui/use-toast"
+import {
+  RadioGroup as BootstrapRadioGroup,
+  RadioGroupItem as BootstrapRadioGroupItem,
+} from "@/components/ui/radio-group"
+import {
+  Skeleton as BootstrapSkeleton,
+} from "@/components/ui/skeleton"
+import {
+  Tabs as BootstrapTabs,
+  TabsContent as BootstrapTabsContent,
+  TabsList as BootstrapTabsList,
+  TabsTrigger as BootstrapTabsTrigger,
+} from "@/components/ui/tabs"
+import {
+  ResizableHandle as BootstrapResizableHandle,
+  ResizablePanel as BootstrapResizablePanel,
+  ResizablePanelGroup as BootstrapResizablePanelGroup,
+  ResizableSeparator as BootstrapResizableSeparator,
+} from "@/components/ui/resizable"
+import {
+  Carousel as BootstrapCarousel,
+  CarouselContent as BootstrapCarouselContent,
+  CarouselItem as BootstrapCarouselItem,
+  CarouselNext as BootstrapCarouselNext,
+  CarouselPrevious as BootstrapCarouselPrevious,
+} from "@/components/ui/carousel"
+import {
+  Calendar as BootstrapCalendar,
+} from "@/components/ui/calendar"
+import {
+  Command as FoundationCommand,
+  CommandDialog as FoundationCommandDialog,
+  CommandEmpty as FoundationCommandEmpty,
+  CommandGroup as FoundationCommandGroup,
+  CommandInput as FoundationCommandInput,
+  CommandList as FoundationCommandList,
+  CommandSeparator as FoundationCommandSeparator,
+  CommandShortcut as FoundationCommandShortcut,
+  CommandItem as FoundationCommandItem,
+} from "@/components/ui/command"
+import {
+  Dialog as FoundationDialog,
+  DialogContent as FoundationDialogContent,
+  DialogDescription as FoundationDialogDescription,
+  DialogHeader as FoundationDialogHeader,
+  DialogTitle as FoundationDialogTitle,
+  DialogTrigger as FoundationDialogTrigger,
+} from "@/components/ui/dialog"
+import {
+  DropdownMenu as FoundationDropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent as FoundationDropdownMenuContent,
+  DropdownMenuItem as FoundationDropdownMenuItem,
+  DropdownMenuLabel as FoundationDropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator as FoundationDropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger as FoundationDropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  Form as FoundationForm,
+  FormControl as FoundationFormControl,
+  FormDescription as FoundationFormDescription,
+  FormField as FoundationFormField,
+  FormItem as FoundationFormItem,
+  FormLabel as FoundationFormLabel,
+  FormMessage as FoundationFormMessage,
+} from "@/components/ui/form"
+import {
+  HoverCard as FoundationHoverCard,
+  HoverCardContent as FoundationHoverCardContent,
+  HoverCardTrigger as FoundationHoverCardTrigger,
+} from "@/components/ui/hover-card"
+import {
+  Input as FoundationInput,
+} from "@/components/ui/input"
+import {
+  Label as FoundationLabel,
+} from "@/components/ui/label"
+import {
+  Menubar as FoundationMenubar,
+  MenubarCheckboxItem,
+  MenubarContent as FoundationMenubarContent,
+  MenubarItem as FoundationMenubarItem,
+  MenubarMenu as FoundationMenubarMenu,
+  MenubarRadioGroup,
+  MenubarRadioItem,
+  MenubarSeparator as FoundationMenubarSeparator,
+  MenubarShortcut,
+  MenubarSub,
+  MenubarSubContent,
+  MenubarSubTrigger,
+  MenubarTrigger as FoundationMenubarTrigger,
+} from "@/components/ui/menubar"
+import {
+  Popover as FoundationPopover,
+  PopoverContent as FoundationPopoverContent,
+  PopoverTrigger as FoundationPopoverTrigger,
+} from "@/components/ui/popover"
+import {
+  Progress as FoundationProgress,
+} from "@/components/ui/progress"
+import {
+  ScrollArea as FoundationScrollArea,
+  ScrollBar as FoundationScrollBar,
+} from "@/components/ui/scroll-area"
+import {
+  Select as FoundationSelect,
+  SelectContent as FoundationSelectContent,
+  SelectItem as FoundationSelectItem,
+  SelectTrigger as FoundationSelectTrigger,
+  SelectValue as FoundationSelectValue,
+} from "@/components/ui/select"
+import {
+  Separator as FoundationSeparator,
+} from "@/components/ui/separator"
+import {
+  Sheet as FoundationSheet,
+  SheetClose as FoundationSheetClose,
+  SheetContent as FoundationSheetContent,
+  SheetDescription as FoundationSheetDescription,
+  SheetFooter as FoundationSheetFooter,
+  SheetHeader as FoundationSheetHeader,
+  SheetTitle as FoundationSheetTitle,
+  SheetTrigger as FoundationSheetTrigger,
+} from "@/components/ui/sheet"
+import {
+  Slider as FoundationSlider,
+} from "@/components/ui/slider"
+import {
+  Switch as FoundationSwitch,
+} from "@/components/ui/switch"
+import {
+  Table as FoundationTable,
+  TableBody as FoundationTableBody,
+  TableCaption as FoundationTableCaption,
+  TableCell as FoundationTableCell,
+  TableFooter as FoundationTableFooter,
+  TableHead as FoundationTableHead,
+  TableHeader as FoundationTableHeader,
+  TableRow as FoundationTableRow,
+} from "@/components/ui/table"
+import {
+  Textarea as FoundationTextarea,
+} from "@/components/ui/textarea"
+import {
+  Tooltip as FoundationTooltip,
+  TooltipContent as FoundationTooltipContent,
+  TooltipProvider as FoundationTooltipProvider,
+  TooltipTrigger as FoundationTooltipTrigger,
+} from "@/components/ui/tooltip"
+import {
+  useToast as FoundationUseToast,
+} from "@/components/ui/use-toast"
+import {
+  RadioGroup as FoundationRadioGroup,
+  RadioGroupItem as FoundationRadioGroupItem,
+} from "@/components/ui/radio-group"
+import {
+  Skeleton as FoundationSkeleton,
+} from "@/components/ui/skeleton"
+import {
+  Tabs as FoundationTabs,
+  TabsContent as FoundationTabsContent,
+  TabsList as FoundationTabsList,
+  TabsTrigger as FoundationTabsTrigger,
+} from "@/components/ui/tabs"
+import {
+  ResizableHandle as FoundationResizableHandle,
+  ResizablePanel as FoundationResizablePanel,
+  ResizablePanelGroup as FoundationResizablePanelGroup,
+  ResizableSeparator as FoundationResizableSeparator,
+} from "@/components/ui/resizable"
+import {
+  Carousel as FoundationCarousel,
+  CarouselContent as FoundationCarouselContent,
+  CarouselItem as FoundationCarouselItem,
+  CarouselNext as FoundationCarouselNext,
+  CarouselPrevious as FoundationCarouselPrevious,
+} from "@/components/ui/carousel"
+import {
+  Calendar as FoundationCalendar,
+} from "@/components/ui/calendar"
+import {
+  Command as BulmaCommand,
+  CommandDialog as BulmaCommandDialog,
+  CommandEmpty as BulmaCommandEmpty,
+  CommandGroup as BulmaCommandGroup,
+  CommandInput as BulmaCommandInput,
+  CommandList as BulmaCommandList,
+  CommandSeparator as BulmaCommandSeparator,
+  CommandShortcut as BulmaCommandShortcut,
+  CommandItem as BulmaCommandItem,
+} from "@/components/ui/command"
+import {
+  Dialog as BulmaDialog,
+  DialogContent as BulmaDialogContent,
+  DialogDescription as BulmaDialogDescription,
+  DialogHeader as BulmaDialogHeader,
+  DialogTitle as BulmaDialogTitle,
+  DialogTrigger as BulmaDialogTrigger,
+} from "@/components/ui/dialog"
+import {
+  DropdownMenu as BulmaDropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent as BulmaDropdownMenuContent,
+  DropdownMenuItem as BulmaDropdownMenuItem,
+  DropdownMenuLabel as BulmaDropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator as BulmaDropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger as BulmaDropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  Form as BulmaForm,
+  FormControl as BulmaFormControl,
+  FormDescription as BulmaFormDescription,
+  FormField as BulmaFormField,
+  FormItem as BulmaFormItem,
+  FormLabel as BulmaFormLabel,
+  FormMessage as BulmaFormMessage,
+} from "@/components/ui/form"
+import {
+  HoverCard as BulmaHoverCard,
+  HoverCardContent as BulmaHoverCardContent,
+  HoverCardTrigger as BulmaHoverCardTrigger,
+} from "@/components/ui/hover-card"
+import {
+  Input as BulmaInput,
+} from "@/components/ui/input"
+import {
+  Label as BulmaLabel,
+} from "@/components/ui/label"
+import {
+  Menubar as BulmaMenubar,
+  MenubarCheckboxItem,
+  MenubarContent as BulmaMenubarContent,
+  MenubarItem as BulmaMenubarItem,
+  MenubarMenu as BulmaMenubarMenu,
+  MenubarRadioGroup,
+  MenubarRadioItem,
+  MenubarSeparator as BulmaMenubarSeparator,
+  MenubarShortcut,
+  MenubarSub,
+  MenubarSubContent,
+  MenubarSubTrigger,
+  MenubarTrigger as BulmaMenubarTrigger,
+} from "@/components/ui/menubar"
+import {
+  Popover as BulmaPopover,
+  PopoverContent as BulmaPopoverContent,
+  PopoverTrigger as BulmaPopoverTrigger,
+} from "@/components/ui/popover"
+import {
+  Progress as BulmaProgress,
+} from "@/components/ui/progress"
+import {
+  ScrollArea as BulmaScrollArea,
+  ScrollBar as BulmaScrollBar,
+} from "@/components/ui/scroll-area"
+import {
+  Select as BulmaSelect,
+  SelectContent as BulmaSelectContent,
+  SelectItem as BulmaSelectItem,
+  SelectTrigger as BulmaSelectTrigger,
+  SelectValue as BulmaSelectValue,
+} from "@/components/ui/select"
+import {
+  Separator as BulmaSeparator,
+} from "@/components/ui/separator"
+import {
+  Sheet as BulmaSheet,
+  SheetClose as BulmaSheetClose,
+  SheetContent as BulmaSheetContent,
+  SheetDescription as BulmaSheetDescription,
+  SheetFooter as BulmaSheetFooter,
+  SheetHeader as BulmaSheetHeader,
+  SheetTitle as BulmaSheetTitle,
+  SheetTrigger as BulmaSheetTrigger,
+} from "@/components/ui/sheet"
+import {
+  Slider as BulmaSlider,
+} from "@/components/ui/slider"
+import {
+  Switch as BulmaSwitch,
+} from "@/components/ui/switch"
+import {
+  Table as BulmaTable,
+  TableBody as BulmaTableBody,
+  TableCaption as BulmaTableCaption,
+  TableCell as BulmaTableCell,
+  TableFooter as BulmaTableFooter,
+  TableHead as BulmaTableHead,
+  TableHeader as BulmaTableHeader,
+  TableRow as BulmaTableRow,
+} from "@/components/ui/table"
+import {
+  Textarea as BulmaTextarea,
+} from "@/components/ui/textarea"
+import {
+  Tooltip as BulmaTooltip,
+  TooltipContent as BulmaTooltipContent,
+  TooltipProvider as BulmaTooltipProvider,
+  TooltipTrigger as BulmaTooltipTrigger,
+} from "@/components/ui/tooltip"
+import {
+  useToast as BulmaUseToast,
+} from "@/components/ui/use-toast"
+import {
+  RadioGroup as BulmaRadioGroup,
+  RadioGroupItem as BulmaRadioGroupItem,
+} from "@/components/ui/radio-group"
+import {
+  Skeleton as BulmaSkeleton,
+} from "@/components/ui/skeleton"
+import {
+  Tabs as BulmaTabs,
+  TabsContent as BulmaTabsContent,
+  TabsList as BulmaTabsList,
+  TabsTrigger as BulmaTabsTrigger,
+} from "@/components/ui/tabs"
+import {
+  ResizableHandle as BulmaResizableHandle,
+  ResizablePanel as BulmaResizablePanel,
+  ResizablePanelGroup as BulmaResizablePanelGroup,
+  ResizableSeparator as BulmaResizableSeparator,
+} from "@/components/ui/resizable"
+import {
+  Carousel as BulmaCarousel,
+  CarouselContent as BulmaCarouselContent,
+  CarouselItem as BulmaCarouselItem,
+  CarouselNext as BulmaCarouselNext,
+  CarouselPrevious as BulmaCarouselPrevious,
+} from "@/components/ui/carousel"
+import {
+  Calendar as BulmaCalendar,
+} from "@/components/ui/calendar"
+import { LogoutButton } from '@/app/components/logout-button'
+import { Calendar, Clock, TrendingUp, User, LogOut, Plus } from 'lucide-react'
+import Link from "next/link"
+import { useAuth } from "@/hooks/use-auth"
 
-// Update the chart dates to show daily data
-const chartDates = ["Day 1", "Day 2", "Day 3", "Day 4", "Day 5", "Day 6", "Day 7"]
-
-// Sample symptom tracking data for the chart with more distinct colors
-const symptomHistoryData = {
-  dates: chartDates,
-  symptoms: [], // Will be populated based on user's selected symptoms
-}
-
-// Sample wellness data structure
-const wellnessHistoryData = {
-  dates: chartDates,
-  scores: [0, 0, 0, 0, 0, 0, 0], // Will be populated with wellness scores
-  color: "#4ade80", // Green color for wellness
-  gradient: ["#4ade80", "#4ade8033"],
-}
-
-// Interface for logged symptom data
-interface LoggedSymptom {
-  name: string
-  severity: number
+interface WellnessEntry {
   date: string
-}
-
-// Interface for logged wellness data
-interface LoggedWellness {
-  mood?: number
-  sleep?: number
-  stress?: number
-  date: string
-  onPeriod?: boolean
-  periodSymptoms?: string[]
-  digestiveSymptoms?: string[]
-}
-
-// Interface for user profile data
-interface UserProfile {
-  gender: string
-  age: number
-  weight: number
-  weightUnit: "kg" | "lb"
-  height: number
-  heightUnit: string
-  weightHistory?: Array<{ date: string; weight: number }>
-}
-
-// Interface for to-do item
-interface TodoItem {
-  id: string
-  text: string
-  isSpecial?: boolean
-}
-
-// Interface for completed to-do items
-interface CompletedTodos {
-  date: string
-  completedIds: string[]
+  score: number
+  symptoms: string[]
+  notes: string
 }
 
 export default function Dashboard() {
   const router = useRouter()
-  const [conditions, setConditions] = useState<string[]>([])
-  const [showWelcome, setShowWelcome] = useState(false)
-  const [userName, setUserName] = useState("")
-  const [currentDate, setCurrentDate] = useState("")
-  const [streakDays, setStreakDays] = useState(1)
-  const [progress, setProgress] = useState(1)
-  const [selectedDate, setSelectedDate] = useState(new Date())
-  const [userSymptoms, setUserSymptoms] = useState<string[]>([])
-  const [hasLoggedSymptoms, setHasLoggedSymptoms] = useState(false)
-  const [hasLoggedWellness, setHasLoggedWellness] = useState(false)
-  const [selectedSymptom, setSelectedSymptom] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<"symptoms" | "wellness">("symptoms")
-  const [wellnessScore, setWellnessScore] = useState<number>(0)
-  const [symptomData, setSymptomData] = useState<any[]>([])
-  const [loggedPeriodSymptoms, setLoggedPeriodSymptoms] = useState<string[]>([])
-  const [loggedDigestiveSymptoms, setLoggedDigestiveSymptoms] = useState<string[]>([])
-  const [isOnPeriod, setIsOnPeriod] = useState<boolean>(false)
-
-  // Weight tracking states
-  const [currentWeight, setCurrentWeight] = useState<string>("")
-  const [weightUnit, setWeightUnit] = useState<"kg" | "lb">("kg")
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
-  const [isUpdatingWeight, setIsUpdatingWeight] = useState(false)
-  const [weightUpdateSuccess, setWeightUpdateSuccess] = useState(false)
-
-  // To-do list states
-  const [isAdaptationPhase, setIsAdaptationPhase] = useState(false)
-  const [adaptationDay, setAdaptationDay] = useState(1)
-  const [todoItems, setTodoItems] = useState<TodoItem[]>([])
-  const [completedTodoIds, setCompletedTodoIds] = useState<string[]>([])
-  const [showConfetti, setShowConfetti] = useState(false)
-
-  // Add a new state for elimination phase percentage
-  const [eliminationPhasePercentage, setEliminationPhasePercentage] = useState(0)
-
-  // Add a new state for reintroduction phase day
-  const [reintroductionDay, setReintroductionDay] = useState(0)
-  const [currentPhase, setCurrentPhase] = useState<"adaptation" | "elimination" | "reintroduction">("elimination")
-
-  // Function to handle symptom selection
-  const handleSymptomSelect = (symptomName: string) => {
-    if (selectedSymptom === symptomName) {
-      setSelectedSymptom(null) // Deselect if already selected
-    } else {
-      setSelectedSymptom(symptomName) // Select the symptom
-    }
-  }
-
-  // Function to calculate wellness score (1-100) based on mood, sleep, stress, and symptoms
-  const calculateWellnessScore = (
-    mood?: number,
-    sleep?: number,
-    stress?: number,
-    symptoms?: { name: string; severity: number }[],
-  ): number => {
-    let totalScore = 0
-    let factors = 0
-
-    // Mood is 1-5 where 5 is best
-    if (mood !== undefined) {
-      // Convert 1-5 scale to 0-100 (where 5 = 100, 1 = 0)
-      totalScore += ((mood - 1) / 4) * 100
-      factors++
-    }
-
-    // Sleep is 1-5 where 5 is best
-    if (sleep !== undefined) {
-      // Convert 1-5 scale to 0-100 (where 5 = 100, 1 = 0)
-      totalScore += ((sleep - 1) / 4) * 100
-      factors++
-    }
-
-    // Stress is 1-5 where 1 is best (no stress)
-    if (stress !== undefined) {
-      // Convert 1-5 scale to 0-100 (where 1 = 100, 5 = 0)
-      totalScore += ((5 - stress) / 4) * 100
-      factors++
-    }
-
-    // Include symptoms in the calculation (if provided)
-    if (symptoms && symptoms.length > 0) {
-      const validSymptoms = symptoms.filter((s) => s.severity > 0)
-      if (validSymptoms.length > 0) {
-        const totalSeverity = validSymptoms.reduce((sum, s) => sum + s.severity, 0)
-        const avgSeverity = totalSeverity / validSymptoms.length
-        totalScore += ((5 - avgSeverity) / 4) * 100
-        factors++
-      }
-    }
-
-    // If no factors were provided, return middle score
-    if (factors === 0) return 50
-
-    // Return the average score
-    return Math.round(totalScore / factors)
-  }
-
-  // Function to get period symptom name (handles custom symptoms)
-  const getPeriodSymptomName = (symptomId: string) => {
-    if (symptomId.startsWith("custom_")) {
-      return symptomId.replace("custom_", "")
-    }
-
-    // Default period symptoms mapping
-    const periodSymptoms = [
-      { id: "menstrual_cramps", name: "Menstrual Cramps" },
-      { id: "headaches", name: "Headaches or Migraines" },
-      { id: "breast_tenderness", name: "Breast Tenderness" },
-      { id: "lower_back_pain", name: "Lower Back Pain" },
-      { id: "muscle_aches", name: "Muscle Aches" },
-      { id: "joint_pain", name: "Joint Pain" },
-    ]
-
-    const symptom = periodSymptoms.find((s) => s.id === symptomId)
-    return symptom ? symptom.name : symptomId
-  }
-
-  // Function to get digestive symptom name (handles custom symptoms)
-  const getDigestiveSymptomName = (symptomId: string) => {
-    if (symptomId.startsWith("custom_digestive_")) {
-      return symptomId.replace("custom_digestive_", "")
-    }
-
-    // Default digestive symptoms mapping
-    const digestiveSymptoms = [
-      { id: "nauseous", name: "Nauseous" },
-      { id: "bloated", name: "Bloated" },
-      { id: "gassy", name: "Gassy" },
-      { id: "heartburn", name: "Heartburn" },
-      { id: "ok", name: "OK" },
-    ]
-
-    const symptom = digestiveSymptoms.find((s) => s.id === symptomId)
-    return symptom ? symptom.name : symptomId
-  }
-
-  // Function to load and process symptom data
-  const loadSymptomData = () => {
-    if (typeof window === "undefined") return
-
-    // Get logged symptoms from localStorage
-    const loggedSymptomsStr = localStorage.getItem("loggedSymptoms")
-    const hasLogged = !!loggedSymptomsStr && loggedSymptomsStr !== "[]"
-    setHasLoggedSymptoms(hasLogged)
-
-    // Parse logged symptoms
-    const loggedSymptoms: LoggedSymptom[] = loggedSymptomsStr ? JSON.parse(loggedSymptomsStr) : []
-
-    // If we have logged symptoms but no user symptoms set, extract them from logged symptoms
-    if (loggedSymptoms.length > 0 && userSymptoms.length === 0) {
-      const symptomNames = [...new Set(loggedSymptoms.map((s) => s.name))]
-      setUserSymptoms(symptomNames)
-
-      // Save to localStorage for consistency
-      localStorage.setItem("userSymptoms", JSON.stringify(symptomNames))
-    }
-
-    // Define colors for the symptoms
-    const colors = ["#38bdf8", "#2dd4bf", "#4ade80", "#a78bfa", "#fb7185"]
-
-    // Get the symptoms to display (either from user preferences or from logged symptoms)
-    const symptomsToDisplay = userSymptoms.length > 0 ? userSymptoms : [...new Set(loggedSymptoms.map((s) => s.name))]
-
-    // Create symptom data for chart
-    const userSymptomData = symptomsToDisplay.map((symptomName, index) => {
-      // Find the logged severity for this symptom
-      const loggedSymptom = loggedSymptoms.find((s) => s.name === symptomName)
-
-      // For new users with no logs, use empty values
-      // For users with logs, show the logged severity at Day 1 and empty for other days
-      const values = [0, 0, 0, 0, 0, 0, 0]
-
-      // If we have a logged symptom, set the first value (Day 1) to the logged severity
-      if (loggedSymptom) {
-        values[0] = loggedSymptom.severity
-      }
-
-      const colorIndex = index % colors.length
-      return {
-        name: symptomName,
-        values: values,
-        color: colors[colorIndex],
-        gradient: [colors[colorIndex], colors[colorIndex] + "33"],
-      }
-    })
-
-    // Update symptom data state
-    setSymptomData(userSymptomData)
-  }
-
-  // Function to load user profile data
-  const loadUserProfile = () => {
-    if (typeof window === "undefined") return
-
-    const profileData = localStorage.getItem("userProfile")
-    if (profileData) {
-      const profile = JSON.parse(profileData) as UserProfile
-      setUserProfile(profile)
-      setWeightUnit(profile.weightUnit)
-
-      // Set current weight from profile
-      if (profile.weight) {
-        setCurrentWeight(profile.weight.toString())
-      }
-    }
-  }
-
-  // Function to update user weight
-  const updateWeight = () => {
-    if (!currentWeight || isNaN(Number(currentWeight)) || Number(currentWeight) <= 0) {
-      return
-    }
-
-    setIsUpdatingWeight(true)
-
-    // Get current profile data
-    const profileData = localStorage.getItem("userProfile")
-    if (profileData) {
-      const profile = JSON.parse(profileData) as UserProfile
-
-      // Update weight
-      profile.weight = Number(currentWeight)
-      profile.weightUnit = weightUnit
-
-      // Add to weight history if it doesn't exist
-      if (!profile.weightHistory) {
-        profile.weightHistory = []
-      }
-
-      // Add current weight to history
-      profile.weightHistory.push({
-        date: new Date().toISOString(),
-        weight: Number(currentWeight),
-      })
-
-      // Save updated profile
-      localStorage.setItem("userProfile", JSON.stringify(profile))
-      setUserProfile(profile)
-
-      // Show success message
-      setWeightUpdateSuccess(true)
-      setTimeout(() => {
-        setWeightUpdateSuccess(false)
-        setIsUpdatingWeight(false)
-      }, 2000)
-    } else {
-      setIsUpdatingWeight(false)
-    }
-  }
-
-  // Modify the determineAdaptationPhase function to also determine elimination phase percentage
-  const determinePhases = () => {
-    if (typeof window === "undefined") return
-
-    const adaptationChoice = localStorage.getItem("userAdaptationChoice")
-    const hasAdaptation = adaptationChoice === "Yes"
-    const startDate = localStorage.getItem("dietStartDate")
-
-    if (!startDate) {
-      setIsAdaptationPhase(false)
-      setCurrentPhase("elimination")
-      return
-    }
-
-    const dietStartDate = new Date(startDate)
-    const today = new Date()
-    const daysElapsed = Math.floor((today.getTime() - dietStartDate.getTime()) / (1000 * 60 * 60 * 24))
-
-    // Get diet timeline
-    const dietTimeline = localStorage.getItem("userDietTimeline")
-    const totalSelectedDays = dietTimeline ? Number.parseInt(dietTimeline) : 30
-
-    // Calculate adaptation and elimination days
-    const adaptationDays = hasAdaptation ? 28 : 0
-    const eliminationDays = hasAdaptation ? totalSelectedDays - adaptationDays : totalSelectedDays
-
-    // Determine current phase
-    if (hasAdaptation && daysElapsed < adaptationDays) {
-      // In adaptation phase
-      setIsAdaptationPhase(true)
-      setAdaptationDay(daysElapsed + 1) // +1 because day 1 is the first day
-      setEliminationPhasePercentage(0) // Not in elimination phase yet
-      setReintroductionDay(0) // Not in reintroduction phase yet
-      setCurrentPhase("adaptation")
-    } else if (daysElapsed < (hasAdaptation ? adaptationDays + eliminationDays : eliminationDays)) {
-      // In elimination phase
-      setIsAdaptationPhase(false)
-      setCurrentPhase("elimination")
-
-      // Calculate elimination phase percentage
-      const eliminationDaysElapsed = daysElapsed - (hasAdaptation ? adaptationDays : 0)
-      const percentage = Math.floor((eliminationDaysElapsed / eliminationDays) * 100)
-      setEliminationPhasePercentage(percentage)
-      setReintroductionDay(0) // Not in reintroduction phase yet
-    } else {
-      // In reintroduction phase
-      setIsAdaptationPhase(false)
-      setEliminationPhasePercentage(100) // Elimination phase completed
-      setCurrentPhase("reintroduction")
-
-      // Calculate reintroduction day
-      const reintroductionDaysElapsed =
-        daysElapsed - (hasAdaptation ? adaptationDays + eliminationDays : eliminationDays)
-      setReintroductionDay(reintroductionDaysElapsed + 1) // +1 because day 1 is the first day
-    }
-  }
-
-  // Function to generate to-do items for the reintroduction phase
-  const generateReintroductionTodoItems = () => {
-    if (currentPhase !== "reintroduction" || reintroductionDay === 0) return []
-
-    // Common items for all days
-    const commonItems = [
-      { id: "water", text: "Drink 1.5–2L water" },
-      { id: "walk", text: "Walk 30 minutes" },
-      { id: "sleep", text: "Sleep 7–8 hours" },
-    ]
-
-    // Day-specific items
-    switch (reintroductionDay) {
-      case 1:
-        return [
-          { id: "reintroduce_egg_yolk", text: "Reintroduce egg yolk (boiled or poached)", isSpecial: true },
-          ...commonItems,
-          { id: "log_feelings", text: "Log how you feel 2–3 times today (mood, digestion, energy)" },
-        ]
-      case 2:
-        return [
-          { id: "rest_day", text: "Rest day — no new food", isSpecial: true },
-          ...commonItems,
-          { id: "observe_symptoms", text: "Observe for any delayed symptoms" },
-          { id: "update_product_list", text: "Update the product list with 'Can eat' or 'Can't eat'" },
-        ]
-      case 3:
-        return [
-          { id: "reintroduce_peas", text: "Reintroduce green peas or sugar snap peas", isSpecial: true },
-          ...commonItems,
-          { id: "log_feelings", text: "Log how you feel 2–3 times" },
-        ]
-      case 4:
-        return [
-          { id: "eat_vegetables", text: "Eat a variety of vegetables today" },
-          ...commonItems,
-          { id: "update_product_list", text: "Update the product list with 'Can eat' or 'Can't eat'" },
-        ]
-      case 5:
-        return [
-          { id: "reintroduce_ghee", text: "Reintroduce ghee (1 tsp with a warm meal)", isSpecial: true },
-          ...commonItems,
-          { id: "lemon_water", text: "Drink lemon water in the morning" },
-          { id: "log_feelings", text: "Log how you feel 2–3 times" },
-          { id: "calming_music", text: "Play calming music in the evening" },
-        ]
-      case 6:
-        return [
-          { id: "stretching", text: "Do a stretching session" },
-          ...commonItems,
-          { id: "update_product_list", text: "Update the product list with 'Can eat' or 'Can't eat'" },
-        ]
-      case 7:
-        return [
-          {
-            id: "reintroduce_spices",
-            text: "Reintroduce cumin or coriander (use sparingly in cooking)",
-            isSpecial: true,
-          },
-          ...commonItems,
-          { id: "log_feelings", text: "Log how you feel 2–3 times" },
-          { id: "meditate", text: "Meditate for 10 minutes" },
-        ]
-      case 8:
-        return [
-          { id: "cook_dinner", text: "Cook a nourishing veggie-based dinner" },
-          ...commonItems,
-          { id: "update_product_list", text: "Update the product list with 'Can eat' or 'Can't eat'" },
-        ]
-      case 9:
-        return [
-          { id: "reintroduce_cocoa", text: "Reintroduce unsweetened cocoa (1 tsp max)", isSpecial: true },
-          ...commonItems,
-          { id: "log_feelings", text: "Log how you feel 2–3 times" },
-        ]
-      case 10:
-        return [
-          { id: "mocktail", text: "Try a mocktail as a reward" },
-          ...commonItems,
-          { id: "update_product_list", text: "Update the product list with 'Can eat' or 'Can't eat'" },
-        ]
-      case 11:
-        return [
-          {
-            id: "reintroduce_nut_oil",
-            text: "Reintroduce nut/seed oil (e.g., walnut or sesame, 1 tsp)",
-            isSpecial: true,
-          },
-          ...commonItems,
-          { id: "log_feelings", text: "Log how you feel 2–3 times" },
-          { id: "extra_water", text: "Drink extra water" },
-        ]
-      case 12:
-        return [
-          ...commonItems,
-          { id: "update_product_list", text: "Update the product list with 'Can eat' or 'Can't eat'" },
-        ]
-      case 13:
-        return [
-          { id: "reintroduce_sprouts", text: "Reintroduce legume sprouts (e.g., pea shoots)", isSpecial: true },
-          ...commonItems,
-          { id: "new_vegetables", text: "Add three new vegetables to your plate" },
-          { id: "log_feelings", text: "Log how you feel 2–3 times" },
-        ]
-      case 14:
-        return [
-          { id: "meditate_longer", text: "Meditate for 20 minutes" },
-          ...commonItems,
-          { id: "update_product_list", text: "Update the product list with 'Can eat' or 'Can't eat'" },
-        ]
-      case 15:
-        return [
-          { id: "reintroduce_almonds", text: "Reintroduce almonds (start small, preferably soaked)", isSpecial: true },
-          ...commonItems,
-          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
-        ]
-      case 16:
-      case 17:
-        return [
-          { id: "eat_almonds", text: "Eat almonds (start small, preferably soaked)" },
-          ...commonItems,
-          { id: "almond_milk", text: "Use a splash of almond milk" },
-          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
-          ...(reintroductionDay === 17 ? [{ id: "update_product_list", text: "Update the product list" }] : []),
-        ]
-      case 18:
-        return [
-          { id: "reintroduce_seeds", text: "Reintroduce seeds (tahini or raw seeds, one type only)", isSpecial: true },
-          ...commonItems,
-          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
-        ]
-      case 19:
-      case 20:
-        return [
-          { id: "eat_seeds", text: "Eat seeds (tahini or raw seeds, one type only)" },
-          ...commonItems,
-          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
-          ...(reintroductionDay === 20
-            ? [
-                { id: "avoid_mixing", text: "Avoid mixing seeds" },
-                { id: "update_product_list", text: "Update the product list" },
-              ]
-            : []),
-        ]
-      case 21:
-        return [
-          {
-            id: "reintroduce_egg_whites",
-            text: "Reintroduce egg whites (start small, gradually increase)",
-            isSpecial: true,
-          },
-          ...commonItems,
-          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
-        ]
-      case 22:
-        return [
-          { id: "eat_egg_whites", text: "Eat egg whites (start small, gradually increase)" },
-          ...commonItems,
-          { id: "grounding", text: "Add grounding practices: journaling, stretching, slow walks" },
-          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
-        ]
-      case 23:
-        return [
-          { id: "eat_whole_egg", text: "Eat a whole egg" },
-          ...commonItems,
-          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
-          { id: "update_product_list", text: "Update the product list" },
-        ]
-      case 24:
-        return [
-          {
-            id: "reintroduce_butter",
-            text: "Reintroduce grass-fed butter (do not combine with other dairy)",
-            isSpecial: true,
-          },
-          ...commonItems,
-          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
-        ]
-      case 25:
-      case 26:
-        return [
-          { id: "eat_butter", text: "Eat grass-fed butter (do not combine with other dairy)" },
-          ...commonItems,
-          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
-          ...(reintroductionDay === 26 ? [{ id: "update_product_list", text: "Update the product list" }] : []),
-        ]
-      case 27:
-        return [
-          { id: "review_list", text: "Review your personal 'Can eat' list" },
-          ...commonItems,
-          { id: "calming_activity", text: "Plan a calming activity" },
-        ]
-      case 28:
-        return [
-          { id: "reintroduce_cashews", text: "Reintroduce plain, unroasted cashews", isSpecial: true },
-          ...commonItems,
-          { id: "tea", text: "Add lemon or ginger tea to support digestion" },
-          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
-        ]
-      case 29:
-        return [
-          { id: "eat_cashews", text: "Eat plain, unroasted cashews" },
-          ...commonItems,
-          { id: "tea", text: "Add lemon or ginger tea to support digestion" },
-          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
-          { id: "update_product_list", text: "Update the product list" },
-        ]
-      case 30:
-        return [
-          { id: "reintroduce_potato", text: "Reintroduce cooked potato (white, peeled)", isSpecial: true },
-          ...commonItems,
-          { id: "log_feelings", text: "Log how you feel 2–3 times" },
-          { id: "update_product_list", text: "Update the product list" },
-        ]
-      case 31:
-        return [
-          { id: "reintroduce_pepper", text: "Reintroduce sweet red pepper (roasted or sautéed)", isSpecial: true },
-          ...commonItems,
-          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
-        ]
-      case 32:
-      case 33:
-        return [
-          { id: "eat_pepper", text: "Eat sweet red pepper (roasted or sautéed)" },
-          ...commonItems,
-          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
-          ...(reintroductionDay === 33 ? [{ id: "update_product_list", text: "Update the product list" }] : []),
-        ]
-      case 34:
-        return [
-          { id: "reintroduce_paprika", text: "Reintroduce paprika (use a small pinch in meals)", isSpecial: true },
-          ...commonItems,
-          { id: "no_new_food", text: "Do not introduce any other new food during this time" },
-          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
-        ]
-      case 35:
-      case 36:
-        return [
-          { id: "eat_paprika", text: "Eat paprika (use a small pinch in meals)" },
-          ...commonItems,
-          { id: "no_new_food", text: "Do not introduce any other new food during this time" },
-          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
-          ...(reintroductionDay === 36 ? [{ id: "update_product_list", text: "Update the product list" }] : []),
-        ]
-      case 37:
-        return [
-          { id: "reintroduce_eggplant", text: "Reintroduce cooked eggplant (start with 1/4 cup)", isSpecial: true },
-          ...commonItems,
-          { id: "log_feelings", text: "Log how you feel 2–3 times" },
-          { id: "update_product_list", text: "Update the product list" },
-        ]
-      case 38:
-        return [
-          { id: "reintroduce_rice", text: "Reintroduce white rice (start with 2 tbsp cooked)", isSpecial: true },
-          ...commonItems,
-          { id: "deep_breathing", text: "Add deep breathing after meals" },
-          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
-          { id: "relaxing_ritual", text: "End day with a relaxing ritual (bath, walk, etc.)" },
-        ]
-      case 39:
-      case 40:
-        return [
-          { id: "eat_rice", text: "Eat white rice" },
-          ...commonItems,
-          { id: "deep_breathing", text: "Add deep breathing after meals" },
-          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
-          ...(reintroductionDay === 40
-            ? [
-                { id: "relaxing_ritual", text: "End day with a relaxing ritual (bath, walk, etc.)" },
-                { id: "update_product_list", text: "Update the product list" },
-              ]
-            : []),
-        ]
-      case 41:
-        return [
-          {
-            id: "reintroduce_yogurt",
-            text: "Reintroduce grass-fed yogurt or kefir (unsweetened, small portion)",
-            isSpecial: true,
-          },
-          ...commonItems,
-          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
-        ]
-      case 42:
-      case 43:
-        return [
-          { id: "eat_yogurt", text: "Eat grass-fed yogurt or kefir (unsweetened, small portion)" },
-          ...commonItems,
-          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
-          ...(reintroductionDay === 43 ? [{ id: "update_product_list", text: "Update the product list" }] : []),
-        ]
-      case 44:
-        return [
-          {
-            id: "reintroduce_tomato",
-            text: "Reintroduce cooked and peeled tomato (start with 1 tbsp)",
-            isSpecial: true,
-          },
-          ...commonItems,
-          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
-        ]
-      case 45:
-        return [
-          { id: "eat_tomato", text: "Eat cooked and peeled tomato (start with 1 tbsp)" },
-          ...commonItems,
-          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
-          { id: "update_product_list", text: "Update the product list" },
-        ]
-      default:
-        // For days beyond 45, provide general maintenance tasks
-        return [
-          ...commonItems,
-          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
-          {
-            id: "continue_reintroductions",
-            text: "Continue with your personalized reintroduction schedule",
-            isSpecial: true,
-          },
-        ]
-    }
-  }
-
-  // Function to generate to-do items for the elimination phase
-  const generateEliminationTodoItems = () => {
-    if (isAdaptationPhase || eliminationPhasePercentage === 0) return []
-
-    let items: TodoItem[] = []
-
-    // Common items for all percentage ranges
-    const commonItems = [
-      { id: "track_symptoms", text: "Track your symptoms" },
-      { id: "sleep", text: "Maintain 7-8h of sleep" },
-      { id: "water", text: "Drink 1.5–2L water" },
-    ]
-
-    // Add percentage-specific items
-    if (eliminationPhasePercentage <= 20) {
-      // 0-20% days of the elimination diet phase
-      items = [
-        ...commonItems,
-        { id: "protein", text: "Have protein with every meal" },
-        { id: "yoga", text: "Try a gentle yoga or breathwork session" },
-      ]
-    } else if (eliminationPhasePercentage <= 40) {
-      // 21-40% days of the elimination diet phase
-      items = [
-        ...commonItems,
-        { id: "new_aip", text: "Try one new AIP recipe" },
-        { id: "eft", text: "Research EFT tapping stress relief method" },
-        { id: "meditation", text: "Listen to a 10 minute calming playlist or guided meditation" },
-      ]
-    } else if (eliminationPhasePercentage <= 60) {
-      // 41-60% days of the elimination diet phase
-      items = [
-        ...commonItems,
-        { id: "mindful_eating", text: "Try eating your meals more mindfully (no phone, chew slowly)" },
-        { id: "journal", text: "Journal about changes in mood, sleep, digestion" },
-      ]
-    } else if (eliminationPhasePercentage <= 80) {
-      // 61-80% days of the elimination diet phase
-      items = [
-        ...commonItems,
-        { id: "new_veggies", text: "Explore new veggies or safe fruits you haven't tried yet" },
-        { id: "strength_training", text: "Start light strength training at home" },
-      ]
-    } else {
-      // 81-100% days of the elimination diet phase
-      items = [
-        ...commonItems,
-        {
-          id: "journal_end",
-          text: "Journal your feelings now that Elimination phase is coming to an end",
-          isSpecial: true,
-        },
-        { id: "review_logs", text: "Review your food and symptom logs — are any patterns clear?", isSpecial: true },
-      ]
-    }
-
-    return items
-  }
-
-  // Function to generate to-do items based on adaptation day
-  const generateAdaptationTodoItems = () => {
-    if (!isAdaptationPhase) return []
-
-    let items: TodoItem[] = []
-
-    // Base items for days 1-7
-    if (adaptationDay >= 1) {
-      items = [
-        { id: "water", text: "Drink water (1-1.5L)" },
-        { id: "walk", text: "Walk 30 minutes" },
-        { id: "caffeine", text: "No caffeine consumption" },
-        { id: "sleep", text: "Sleep 8 hours" },
-      ]
-    }
-
-    // Add items for days 8-14
-    if (adaptationDay >= 8) {
-      items.push({ id: "alcohol", text: "No alcohol consumption" })
-    }
-
-    // Add items for days 15-21
-    if (adaptationDay >= 15) {
-      items.push({ id: "sugar", text: "No sugar consumption" })
-    }
-
-    // Add items for days 22-28
-    if (adaptationDay >= 22) {
-      items.push({ id: "vegetables", text: "Eat more vegetables (for snacks and with your main meal)" })
-    }
-
-    // Special items for specific days
-    if (adaptationDay === 10) {
-      items.push({
-        id: "journal",
-        text: "Try to write down your feelings and thoughts on a piece of paper",
-        isSpecial: true,
-      })
-    } else if (adaptationDay === 18) {
-      items.push({
-        id: "meditation",
-        text: "Try meditation",
-        isSpecial: true,
-      })
-    } else if (adaptationDay === 24) {
-      items.push({
-        id: "mocktail",
-        text: "Try a mocktail, celebrate, you almost finished one phase!",
-        isSpecial: true,
-      })
-    }
-
-    return items
-  }
-
-  // Modify the generateTodoItems function to handle all phases
-  const generateTodoItems = () => {
-    let items: TodoItem[] = []
-
-    if (isAdaptationPhase) {
-      // Generate adaptation phase to-do items
-      items = generateAdaptationTodoItems()
-    } else if (currentPhase === "elimination") {
-      // Generate elimination phase to-do items
-      items = generateEliminationTodoItems()
-    } else if (currentPhase === "reintroduction") {
-      // Generate reintroduction phase to-do items
-      items = generateReintroductionTodoItems()
-    }
-
-    setTodoItems(items)
-  }
-
-  // Function to load completed to-dos from local storage
-  const loadCompletedTodos = () => {
-    if (typeof window === "undefined") return
-
-    const completedTodosStr = localStorage.getItem("completedTodos")
-    if (completedTodosStr) {
-      try {
-        const completedTodos: CompletedTodos[] = JSON.parse(completedTodosStr)
-        const today = new Date().toISOString().split("T")[0] // Get today's date in YYYY-MM-DD format
-
-        // Find the completed todos for today
-        const todayCompleted = completedTodos.find((item) => item.date === today)
-
-        // If we have completed todos for today, set the completed ids
-        if (todayCompleted) {
-          setCompletedTodoIds(todayCompleted.completedIds)
-        } else {
-          setCompletedTodoIds([]) // No completed todos for today
-        }
-      } catch (e) {
-        console.error("Error parsing completed todos:", e)
-        setCompletedTodoIds([]) // Error, so set to empty
-      }
-    } else {
-      setCompletedTodoIds([]) // No completed todos saved
-    }
-  }
-
-  // Function to toggle to-do completion status
-  const toggleTodoCompletion = (id: string) => {
-    if (typeof window === "undefined") return
-
-    const today = new Date().toISOString().split("T")[0] // Get today's date in YYYY-MM-DD format
-    const isCompleted = completedTodoIds.includes(id)
-
-    let updatedCompletedIds: string[] = []
-
-    if (isCompleted) {
-      // Remove the id from the completed list
-      updatedCompletedIds = completedTodoIds.filter((todoId) => todoId !== id)
-    } else {
-      // Add the id to the completed list
-      updatedCompletedIds = [...completedTodoIds, id]
-    }
-
-    // Update state
-    setCompletedTodoIds(updatedCompletedIds)
-
-    // Load existing completed todos from localStorage
-    const completedTodosStr = localStorage.getItem("completedTodos")
-    let completedTodos: CompletedTodos[] = []
-
-    if (completedTodosStr) {
-      try {
-        completedTodos = JSON.parse(completedTodosStr)
-      } catch (e) {
-        console.error("Error parsing completed todos:", e)
-      }
-    }
-
-    // Find if we have an entry for today
-    const todayIndex = completedTodos.findIndex((item) => item.date === today)
-
-    if (todayIndex !== -1) {
-      // Update existing entry for today
-      completedTodos[todayIndex] = { date: today, completedIds: updatedCompletedIds }
-    } else {
-      // Add a new entry for today
-      completedTodos.push({ date: today, completedIds: updatedCompletedIds })
-    }
-
-    // Save updated completed todos to localStorage
-    localStorage.setItem("completedTodos", JSON.stringify(completedTodos))
-
-    // Show confetti if all items are completed
-    if (updatedCompletedIds.length === todoItems.length) {
-      setShowConfetti(true)
-    }
-  }
+  const { user, loading, isAuthenticated } = useAuth()
+  const [wellnessData, setWellnessData] = useState<WellnessEntry[]>([])
+  const [currentPhase, setCurrentPhase] = useState("elimination")
+  const [daysInPhase, setDaysInPhase] = useState(0)
+  const [userProfile, setUserProfile] = useState<any>(null)
 
   useEffect(() => {
-    // Format current date
-    const date = new Date()
-    const options: Intl.DateTimeFormatOptions = { weekday: "long", month: "long", day: "numeric" }
-    setCurrentDate(date.toLocaleDateString("en-US", options))
+    // Load data from localStorage
+    const savedWellnessData = localStorage.getItem("wellnessData")
+    if (savedWellnessData) {
+      setWellnessData(JSON.parse(savedWellnessData))
+    }
 
-    // Check if this is the first time loading the dashboard after onboarding
-    const isFirstLoad = sessionStorage.getItem("dashboardFirstLoad") !== "false"
+    const savedProfile = localStorage.getItem("userProfile")
+    if (savedProfile) {
+      setUserProfile(JSON.parse(savedProfile))
+    }
 
-    if (typeof window !== "undefined") {
-      // Load user profile data
-      loadUserProfile()
+    // Calculate days in current phase
+    const dietStartDate = localStorage.getItem("dietStartDate")
+    if (dietStartDate) {
+      const startDate = new Date(dietStartDate)
+      const today = new Date()
+      const diffTime = Math.abs(today.getTime() - startDate.getTime())
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+      setDaysInPhase(diffDays)
 
-      // Determine phases
-      determinePhases()
-
-      // Get diet timeline data
-      const dietTimeline = localStorage.getItem("userDietTimeline")
-      const startDate = localStorage.getItem("dietStartDate")
-
-      // Get streak days from localStorage or calculate it
-      const savedStreakDays = localStorage.getItem("streakDays")
-
-      // If no start date is set, this is a new user - set it now
-      if (!startDate) {
-        localStorage.setItem("dietStartDate", new Date().toISOString())
-      }
-
-      // Calculate days elapsed since diet start
-      const daysElapsed = startDate
-        ? Math.floor((new Date().getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24))
-        : 0
-
-      // Set streak to saved value, days elapsed, or 1 for new users (minimum 1 day)
-      setStreakDays(savedStreakDays ? Number.parseInt(savedStreakDays, 10) : Math.max(daysElapsed, 1))
-
-      // Calculate progress percentage
-      const totalDays = dietTimeline ? Number.parseInt(dietTimeline) : 30
-      const progressPercentage = totalDays > 0 ? Math.min(Math.round((daysElapsed / totalDays) * 100), 100) : 1
-
-      // Set progress to calculated value or 1% for new users
-      setProgress(progressPercentage > 0 ? progressPercentage : 1)
-
-      if (isFirstLoad) {
-        setShowWelcome(true)
-        sessionStorage.setItem("dashboardFirstLoad", "false")
-
-        // Get user account info if available
-        const accountInfo = JSON.parse(localStorage.getItem("userAccount") || "{}")
-        if (accountInfo && accountInfo.name) {
-          setUserName(accountInfo.name)
-        }
-      }
-
-      // Retrieve the saved conditions from local storage
-      const savedConditions = localStorage.getItem("userConditions")
-      if (savedConditions) {
-        setConditions(JSON.parse(savedConditions))
-      }
-
-      // Retrieve the saved symptoms from local storage
-      const savedSymptoms = localStorage.getItem("userSymptoms")
-      if (savedSymptoms) {
-        const parsedSymptoms = JSON.parse(savedSymptoms)
-        setUserSymptoms(parsedSymptoms)
-      }
-
-      // Load symptom data
-      loadSymptomData()
-
-      // Process wellness data
-      const loggedDayStr = localStorage.getItem("loggedDay")
-      const loggedSymptomsStr = localStorage.getItem("loggedSymptoms")
-
-      if (loggedDayStr) {
-        try {
-          const loggedDay = JSON.parse(loggedDayStr)
-          setHasLoggedWellness(true)
-
-          // Get logged symptoms if available
-          const loggedSymptoms: LoggedSymptom[] = loggedSymptomsStr ? JSON.parse(loggedSymptomsStr) : []
-
-          // Calculate wellness score from the logged data
-          const score = calculateWellnessScore(loggedDay.mood, loggedDay.sleep, loggedDay.stress, loggedSymptoms)
-
-          setWellnessScore(score)
-
-          // Update the wellness history data
-          const updatedScores = [...wellnessHistoryData.scores]
-          updatedScores[0] = score
-          wellnessHistoryData.scores = updatedScores
-
-          // Store period data
-          if (loggedDay.onPeriod === true) {
-            setIsOnPeriod(true)
-            if (loggedDay.periodSymptoms && Array.isArray(loggedDay.periodSymptoms)) {
-              setLoggedPeriodSymptoms(loggedDay.periodSymptoms)
-            }
-          }
-
-          // Store digestive symptoms - FIX THE BUG HERE
-          if (loggedDay.digestiveSymptoms && Array.isArray(loggedDay.digestiveSymptoms)) {
-            setLoggedDigestiveSymptoms(loggedDay.digestiveSymptoms)
-          }
-        } catch (e) {
-          console.error("Error parsing logged day data:", e)
-        }
+      // Determine phase based on days
+      if (diffDays <= 30) {
+        setCurrentPhase("elimination")
+      } else if (diffDays <= 60) {
+        setCurrentPhase("reintroduction")
+      } else {
+        setCurrentPhase("maintenance")
       }
     }
   }, [])
 
-  // Effect to generate to-do items when adaptation phase or day changes
-  useEffect(() => {
-    generateTodoItems()
-  }, [isAdaptationPhase, adaptationDay, eliminationPhasePercentage, reintroductionDay, currentPhase])
-
-  // Effect to load completed to-dos when to-do items change
-  useEffect(() => {
-    if (todoItems.length > 0) {
-      loadCompletedTodos()
-    }
-  }, [todoItems])
-
-  // Add an effect to reload symptom data when the component is focused
-  useEffect(() => {
-    // Function to handle when the window gets focus
-    const handleFocus = () => {
-      loadSymptomData()
-      loadUserProfile()
-      loadCompletedTodos()
-    }
-
-    // Add event listener for focus
-    window.addEventListener("focus", handleFocus)
-
-    // Clean up
-    return () => {
-      window.removeEventListener("focus", handleFocus)
-    }
-  }, [userSymptoms]) // Re-run when userSymptoms changes
-
-  const handleCloseWelcome = () => {
-    setShowWelcome(false)
+  // Show loading state while checking auth
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    )
   }
 
-  const handleProfileClick = () => {
-    router.push("/profile")
+  const getLatestWellnessScore = () => {
+    if (wellnessData.length === 0) return 0
+    return wellnessData[wellnessData.length - 1].score
   }
 
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString("en-US", { month: "short", day: "numeric" })
-  }
-
-  const getDayName = (date: Date) => {
-    return date.toLocaleDateString("en-US", { weekday: "short" })
-  }
-
-  // Function to create smooth curve path
-  const createSmoothCurvePath = (values: number[]) => {
-    const points = values.map((value, i) => {
-      const x = (i / (values.length - 1)) * 100
-      // Invert the y value since SVG 0,0 is top-left
-      const y = 100 - (value / 5) * 100
-      return { x, y }
-    })
-
-    let path = `M ${points[0].x},${points[0].y}`
-
-    for (let i = 0; i < points.length - 1; i++) {
-      const x1 = points[i].x + (points[i + 1].x - points[i].x) / 3
-      const y1 = points[i].y
-      const x2 = points[i].x + (2 * (points[i + 1].x - points[i].x)) / 3
-      const y2 = points[i + 1].y
-      path += ` C ${x1},${y1} ${x2},${y2} ${points[i + 1].x},${points[i + 1].y}`
-    }
-
-    return path
-  }
-
-  // Function to create wellness curve path (scaled for 0-100)
-  const createWellnessCurvePath = (values: number[]) => {
-    const points = values.map((value, i) => {
-      const x = (i / (values.length - 1)) * 100
-      // Invert the y value since SVG 0,0 is top-left
-      // Scale from 0-100 to 0-100% of chart height
-      const y = 100 - value
-      return { x, y }
-    })
-
-    let path = `M ${points[0].x},${points[0].y}`
-
-    for (let i = 0; i < points.length - 1; i++) {
-      const x1 = points[i].x + (points[i + 1].x - points[i].x) / 3
-      const y1 = points[i].y
-      const x2 = points[i].x + (2 * (points[i + 1].x - points[i].x)) / 3
-      const y2 = points[i + 1].y
-      path += ` C ${x1},${y1} ${x2},${y2} ${points[i + 1].x},${points[i + 1].y}`
-    }
-
-    return path
-  }
-
-  // Function to create wellness area path (for filled area below the line)
-  const createWellnessAreaPath = (values: number[]) => {
-    const linePath = createWellnessCurvePath(values)
-    const lastPoint = values.length - 1
-    const lastX = 100 // 100% width
-    const firstX = 0 // 0% width
-
-    // Add line to bottom right, then to bottom left, then close path
-    return `${linePath} L ${lastX},100 L ${firstX},100 Z`
-  }
-
-  // Find the getDigestiveSymptomTip function and ensure it's properly implemented
-  // This function should return specific tips for each digestive symptom
-
-  // Function to get digestive symptom tip
-  const getDigestiveSymptomTip = (symptomId: string) => {
-    switch (symptomId) {
-      case "nauseous":
-        return {
-          tip: "If you feel nauseous, try increasing healthy fats, check for food sensitivities, and stay hydrated.",
-          link: "/faq#digestive-nauseous",
-        }
-      case "bloated":
-        return {
-          tip: "Bloating may be caused by too much fiber, fermented foods, coconut, or stress. Try adjusting your diet.",
-          link: "/faq#digestive-bloated",
-        }
-      case "gassy":
-        return {
-          tip: "Gas can be caused by fiber, coconut, large portions, or cruciferous vegetables. Try cooking vegetables well.",
-          link: "/faq#digestive-gassy",
-        }
-      case "heartburn":
-        return {
-          tip: "Heartburn may be triggered by high-fat foods, large portions, or eating too close to bedtime.",
-          link: "/faq#digestive-heartburn",
-        }
+  const getPhaseProgress = () => {
+    switch (currentPhase) {
+      case "elimination":
+        return Math.min((daysInPhase / 30) * 100, 100)
+      case "reintroduction":
+        return Math.min(((daysInPhase - 30) / 30) * 100, 100)
       default:
-        return null
+        return 100
     }
   }
 
-  // Update the generateDailyObservations function to properly handle digestive symptoms
-  const generateDailyObservations = () => {
-    // If no symptoms are logged, return null
-    if (!hasLoggedSymptoms && !hasLoggedWellness) {
-      return null
-    }
-
-    const observations = []
-
-    // Add period-related observations only for female users
-    const userProfile = JSON.parse(localStorage.getItem("userProfile") || "{}")
-    const userGender = userProfile.gender?.toLowerCase()
-
-    if (userGender === "female") {
-      if (isOnPeriod) {
-        if (loggedPeriodSymptoms.length > 0) {
-          const symptomNames = loggedPeriodSymptoms.map(getPeriodSymptomName).join(", ")
-          observations.push(`Your period symptoms (${symptomNames}) may affect your overall wellness score today.`)
-        } else {
-          observations.push("You're on your period today, which may affect your energy levels and comfort.")
-        }
-      }
-    }
-
-    // Add digestive-related observations
-    if (loggedDigestiveSymptoms && loggedDigestiveSymptoms.length > 0) {
-      // Filter out "OK" if it exists
-      const relevantSymptoms = loggedDigestiveSymptoms.filter((s) => s !== "ok")
-
-      if (relevantSymptoms.length > 0) {
-        // Add general observation about digestive symptoms
-        const symptomNames = relevantSymptoms.map(getDigestiveSymptomName).join(", ")
-        observations.push(`Your digestive symptoms (${symptomNames}) may be related to recent dietary changes.`)
-
-        // Add specific tips for each digestive symptom
-        relevantSymptoms.forEach((symptomId) => {
-          const tipInfo = getDigestiveSymptomTip(symptomId)
-          if (tipInfo) {
-            observations.push({
-              text: tipInfo.tip,
-              link: tipInfo.link,
-              linkText: "Learn more",
-            })
-          }
-        })
-      }
-    }
-
-    // Add a general observation about wellness if we have a score
-    if (wellnessScore > 0) {
-      if (wellnessScore >= 75) {
-        observations.push("Your wellness score is excellent today! Keep up the good habits.")
-      } else if (wellnessScore >= 50) {
-        observations.push("Your wellness score is good. Consider focusing on sleep quality to improve further.")
-      } else {
-        observations.push("Your wellness score indicates you might benefit from stress reduction techniques today.")
-      }
-    }
-
-    // Always add some default observations if we have no specific ones
-    if (observations.length === 0) {
-      observations.push("Remember to stay hydrated throughout the day for optimal health.")
-      observations.push("Consider adding more leafy greens to your meals for additional nutrients.")
-      observations.push("Taking short breaks during the day can help reduce stress and improve focus.")
-    }
-
-    return observations
-  }
-
-  // Get the observations
-  const dailyObservations = generateDailyObservations()
-
-  // Initialize nextPhaseDate outside the scope of the JSX
-  const nextPhaseDate = new Date()
-
-  // Function to get the phase display text
-  const getPhaseDisplayText = () => {
-    if (isAdaptationPhase) {
-      return `Adaptation Phase - Day ${adaptationDay}`
-    } else if (currentPhase === "elimination") {
-      return `Elimination Phase - ${eliminationPhasePercentage}% complete`
-    } else {
-      return `Reintroduction Phase - Day ${reintroductionDay}`
+  const getPhaseDescription = () => {
+    switch (currentPhase) {
+      case "elimination":
+        return "Focus on removing inflammatory foods"
+      case "reintroduction":
+        return "Gradually reintroduce foods one at a time"
+      case "maintenance":
+        return "Maintain your personalized diet"
+      default:
+        return ""
     }
   }
 
   return (
-    <div className="min-h-screen app-gradient flex flex-col">
-      {/* Welcome Overlay */}
-      {showWelcome && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-          <div className="glass-card p-6 max-w-md w-full">
-            <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold mb-2 text-primary-color">Welcome to IMMU!</h2>
-              <p className="text-secondary-color">
-                Your profile is complete and your personalized AIP journey is ready.
-              </p>
-            </div>
-
-            {conditions.length > 0 && (
-              <div className="mb-6">
-                <p className="font-medium mb-2 text-primary-color">Your Conditions:</p>
-                <div className="flex flex-wrap gap-2">
-                  {conditions.map((condition, index) => (
-                    <span key={index} className="bg-[#f0eaf9] text-primary-color px-3 py-1 rounded-full text-sm">
-                      {condition}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <p className="mb-6 text-secondary-color">
-              {userName ? `Welcome, ${userName}! ` : "Welcome! "}
-              We've created your personalized plan based on your selections. Track your symptoms and progress right from
-              your dashboard.
-            </p>
-
-            <button onClick={handleCloseWelcome} className="w-full gradient-button py-3 rounded-full">
-              Get Started
-            </button>
-          </div>
-        </div>
-      )}
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
       {/* Header */}
-      <header className="p-4 flex justify-between items-center header-gradient text-white">
-        <Logo />
-        <div className="flex items-center">
-          <button
-            className="w-10 h-10 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 transition-colors mr-2"
-            onClick={() => router.push("/faq")}
-            aria-label="FAQ"
-          >
-            <HelpCircle className="h-5 w-5 text-white" />
-          </button>
-          <div className="relative">
-            <button
-              className="w-10 h-10 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 transition-colors"
-              onClick={handleProfileClick}
-              aria-label="Profile"
-            >
-              <User className="h-5 w-5 text-white" />
-            </button>
+      <header className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center">
+              <h1 className="text-2xl font-bold text-green-800">ImmuHealth</h1>
+            </div>
+            <div className="flex items-center space-x-4">
+              <span className="text-sm text-gray-600">
+                {user?.email || userProfile?.email || "Welcome back!"}
+              </span>
+              <LogoutButton />
+            </div>
           </div>
         </div>
       </header>
+
       {/* Main Content */}
-      <main className="flex-1 p-6 overflow-auto">
-        {/* Date and Greeting */}
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold text-primary-color">Hello!</h2>
-          <p className="text-secondary-color">{currentDate}</p>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-8">
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">Your AIP Journey</h2>
+          <p className="text-gray-600">Track your progress and manage your autoimmune protocol</p>
         </div>
 
-        {/* Date Picker and Streak in one row */}
-        <div className="flex flex-row gap-4 mb-6 overflow-x-auto">
-          {/* Date Picker */}
-          <div className="glass-card p-4 flex items-center justify-between min-w-[200px]">
-            <button
-              onClick={() => {
-                const prevDate = new Date(selectedDate)
-                prevDate.setDate(prevDate.getDate() - 1)
-                setSelectedDate(prevDate)
-              }}
-              className="w-8 h-8 flex items-center justify-center rounded-full bg-white text-primary-color shadow-sm"
-              aria-label="Previous day"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-
-            <div className="flex flex-col items-center">
-              <span className="text-sm font-medium text-secondary-color">
-                {selectedDate.toLocaleDateString("en-US", { weekday: "short" })}
-              </span>
-              <span className="text-2xl font-bold text-primary-color">{selectedDate.getDate()}</span>
-              <span className="text-xs text-secondary-color">
-                {selectedDate.toLocaleDateString("en-US", { month: "short" })}
-              </span>
-            </div>
-
-            <button
-              onClick={() => {
-                const nextDate = new Date(selectedDate)
-                nextDate.setDate(nextDate.getDate() + 1)
-                setSelectedDate(nextDate)
-              }}
-              className="w-8 h-8 flex items-center justify-center rounded-full bg-white text-primary-color shadow-sm"
-              aria-label="Next day"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </button>
-          </div>
-
-          {/* Streak Card */}
-          <div className="glass-card p-4 min-w-[120px]">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm text-secondary-color">Streak</h3>
-              <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full">Active</span>
-            </div>
-            <div className="flex items-end">
-              <p className="text-2xl font-bold text-primary-color">{streakDays}</p>
-              <p className="ml-1 text-sm text-secondary-color">days</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Calendar Section */}
-        <div className="glass-card p-5 mb-6">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="font-medium text-primary-color">Calendar</h3>
-            <button className="text-accent-color text-sm flex items-center" onClick={() => router.push("/calendar")}>
-              View Calendar
-              <ArrowRight className="h-4 w-4 ml-1" />
-            </button>
-          </div>
-
-          <div className="flex items-center justify-between">
-            {typeof window !== "undefined" && (
-              <>
-                <div className="text-center">
-                  {(() => {
-                    // Get diet data from localStorage
-                    const adaptationChoice = localStorage.getItem("userAdaptationChoice")
-                    const hasAdaptation = adaptationChoice === "Yes"
-                    const startDate = localStorage.getItem("dietStartDate")
-                    const dietStartDate = startDate ? new Date(startDate) : new Date()
-                    const dietTimeline = localStorage.getItem("userDietTimeline")
-                    const totalSelectedDays = dietTimeline ? Number.parseInt(dietTimeline) : 30
-
-                    // Calculate days for each phase
-                    const adaptationDays = hasAdaptation ? 28 : 0
-                    const eliminationDays = hasAdaptation ? totalSelectedDays - adaptationDays : totalSelectedDays
-
-                    // Calculate days elapsed since diet start
-                    const today = new Date()
-                    const daysElapsed = Math.floor((today.getTime() - dietStartDate.getTime()) / (1000 * 60 * 60 * 24))
-
-                    // Determine current phase
-                    let currentPhase = "adaptation"
-                    let daysRemaining = 0
-
-                    if (hasAdaptation && daysElapsed < adaptationDays) {
-                      // In adaptation phase
-                      currentPhase = "adaptation"
-                      daysRemaining = adaptationDays - daysElapsed
-                    } else if (daysElapsed < (hasAdaptation ? adaptationDays + eliminationDays : eliminationDays)) {
-                      // In elimination phase
-                      currentPhase = "elimination"
-                      const eliminationDaysElapsed = daysElapsed - (hasAdaptation ? adaptationDays : 0)
-                      daysRemaining = eliminationDays - eliminationDaysElapsed
-                    } else {
-                      // In reintroduction phase
-                      currentPhase = "reintroduction"
-                      const reintroductionDays = 150 // 5 months
-                      const reintroductionDaysElapsed =
-                        daysElapsed - (hasAdaptation ? adaptationDays + eliminationDays : eliminationDays)
-                      daysRemaining = Math.max(reintroductionDays - reintroductionDaysElapsed, 0)
-                    }
-
-                    return (
-                      <>
-                        <p className="text-sm text-secondary-color">
-                          {currentPhase === "adaptation"
-                            ? "Adaptation Phase"
-                            : currentPhase === "elimination"
-                              ? "Elimination Phase"
-                              : "Reintroduction Phase"}
-                        </p>
-                        <p className="font-bold text-primary-color">{daysRemaining} days left</p>
-                      </>
-                    )
-                  })()}
-                </div>
-
-                <div className="relative w-32">
-                  <div className="h-2 bg-[#e4e0f0] rounded-full">
-                    <div className="h-2 bg-[#da83d2] rounded-full" style={{ width: `${progress}%` }}></div>
-                  </div>
-                  <div className="absolute -top-5 right-0 text-xs font-medium text-primary-color">{progress}%</div>
-                </div>
-
-                <div className="text-center">
-                  <p className="text-sm text-secondary-color">
-                    {(() => {
-                      // Get diet data from localStorage
-                      const adaptationChoice = localStorage.getItem("userAdaptationChoice")
-                      const hasAdaptation = adaptationChoice === "Yes"
-                      const startDate = localStorage.getItem("dietStartDate")
-                      const dietStartDate = startDate ? new Date(startDate) : new Date()
-                      const dietTimeline = localStorage.getItem("userDietTimeline")
-                      const totalSelectedDays = dietTimeline ? Number.parseInt(dietTimeline) : 30
-
-                      // Calculate days for each phase
-                      const adaptationDays = hasAdaptation ? 28 : 0
-                      const eliminationDays = totalSelectedDays - adaptationDays
-
-                      // Calculate days elapsed since diet start
-                      const today = new Date()
-                      const daysElapsed = Math.floor(
-                        (today.getTime() - dietStartDate.getTime()) / (1000 * 60 * 60 * 24),
-                      )
-
-                      // Determine current phase
-                      const currentPhase = "adaptation"
-
-                      if (hasAdaptation && daysElapsed < adaptationDays) {
-                        // In adaptation phase, next is elimination
-                        nextPhaseDate.setDate(dietStartDate.getDate() + adaptationDays)
-                      } else if (daysElapsed < (hasAdaptation ? adaptationDays + eliminationDays : eliminationDays)) {
-                        // In elimination phase, next is reintroduction
-                        nextPhaseDate.setDate(
-                          dietStartDate.getDate() +
-                            (hasAdaptation ? adaptationDays + eliminationDays : eliminationDays),
-                        )
-                      } else {
-                        // In reintroduction phase, next is completion
-                        const reintroductionDays = 150 // 5 months
-                        nextPhaseDate.setDate(
-                          dietStartDate.getDate() +
-                            (hasAdaptation ? adaptationDays + eliminationDays : eliminationDays) +
-                            reintroductionDays,
-                        )
-                      }
-
-                      return nextPhaseDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })
-                    })()}
-                  </p>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* Chart Tabs */}
-        <div className="glass-card p-6 mb-6">
-          {/* Tab Navigation */}
-          <div className="flex border-b border-[#e4e0f0] mb-4">
-            <button
-              onClick={() => setActiveTab("symptoms")}
-              className={`pb-2 px-4 font-medium text-lg transition-colors ${
-                activeTab === "symptoms"
-                  ? "border-b-2 border-[#38bdf8] text-[#38bdf8]"
-                  : "text-secondary-color hover:text-primary-color"
-              }`}
-            >
-              Symptom Improvement
-            </button>
-            <button
-              onClick={() => setActiveTab("wellness")}
-              className={`pb-2 px-4 font-medium text-lg transition-colors ${
-                activeTab === "wellness"
-                  ? "border-b-2 border-[#4ade80] text-[#4ade80]"
-                  : "text-secondary-color hover:text-primary-color"
-              }`}
-            >
-              Wellness Score
-            </button>
-          </div>
-
-          {/* Tab Content */}
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="font-medium text-xl text-[#38bdf8]">
-              {activeTab === "symptoms" ? "Symptom Improvement" : "Wellness Score"}
-            </h3>
-            <button className="text-accent-color text-sm flex items-center" onClick={() => router.push("/log-day")}>
-              Log Day
-              <ChevronRight className="h-4 w-4 ml-1" />
-            </button>
-          </div>
-
-          {/* Symptom Chart */}
-          {activeTab === "symptoms" && (
-            <>
-              {/* Chart Container */}
-              <div className="h-64 relative mb-8 bg-white rounded-lg shadow-sm">
-                {/* Y-axis labels */}
-                <div className="absolute left-0 top-0 bottom-0 w-12 flex flex-col justify-between text-xs text-secondary-color py-4">
-                  <span>Severe</span>
-                  <span>Moderate</span>
-                  <span>Mild</span>
-                  <span>Very mild</span>
-                  <span>None</span>
-                </div>
-
-                {/* Vertical grid lines */}
-                <div className="absolute left-12 right-0 top-0 bottom-0 flex justify-between">
-                  {symptomHistoryData.dates.map((date, index) => (
-                    <div
-                      key={index}
-                      className="h-full border-r border-[#f0eaf9] flex flex-col justify-end items-center"
-                      style={{ width: `${100 / symptomHistoryData.dates.length}%` }}
-                    >
-                      <span className="text-xs text-secondary-color mb-2">{date}</span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Chart area */}
-                <div className="absolute left-12 right-0 top-0 bottom-8 px-4 pt-4">
-                  {/* Grid lines */}
-                  <div className="absolute inset-0">
-                    <div className="border-b border-[#f0eaf9] absolute top-[20%] left-0 right-0"></div>
-                    <div className="border-b border-[#f0eaf9] absolute top-[40%] left-0 right-0"></div>
-                    <div className="border-b border-[#f0eaf9] absolute top-[60%] left-0 right-0"></div>
-                    <div className="border-b border-[#f0eaf9] absolute top-[80%] left-0 right-0"></div>
-                  </div>
-
-                  {/* Only show the selected symptom or all if none selected */}
-                  {symptomData.map((symptom, index) => {
-                    // Only render if this is the selected symptom or no selection
-                    if (selectedSymptom !== null && selectedSymptom !== symptom.name) {
-                      return null
-                    }
-
-                    return (
-                      <svg
-                        key={index}
-                        className="absolute inset-0 h-full w-full transition-opacity duration-300"
-                        viewBox="0 0 100 100"
-                        preserveAspectRatio="none"
-                      >
-                        {/* Line */}
-                        <path
-                          d={createSmoothCurvePath(symptom.values)}
-                          fill="none"
-                          stroke={symptom.color}
-                          strokeWidth="2.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-
-                        {/* Add dots for data points */}
-                        {symptom.values.map((value, i) => {
-                          if (value === 0) return null // Don't show dots for zero values
-
-                          const x = (i / (symptom.values.length - 1)) * 100
-                          const y = 100 - (value / 5) * 100
-
-                          return (
-                            <circle
-                              key={i}
-                              cx={x}
-                              cy={y}
-                              r="3.5"
-                              fill={symptom.color}
-                              stroke="white"
-                              strokeWidth="1.5"
-                            />
-                          )
-                        })}
-                      </svg>
-                    )
-                  })}
-                </div>
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {/* Current Phase */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Current Phase</CardTitle>
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold capitalize">{currentPhase}</div>
+              <p className="text-xs text-muted-foreground">{getPhaseDescription()}</p>
+              <div className="mt-2">
+                <Progress value={getPhaseProgress()} className="h-2" />
               </div>
+            </CardContent>
+          </Card>
 
-              {/* Legend */}
-              <div className="flex flex-wrap gap-4 mt-4">
-                {symptomData.slice(0, 5).map((symptom, index) => (
-                  <button
-                    key={index}
-                    className={`flex items-center transition-opacity duration-200 ${
-                      selectedSymptom !== null && selectedSymptom !== symptom.name ? "opacity-50" : "opacity-100"
-                    }`}
-                    onClick={() => handleSymptomSelect(symptom.name)}
-                  >
-                    <div
-                      className={`w-3 h-3 rounded-full mr-2 ${
-                        selectedSymptom === symptom.name ? "ring-2 ring-offset-2 ring-[#e4e0f0]" : ""
-                      }`}
-                      style={{ backgroundColor: symptom.color }}
-                    ></div>
-                    <span className="text-sm text-primary-color">{symptom.name}</span>
-                  </button>
+          {/* Days in Phase */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Days in Phase</CardTitle>
+              <Clock className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{daysInPhase}</div>
+              <p className="text-xs text-muted-foreground">
+                {currentPhase === "elimination" ? `${30 - daysInPhase} days remaining` : "Keep going!"}
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Wellness Score */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Latest Wellness</CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{getLatestWellnessScore()}/10</div>
+              <p className="text-xs text-muted-foreground">
+                {wellnessData.length > 0 ? "Last recorded" : "No data yet"}
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Total Entries */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Entries</CardTitle>
+              <User className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{wellnessData.length}</div>
+              <p className="text-xs text-muted-foreground">Wellness logs recorded</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+            <Link href="/log-day">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Plus className="h-5 w-5 mr-2" />
+                  Log Today
+                </CardTitle>
+                <CardDescription>Record your daily wellness and symptoms</CardDescription>
+              </CardHeader>
+            </Link>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+            <Link href="/food-list">
+              <CardHeader>
+                <CardTitle>Food List</CardTitle>
+                <CardDescription>Check what foods are allowed in your current phase</CardDescription>
+              </CardHeader>
+            </Link>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+            <Link href="/recipes">
+              <CardHeader>
+                <CardTitle>Recipes</CardTitle>
+                <CardDescription>Discover AIP-compliant recipes</CardDescription>
+              </CardHeader>
+            </Link>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+            <Link href="/calendar">
+              <CardHeader>
+                <CardTitle>Calendar</CardTitle>
+                <CardDescription>View your wellness history</CardDescription>
+              </CardHeader>
+            </Link>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+            <Link href="/nutrition">
+              <CardHeader>
+                <CardTitle>Nutrition Guide</CardTitle>
+                <CardDescription>Learn about each phase of the AIP</CardDescription>
+              </CardHeader>
+            </Link>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+            <Link href="/profile">
+              <CardHeader>
+                <CardTitle>Profile</CardTitle>
+                <CardDescription>Manage your account and preferences</CardDescription>
+              </CardHeader>
+            </Link>
+          </Card>
+        </div>
+
+        {/* Recent Activity */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent Activity</CardTitle>
+            <CardDescription>Your latest wellness entries</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {wellnessData.length > 0 ? (
+              <div className="space-y-4">
+                {wellnessData.slice(-5).reverse().map((entry, index) => (
+                  <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div>
+                      <p className="font-medium">{new Date(entry.date).toLocaleDateString()}</p>
+                      <p className="text-sm text-gray-600">Wellness Score: {entry.score}/10</p>
+                      {entry.symptoms.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {entry.symptoms.map((symptom, idx) => (
+                            <Badge key={idx} variant="secondary" className="text-xs">
+                              {symptom}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 ))}
               </div>
-
-              {/* Message for users who haven't logged symptoms yet */}
-              {!hasLoggedSymptoms && userSymptoms.length > 0 && (
-                <div className="mt-4 text-center text-sm text-secondary-color p-2 bg-[#f0eaf9] rounded-lg">
-                  Log your first day to start tracking your symptom improvement over time.
-                </div>
-              )}
-            </>
-          )}
-
-          {/* Wellness Chart */}
-          {activeTab === "wellness" && (
-            <>
-              {/* Chart Container */}
-              <div className="h-64 relative mb-8 bg-white rounded-lg shadow-sm">
-                {/* Y-axis labels */}
-                <div className="absolute left-0 top-0 bottom-0 w-12 flex flex-col justify-between text-xs text-secondary-color py-4">
-                  <span>100</span>
-                  <span>75</span>
-                  <span>50</span>
-                  <span>25</span>
-                  <span>0</span>
-                </div>
-
-                {/* Vertical grid lines */}
-                <div className="absolute left-12 right-0 top-0 bottom-0 flex justify-between">
-                  {wellnessHistoryData.dates.map((date, index) => {
-                    // Check if this date has a period logged
-                    // For the first day (index 0), we'll use the current logged data
-                    const hasPeriod =
-                      index === 0
-                        ? (() => {
-                            try {
-                              const loggedDay = JSON.parse(localStorage.getItem("loggedDay") || "{}")
-                              return loggedDay.onPeriod === true
-                            } catch (e) {
-                              return false
-                            }
-                          })()
-                        : false // For demo purposes, only show for the first day
-
-                    return (
-                      <div
-                        key={index}
-                        className="h-full border-r border-[#f0eaf9] flex flex-col justify-end items-center relative group"
-                        style={{ width: `${100 / wellnessHistoryData.dates.length}%` }}
-                      >
-                        <span
-                          className={`text-xs mb-2 ${
-                            hasPeriod ? "text-red-500 font-semibold" : "text-secondary-color"
-                          }`}
-                        >
-                          {date}
-                        </span>
-
-                        {/* Tooltip */}
-                        {hasPeriod && (
-                          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-white rounded shadow-md text-xs whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity">
-                            Period logged on this day
-                          </div>
-                        )}
-                      </div>
-                    )
-                  })}
-                </div>
-
-                {/* Chart area */}
-                <div className="absolute left-12 right-0 top-0 bottom-8 px-4 pt-4">
-                  {/* Wellness curve */}
-                  <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                    {/* Filled area */}
-                    <defs>
-                      <linearGradient id="wellness-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stopColor={wellnessHistoryData.gradient[0]} />
-                        <stop offset="100%" stopColor={wellnessHistoryData.gradient[1]} />
-                      </linearGradient>
-                    </defs>
-
-                    {/* Area fill */}
-                    <path
-                      d={createWellnessAreaPath(wellnessHistoryData.scores)}
-                      fill="url(#wellness-gradient)"
-                      opacity="0.8"
-                    />
-
-                    {/* Line on top */}
-                    <path
-                      d={createWellnessCurvePath(wellnessHistoryData.scores)}
-                      fill="none"
-                      stroke={wellnessHistoryData.color}
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-
-                    {/* Add dots for data points */}
-                    {wellnessHistoryData.scores.map((value, i) => {
-                      if (value === 0) return null // Don't show dots for zero values
-
-                      const x = (i / (wellnessHistoryData.scores.length - 1)) * 100
-                      const y = 100 - value
-
-                      return (
-                        <circle
-                          key={i}
-                          cx={x}
-                          cy={y}
-                          r="3"
-                          fill="white"
-                          stroke={wellnessHistoryData.color}
-                          strokeWidth="2"
-                        />
-                      )
-                    })}
-                  </svg>
-                </div>
-              </div>
-
-              {/* Wellness Score Display */}
-              <div className="flex justify-center items-center mb-4">
-                <div className="text-center">
-                  <p className="text-sm text-secondary-color mb-1">Current Wellness Score</p>
-                  <div className="flex items-center justify-center">
-                    <div
-                      className="w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-xl"
-                      style={{
-                        backgroundColor:
-                          wellnessScore >= 75
-                            ? "#4ade80"
-                            : wellnessScore >= 50
-                              ? "#facc15"
-                              : wellnessScore >= 25
-                                ? "#fb923c"
-                                : "#f87171",
-                      }}
-                    >
-                      {wellnessScore}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Wellness Factors */}
-              <div className="flex flex-wrap gap-4 mt-4 justify-center">
-                <div className="flex items-center">
-                  <div className="w-3 h-3 rounded-full mr-2 bg-green-400"></div>
-                  <span className="text-sm text-primary-color">Mood</span>
-                </div>
-                <div className="flex items-center">
-                  <div className="w-3 h-3 rounded-full mr-2 bg-blue-400"></div>
-                  <span className="text-sm text-primary-color">Sleep</span>
-                </div>
-                <div className="flex items-center">
-                  <div className="w-3 h-3 rounded-full mr-2 bg-amber-400"></div>
-                  <span className="text-sm text-primary-color">Stress</span>
-                </div>
-              </div>
-
-              {/* Message for users who haven't logged wellness yet */}
-              {!hasLoggedWellness && (
-                <div className="mt-4 text-center text-sm text-secondary-color p-2 bg-[#f0eaf9] rounded-lg">
-                  Log your first day to start tracking your wellness score over time. Your score is calculated from your
-                  mood, sleep quality, and stress levels.
-                </div>
-              )}
-            </>
-          )}
-        </div>
-
-        {/* Weight Tracking Module */}
-        <div className="glass-card p-6 mb-6">
-          <div className="flex items-center mb-4">
-            <Scale className="h-5 w-5 mr-2 text-pink-500" />
-            <h3 className="font-medium text-xl text-primary-color">Weight Tracking</h3>
-          </div>
-
-          <div className="flex flex-col">
-            {userProfile && (
-              <div className="mb-4">
-                <p className="text-sm text-secondary-color mb-1">Current Weight</p>
-                <p className="font-bold text-primary-color">
-                  {userProfile.weight} {userProfile.weightUnit}
-                </p>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-gray-500 mb-4">No wellness entries yet</p>
+                <Button asChild>
+                  <Link href="/log-day">Log Your First Day</Link>
+                </Button>
               </div>
             )}
-
-            <div className="mb-4">
-              <label htmlFor="weight" className="block text-sm text-secondary-color mb-2">
-                Update Weight
-              </label>
-              <div className="flex gap-2">
-                <input
-                  type="number"
-                  id="weight"
-                  value={currentWeight}
-                  onChange={(e) => setCurrentWeight(e.target.value)}
-                  placeholder="Enter weight"
-                  className="flex-1 p-3 h-12 rounded-xl bg-white/80 border border-brand-dark/20 focus:outline-none focus:ring-2 focus:ring-pink-400"
-                  min="1"
-                />
-                <select
-                  value={weightUnit}
-                  onChange={(e) => setWeightUnit(e.target.value as "kg" | "lb")}
-                  className="w-24 h-12 rounded-xl bg-white/80 border border-brand-dark/20 focus:outline-none focus:ring-2 focus:ring-pink-400"
-                >
-                  <option value="kg">kg</option>
-                  <option value="lb">lb</option>
-                </select>
-              </div>
-              <button
-                onClick={updateWeight}
-                disabled={isUpdatingWeight || !currentWeight}
-                className="mt-3 py-3 px-6 w-full sm:w-auto rounded-xl gradient-button flex items-center justify-center"
-              >
-                {isUpdatingWeight ? "Saving..." : weightUpdateSuccess ? <Check className="h-5 w-5" /> : "Update"}
-              </button>
-            </div>
-
-            {userProfile?.weightHistory && userProfile.weightHistory.length > 0 && (
-              <div>
-                <p className="text-sm text-secondary-color mb-2">Weight History</p>
-                <div className="max-h-32 overflow-y-auto">
-                  {userProfile.weightHistory
-                    .slice()
-                    .reverse()
-                    .slice(0, 5)
-                    .map((entry, index) => (
-                      <div key={index} className="flex justify-between items-center py-2 border-b border-brand-dark/10">
-                        <span className="text-sm text-primary-color">
-                          {new Date(entry.date).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                          })}
-                        </span>
-                        <span className="font-medium text-primary-color">
-                          {entry.weight} {userProfile.weightUnit}
-                        </span>
-                      </div>
-                    ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Daily Observations Module */}
-        {/* Update the Daily Observations Module section to ensure it's displaying content */}
-        <div className="glass-card p-6 mb-6">
-          <div className="flex items-center mb-4">
-            <LightbulbIcon className="h-5 w-5 mr-2 text-amber-500" />
-            <h3 className="font-medium text-xl text-primary-color">Daily Observations</h3>
-          </div>
-
-          {dailyObservations === null ? (
-            <div className="text-center text-sm text-secondary-color p-4 bg-[#f0eaf9] rounded-lg">
-              Log your symptoms to see daily insights.
-            </div>
-          ) : dailyObservations.length === 0 ? (
-            <div className="text-center text-sm text-secondary-color p-4 bg-[#f0eaf9] rounded-lg">
-              No insights for today. Try logging your symptoms and wellness data.
-            </div>
-          ) : (
-            <ul className="space-y-3">
-              {dailyObservations.map((observation, index) => (
-                <li key={index} className="flex items-start">
-                  <span className="inline-block w-2 h-2 rounded-full bg-pink-400 mt-1.5 mr-3 flex-shrink-0"></span>
-                  {typeof observation === "string" ? (
-                    <span className="text-sm text-primary-color">{observation}</span>
-                  ) : (
-                    <div className="text-sm text-primary-color">
-                      {observation.text}{" "}
-                      <button
-                        onClick={() => router.push(observation.link)}
-                        className="text-accent-color inline-flex items-center"
-                      >
-                        {observation.linkText}
-                        <ExternalLink className="h-3 w-3 ml-1" />
-                      </button>
-                    </div>
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-
-        {/* To Do List Module */}
-        {todoItems.length > 0 && (
-          <div className="glass-card p-6 mb-6">
-            <div className="flex items-center mb-4">
-              <ListChecks className="h-5 w-5 mr-2 text-blue-500" />
-              <h3 className="font-medium text-xl text-primary-color">Daily To-Do List</h3>
-            </div>
-
-            <div className="mb-2">
-              <p className="text-sm text-secondary-color">{getPhaseDisplayText()}</p>
-            </div>
-
-            <ul className="space-y-3">
-              {todoItems.map((item) => (
-                <li key={item.id} className={`flex items-start ${item.isSpecial ? "bg-pink-50 p-3 rounded-lg" : ""}`}>
-                  <button
-                    onClick={() => toggleTodoCompletion(item.id)}
-                    className="mt-0.5 mr-3 flex-shrink-0 text-primary-color hover:text-accent-color transition-colors"
-                    aria-label={completedTodoIds.includes(item.id) ? "Mark as incomplete" : "Mark as complete"}
-                  >
-                    {completedTodoIds.includes(item.id) ? (
-                      <CheckCircle2 className="h-5 w-5 text-green-500" />
-                    ) : (
-                      <Circle className="h-5 w-5" />
-                    )}
-                  </button>
-                  <span
-                    className={`text-sm ${
-                      completedTodoIds.includes(item.id)
-                        ? "text-gray-400 line-through"
-                        : item.isSpecial
-                          ? "text-pink-700 font-medium"
-                          : "text-primary-color"
-                    }`}
-                  >
-                    {item.text}
-                  </span>
-                </li>
-              ))}
-            </ul>
-
-            <div className="mt-4 text-center">
-              <p className="text-xs text-secondary-color">Check off items as you complete them throughout the day</p>
-            </div>
-          </div>
-        )}
+          </CardContent>
+        </Card>
       </main>
-
-      {/* Confetti celebration */}
-      <ConfettiCelebration active={showConfetti} onComplete={() => setShowConfetti(false)} duration={4000} />
-
-      {/* Bottom Navigation */}
-      <nav className="grid grid-cols-5 border-t border-[#e4e0f0] bg-white/80 backdrop-blur-sm">
-        <button
-          className="flex flex-col items-center justify-center py-3 text-xs"
-          onClick={() => router.push("/food-list")}
-        >
-          <List className="h-5 w-5 mb-1 text-primary-color" />
-          <span className="text-primary-color">Products</span>
-        </button>
-        <button className="flex flex-col items-center justify-center py-3 text-xs text-accent-color">
-          <Home className="h-5 w-5 mb-1 text-accent-color" />
-          <span>Dashboard</span>
-        </button>
-        <button
-          className="flex items-center justify-center rounded-full gradient-button h-14 w-14 -mt-7 mx-auto shadow-lg"
-          onClick={() => router.push("/log-day")}
-        >
-          <Plus className="h-6 w-6" />
-        </button>
-        <button
-          className="flex flex-col items-center justify-center py-3 text-xs"
-          onClick={() => router.push("/nutrition")}
-        >
-          <BookOpen className="h-5 w-5 mb-1 text-primary-color" />
-          <span className="text-primary-color">Nutrition</span>
-        </button>
-        <button
-          className="flex flex-col items-center justify-center py-3 text-xs"
-          onClick={() => router.push("/recipes")}
-        >
-          <UtensilsCrossed className="h-5 w-5 mb-1 text-primary-color" />
-          <span className="text-primary-color">Recipes</span>
-        </button>
-      </nav>
     </div>
   )
 }

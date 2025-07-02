@@ -1,25 +1,34 @@
 "use client"
 
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/utils/supabase/client"
-import { LogOut } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Icons } from "@/components/icons"
 
-export default function LogoutButton() {
-  const router = useRouter()
+export function LogoutButton({ className }: { className?: string }) {
   const supabase = createClient()
+  const router = useRouter()
+  const [loading, setLoading] = useState(false)
 
   const handleLogout = async () => {
-    await supabase.auth.signOut()
-    router.push("/login")
+    setLoading(true)
+    try {
+      await supabase.auth.signOut()
+      router.push("/login")
+      router.refresh()
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
-    <button
-      onClick={handleLogout}
-      className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-    >
-      <LogOut className="h-4 w-4" />
-      Sign Out
-    </button>
+    <Button variant="ghost" size="sm" className={className} onClick={handleLogout} disabled={loading}>
+      <Icons.logout className="h-4 w-4 mr-1" />
+      {loading ? "Signing out…" : "Sign Out"}
+    </Button>
   )
 }
+
+// also export as default for backward compatibility
+export default LogoutButton
