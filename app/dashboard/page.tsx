@@ -1736,7 +1736,7 @@ export default function Dashboard() {
                       d={createWellnessCurvePath(wellnessHistoryData.scores)}
                       fill="none"
                       stroke={wellnessHistoryData.color}
-                      strokeWidth="2"
+                      strokeWidth="0.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
                     />
@@ -1753,10 +1753,10 @@ export default function Dashboard() {
                           key={i}
                           cx={x}
                           cy={y}
-                          r="3"
+                          r="1.5"
                           fill="white"
                           stroke={wellnessHistoryData.color}
-                          strokeWidth="2"
+                          strokeWidth="0.3"
                         />
                       )
                     })}

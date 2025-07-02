@@ -1,45 +1,17 @@
 /**
- * Utility function to set up test data and skip authentication/onboarding
+ * Placeholder implementation to satisfy imports during build and deployment.
+ * -------------------------------------------------------------------------
+ * Some components or pages still reference a utility called `setupTestData`
+ * from `app/utils/test-utils.ts`.
+ *
+ * The original test helpers were removed, so we recreate the file with a
+ * no-op export to prevent build-time module-resolution errors.
+ *
+ * If you need to seed test data in the future, extend the function below
+ * with real logic (e.g., Supabase inserts, mock API calls, etc.).
  */
-export function setupTestData() {
-  // Set up minimal required localStorage data
-  const testUserAccount = {
-    name: "Test User",
-    email: "test@example.com",
-    createdAt: new Date().toISOString(),
-  }
 
-  // Set up basic user profile
-  const testUserProfile = {
-    gender: "female",
-    age: 30,
-    weight: 65,
-    weightUnit: "kg",
-    height: 170,
-    heightUnit: "cm",
-  }
-
-  // Set up basic user conditions
-  const testConditions = ["Hashimoto's", "Rheumatoid Arthritis"]
-
-  // Set up basic user symptoms
-  const testSymptoms = ["Joint Pain", "Fatigue", "Brain Fog"]
-
-  // Set up diet start date (today)
-  const dietStartDate = new Date().toISOString()
-
-  // Set up diet timeline (30 days)
-  const dietTimeline = "30"
-
-  // Set up adaptation choice
-  const adaptationChoice = "Yes"
-
-  // Save to localStorage
-  localStorage.setItem("userAccount", JSON.stringify(testUserAccount))
-  localStorage.setItem("userProfile", JSON.stringify(testUserProfile))
-  localStorage.setItem("userConditions", JSON.stringify(testConditions))
-  localStorage.setItem("userSymptoms", JSON.stringify(testSymptoms))
-  localStorage.setItem("dietStartDate", dietStartDate)
-  localStorage.setItem("userDietTimeline", dietTimeline)
-  localStorage.setItem("userAdaptationChoice", adaptationChoice)
+export async function setupTestData(): Promise<void> {
+  // Intentionally left blank.
+  // Add any test-data-seeding logic here when required.
 }

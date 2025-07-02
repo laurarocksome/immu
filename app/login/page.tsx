@@ -5,14 +5,11 @@ import type React from "react"
 import Link from "next/link"
 import Logo from "@/components/Logo"
 import { useRouter } from "next/navigation"
-import { setupTestData } from "../utils/test-utils"
-import TestUsers from "../components/test-users"
 import { useState } from "react"
 import { createClient } from "@/utils/supabase/client"
 
 export default function Login() {
   const router = useRouter()
-  const [showTestUsers, setShowTestUsers] = useState(false)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -40,11 +37,6 @@ export default function Login() {
     } finally {
       setIsLoading(false)
     }
-  }
-
-  const handleSkip = () => {
-    setupTestData()
-    router.push("/dashboard")
   }
 
   return (
@@ -101,29 +93,6 @@ export default function Login() {
             >
               {isLoading ? "Logging in..." : "Log In"}
             </button>
-
-            {/* Toggle test users section */}
-            <button
-              type="button"
-              onClick={() => setShowTestUsers(!showTestUsers)}
-              className="w-full py-2 text-pink-500 text-sm hover:underline"
-            >
-              {showTestUsers ? "Hide Test Users" : "Show Test Users"}
-            </button>
-
-            {/* Test Users Section */}
-            {showTestUsers && <TestUsers />}
-
-            {/* Skip button for testing */}
-            {!showTestUsers && (
-              <button
-                type="button"
-                onClick={handleSkip}
-                className="w-full py-4 rounded-full border-2 border-dashed border-pink-300 bg-transparent text-pink-500 hover:bg-pink-50"
-              >
-                Skip (Testing)
-              </button>
-            )}
           </form>
 
           <div className="text-center space-y-3">

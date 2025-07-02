@@ -154,7 +154,7 @@ export default function ConditionsPage() {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-brand-lightest to-white text-brand-dark">
       {/* Header */}
-      <header className="p-4 flex justify-center items-center bg-brand-dark text-white relative">
+      <header className="p-4 flex justify-center items-center bg-brand-dark text-white relative mb-2.5">
         <button
           onClick={handleBack}
           className="absolute left-4 text-white/80 hover:text-white transition-colors flex items-center"
