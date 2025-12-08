@@ -25,6 +25,8 @@ import RestartConfirmation from "@/app/components/restart-confirmation"
 import AdaptationPeriodQuestion from "@/app/components/adaptation-period-question"
 
 // Sample mood options
+export const dynamic = 'force-dynamic'
+
 const moodOptions = [
   { value: 5, label: "Great", icon: Smile },
   { value: 4, label: "Good", icon: Smile },

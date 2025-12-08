@@ -8,6 +8,8 @@ import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { createClient } from "@/utils/supabase/client"
 
+export const dynamic = 'force-dynamic'
+
 export default function Login() {
   const router = useRouter()
   const [email, setEmail] = useState("")

@@ -6,6 +6,8 @@ import { List, Home, Plus, BookOpen, UtensilsCrossed, User, Search, Filter } fro
 import Logo from "@/app/components/logo"
 
 // Sample recipe data
+export const dynamic = 'force-dynamic'
+
 const sampleRecipes = [
   {
     id: 1,

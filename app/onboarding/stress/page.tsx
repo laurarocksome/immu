@@ -7,6 +7,8 @@ import Logo from "@/app/components/logo"
 import { ArrowLeft } from "lucide-react"
 
 // List of stress management techniques
+export const dynamic = 'force-dynamic'
+
 const stressManagementOptions = [
   "Exercise",
   "Meditation",

@@ -5,6 +5,8 @@ import { List, Home, Plus, BookOpen, UtensilsCrossed, User } from "lucide-react"
 import Logo from "@/app/components/logo"
 import { useState, useEffect } from "react"
 
+export const dynamic = 'force-dynamic'
+
 export default function NutritionPage() {
   const router = useRouter()
 

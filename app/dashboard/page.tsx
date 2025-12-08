@@ -25,6 +25,8 @@ import Logo from "@/app/components/logo"
 import ConfettiCelebration from "@/app/components/confetti-celebration"
 
 // Update the chart dates to show daily data
+export const dynamic = 'force-dynamic'
+
 const chartDates = ["Day 1", "Day 2", "Day 3", "Day 4", "Day 5", "Day 6", "Day 7"]
 
 // Sample symptom tracking data for the chart with more distinct colors

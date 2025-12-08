@@ -6,6 +6,8 @@ import { List, Home, Plus, BookOpen, UtensilsCrossed, User, ArrowLeft, ChevronRi
 import Logo from "@/app/components/logo"
 import Image from "next/image"
 
+export const dynamic = 'force-dynamic'
+
 export default function EliminationPhasePage() {
   const router = useRouter()
   const [expandedFaq, setExpandedFaq] = useState<string | null>(null)

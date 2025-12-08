@@ -6,6 +6,8 @@ import { List, Home, Plus, BookOpen, UtensilsCrossed, ArrowLeft, Clock, User, He
 import Logo from "@/app/components/logo"
 
 // Sample recipe details
+export const dynamic = 'force-dynamic'
+
 const recipeDetails = {
   id: 1,
   title: "Turmeric Ginger Chicken Soup",

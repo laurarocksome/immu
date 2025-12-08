@@ -4,6 +4,8 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Logo from "@/app/components/logo"
 
+export const dynamic = 'force-dynamic'
+
 export default function AdaptationPeriodPage() {
   const router = useRouter()
   const [selectedOption, setSelectedOption] = useState<string | null>(null)

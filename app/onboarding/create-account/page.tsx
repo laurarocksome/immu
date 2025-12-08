@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation"
 import Logo from "@/app/components/logo"
 import { createClient } from "@/utils/supabase/client"
 
+export const dynamic = 'force-dynamic'
+
 export default function CreateAccountPage() {
   const router = useRouter()
   const [name, setName] = useState("")

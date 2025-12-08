@@ -8,6 +8,8 @@ import { List, Home, Plus, BookOpen, UtensilsCrossed, ArrowLeft, ChevronDown, Ch
 import Logo from "@/app/components/logo"
 
 // FAQ item interface
+export const dynamic = 'force-dynamic'
+
 interface FAQItem {
   id: string
   question: string

@@ -18,6 +18,8 @@ import {
 } from "lucide-react"
 import Logo from "@/app/components/logo"
 
+export const dynamic = 'force-dynamic'
+
 // Function to determine the current diet phase and day
 const determineDietPhase = () => {
   if (typeof window === "undefined") return { phase: "elimination", adaptationDay: 0 }

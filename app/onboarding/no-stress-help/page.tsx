@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation"
 import { Check } from "lucide-react"
 import Logo from "@/app/components/logo"
 
+export const dynamic = 'force-dynamic'
+
 export default function NoStressHelpPage() {
   const router = useRouter()
   const [acknowledged, setAcknowledged] = useState(false)

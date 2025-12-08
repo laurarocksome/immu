@@ -6,6 +6,8 @@ import Logo from "@/app/components/logo"
 import { ArrowLeft } from "lucide-react"
 
 // Vegetable consumption options
+export const dynamic = 'force-dynamic'
+
 const vegetableOptions = ["5+ servings", "3-4 servings", "1-2 servings", "None"]
 
 export default function VegetablePage() {

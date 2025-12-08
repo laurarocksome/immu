@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation"
 import { ArrowLeft } from "lucide-react"
 import Logo from "@/app/components/logo"
 
+export const dynamic = 'force-dynamic'
+
 export default function SymptomsPage() {
   const router = useRouter()
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([])

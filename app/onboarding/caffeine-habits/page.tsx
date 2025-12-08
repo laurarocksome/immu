@@ -6,6 +6,8 @@ import Logo from "@/app/components/logo"
 import { ArrowLeft } from "lucide-react"
 
 // Caffeine consumption options
+export const dynamic = 'force-dynamic'
+
 const caffeineOptions = ["None", "1-2 cups", "3-4 cups", "5+ cups"]
 
 export default function CaffeinePage() {
