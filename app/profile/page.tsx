@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation"
 import { List, Home, Plus, BookOpen, UtensilsCrossed, ArrowLeft, Edit } from "lucide-react"
 import Logo from "@/app/components/logo"
 
+export const dynamic = 'force-dynamic'
+
 type UserProfile = {
   gender: string
   age: number
