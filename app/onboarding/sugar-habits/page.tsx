@@ -6,8 +6,6 @@ import Logo from "@/app/components/logo"
 import { ArrowLeft } from "lucide-react"
 
 // Sugar consumption options
-export const dynamic = 'force-dynamic'
-
 const sugarOptions = [
   "No, I avoid added sugar",
   "Yes, occasionally (1-2 times per week)",

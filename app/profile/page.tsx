@@ -5,8 +5,6 @@ import { useRouter } from "next/navigation"
 import { List, Home, Plus, BookOpen, UtensilsCrossed, ArrowLeft, Edit } from "lucide-react"
 import Logo from "@/app/components/logo"
 
-export const dynamic = 'force-dynamic'
-
 type UserProfile = {
   gender: string
   age: number
@@ -55,7 +53,7 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-brand-lightest to-white text-brand-dark">
       {/* Header */}
-      <header className="p-4 flex justify-between items-center bg-brand-dark text-white mb-2.5">
+      <header className="p-4 flex justify-between items-center bg-brand-dark text-white">
         <button onClick={handleBackToDashboard} className="flex items-center text-white/80 hover:text-white">
           <ArrowLeft className="h-5 w-5 mr-1" />
           <span>Back</span>

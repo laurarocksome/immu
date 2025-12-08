@@ -5,8 +5,6 @@ import { useRouter } from "next/navigation"
 import { AlertCircle } from "lucide-react"
 import Logo from "@/app/components/logo"
 
-export const dynamic = 'force-dynamic'
-
 export default function AthleteInfoPage() {
   const router = useRouter()
   const [acknowledged, setAcknowledged] = useState(false)

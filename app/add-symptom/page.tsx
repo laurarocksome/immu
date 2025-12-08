@@ -6,8 +6,6 @@ import { List, Home, Plus, BookOpen, UtensilsCrossed, ArrowLeft } from "lucide-r
 import Logo from "@/app/components/logo"
 
 // Sample symptoms for selection
-export const dynamic = 'force-dynamic'
-
 const commonSymptoms = [
   "Fatigue",
   "Joint Pain",

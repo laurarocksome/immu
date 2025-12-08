@@ -5,8 +5,6 @@ import { useRouter } from "next/navigation"
 import { ArrowLeft } from "lucide-react"
 import Logo from "@/app/components/logo"
 
-export const dynamic = 'force-dynamic'
-
 export default function ConditionsPage() {
   const router = useRouter()
   const [selectedConditions, setSelectedConditions] = useState<string[]>([])
@@ -156,7 +154,7 @@ export default function ConditionsPage() {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-brand-lightest to-white text-brand-dark">
       {/* Header */}
-      <header className="p-4 flex justify-center items-center bg-brand-dark text-white relative mb-2.5">
+      <header className="p-4 flex justify-center items-center bg-brand-dark text-white relative">
         <button
           onClick={handleBack}
           className="absolute left-4 text-white/80 hover:text-white transition-colors flex items-center"

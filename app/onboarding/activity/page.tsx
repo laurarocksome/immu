@@ -6,8 +6,6 @@ import Logo from "@/app/components/logo"
 import { ArrowLeft } from "lucide-react"
 
 // Activity level options
-export const dynamic = 'force-dynamic'
-
 const activityLevels = ["Sedentary", "Light activity", "Moderate activity", "Active", "Athlete"]
 
 export default function ActivityPage() {

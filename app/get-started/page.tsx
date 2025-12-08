@@ -4,8 +4,6 @@ import { useRouter } from "next/navigation"
 import Logo from "@/app/components/logo"
 import { setupTestData } from "../utils/test-utils"
 
-export const dynamic = 'force-dynamic'
-
 export default function GetStartedPage() {
   const router = useRouter()
 

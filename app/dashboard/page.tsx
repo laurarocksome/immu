@@ -25,8 +25,6 @@ import Logo from "@/app/components/logo"
 import ConfettiCelebration from "@/app/components/confetti-celebration"
 
 // Update the chart dates to show daily data
-export const dynamic = 'force-dynamic'
-
 const chartDates = ["Day 1", "Day 2", "Day 3", "Day 4", "Day 5", "Day 6", "Day 7"]
 
 // Sample symptom tracking data for the chart with more distinct colors
@@ -1307,15 +1305,13 @@ export default function Dashboard() {
           >
             <HelpCircle className="h-5 w-5 text-white" />
           </button>
-          <div className="relative">
-            <button
-              className="w-10 h-10 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 transition-colors"
-              onClick={handleProfileClick}
-              aria-label="Profile"
-            >
-              <User className="h-5 w-5 text-white" />
-            </button>
-          </div>
+          <button
+            className="w-10 h-10 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 transition-colors"
+            onClick={handleProfileClick}
+            aria-label="Profile"
+          >
+            <User className="h-5 w-5 text-white" />
+          </button>
         </div>
       </header>
       {/* Main Content */}
@@ -1598,7 +1594,7 @@ export default function Dashboard() {
                           d={createSmoothCurvePath(symptom.values)}
                           fill="none"
                           stroke={symptom.color}
-                          strokeWidth="0.5"
+                          strokeWidth="2.5"
                           strokeLinecap="round"
                           strokeLinejoin="round"
                         />
@@ -1615,10 +1611,10 @@ export default function Dashboard() {
                               key={i}
                               cx={x}
                               cy={y}
-                              r="1.5"
+                              r="3.5"
                               fill={symptom.color}
                               stroke="white"
-                              strokeWidth="0.3"
+                              strokeWidth="1.5"
                             />
                           )
                         })}
@@ -1738,7 +1734,7 @@ export default function Dashboard() {
                       d={createWellnessCurvePath(wellnessHistoryData.scores)}
                       fill="none"
                       stroke={wellnessHistoryData.color}
-                      strokeWidth="0.5"
+                      strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
                     />
@@ -1755,10 +1751,10 @@ export default function Dashboard() {
                           key={i}
                           cx={x}
                           cy={y}
-                          r="1.5"
+                          r="3"
                           fill="white"
                           stroke={wellnessHistoryData.color}
-                          strokeWidth="0.3"
+                          strokeWidth="2"
                         />
                       )
                     })}

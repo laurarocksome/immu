@@ -7,8 +7,6 @@ import Logo from "@/app/components/logo"
 
 // Replace the ProgressBar component with this updated version that handles all three phases
 
-export const dynamic = 'force-dynamic'
-
 function ProgressBar() {
   const [progressData, setProgressData] = useState({
     adaptationDays: 0,

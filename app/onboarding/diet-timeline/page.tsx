@@ -8,8 +8,6 @@ import Logo from "@/app/components/logo"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 
-export const dynamic = 'force-dynamic'
-
 export default function DietTimelinePage() {
   const router = useRouter()
   const [needsAdaptation, setNeedsAdaptation] = useState(false)

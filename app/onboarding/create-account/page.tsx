@@ -3,9 +3,6 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Logo from "@/app/components/logo"
-import { createClient } from "@/utils/supabase/client"
-
-export const dynamic = 'force-dynamic'
 
 export default function CreateAccountPage() {
   const router = useRouter()
@@ -15,9 +12,8 @@ export default function CreateAccountPage() {
   const [agreedToTerms, setAgreedToTerms] = useState(false)
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-  const supabase = createClient()
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     // Validate inputs
     if (!name.trim()) {
       setError("Please enter your name")
@@ -40,43 +36,25 @@ export default function CreateAccountPage() {
     }
 
     setIsLoading(true)
-    setError("")
 
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: name,
-          },
-        },
-      })
+    // Save account info to local storage
+    const accountInfo = {
+      name,
+      email,
+      createdAt: new Date().toISOString(),
+    }
 
-      if (error) {
-        setError(error.message)
-        setIsLoading(false)
-        return
-      }
+    localStorage.setItem("userAccount", JSON.stringify(accountInfo))
 
-      // Save account info to local storage for backward compatibility
-      const accountInfo = {
-        name,
-        email,
-        createdAt: new Date().toISOString(),
-      }
+    // Set the diet start date to today
+    localStorage.setItem("dietStartDate", new Date().toISOString())
 
-      localStorage.setItem("userAccount", JSON.stringify(accountInfo))
-
-      // Set the diet start date to today
-      localStorage.setItem("dietStartDate", new Date().toISOString())
-
+    // Simulate API call delay
+    setTimeout(() => {
       // Navigate to dashboard
       router.push("/dashboard")
-    } catch (err) {
-      setError("An unexpected error occurred")
       setIsLoading(false)
-    }
+    }, 1000)
   }
 
   return (
@@ -87,7 +65,7 @@ export default function CreateAccountPage() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 px-4 pb-8 overflow-auto mt-1.5">
+      <main className="flex-1 px-4 pb-8 overflow-auto">
         <div className="max-w-md mx-auto">
           <div className="mb-6">
             <h2 className="text-2xl font-bold mb-2">Create Your Account</h2>

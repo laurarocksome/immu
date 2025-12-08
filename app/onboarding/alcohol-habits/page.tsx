@@ -6,8 +6,6 @@ import Logo from "@/app/components/logo"
 import { ArrowLeft } from "lucide-react"
 
 // Alcohol consumption options
-export const dynamic = 'force-dynamic'
-
 const alcoholOptions = [
   "Never",
   "Occasionally (1-2 times a month)",

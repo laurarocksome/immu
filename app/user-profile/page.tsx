@@ -4,8 +4,6 @@ import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Logo from "@/app/components/logo"
 
-export const dynamic = 'force-dynamic'
-
 export default function UserProfilePage() {
   const router = useRouter()
 

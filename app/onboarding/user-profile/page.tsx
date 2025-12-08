@@ -5,8 +5,6 @@ import { useRouter } from "next/navigation"
 import { ChevronDown, ArrowLeft } from "lucide-react"
 import Logo from "@/app/components/logo"
 
-export const dynamic = 'force-dynamic'
-
 type WeightUnit = "kg" | "lb"
 type HeightUnit = "cm" | "ft"
 
