@@ -17,7 +17,7 @@ export default function Home() {
             Immu Health, your personal guide to the Autoimmune Protocol diet
           </p>
 
-          <div className="glass-card p-6 space-y-5">
+          <div className="glass-card p-6 space-y-4">
             <Link href="/login" passHref>
               <Button className="w-full h-12 text-lg gradient-button">Login</Button>
             </Link>
@@ -25,6 +25,17 @@ export default function Home() {
             <Link href="/onboarding/conditions" passHref>
               <Button className="w-full h-12 text-lg secondary-button">Get Started</Button>
             </Link>
+
+            <div className="pt-2 text-center">
+              <a
+                href="https://immu.health/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-secondary-color hover:text-accent-color transition-colors"
+              >
+                More about Immu Health
+              </a>
+            </div>
           </div>
         </div>
       </div>
