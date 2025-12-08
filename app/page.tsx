@@ -17,7 +17,7 @@ export default function Home() {
             Immu Health, your personal guide to the Autoimmune Protocol diet
           </p>
 
-          <div className="glass-card p-6 space-y-4">
+          <div className="glass-card p-6 flex flex-col gap-4">
             <Link href="/login" passHref>
               <Button className="w-full h-12 text-lg gradient-button">Login</Button>
             </Link>
