@@ -6,6 +6,8 @@ import { List, Home, Plus, BookOpen, UtensilsCrossed, ArrowLeft, Clock, User, He
 import Logo from "@/app/components/logo"
 import Image from "next/image"
 
+export const dynamic = 'force-dynamic'
+
 export default function ShimpPestoPastaPage() {
   const router = useRouter()
   const [isFavorite, setIsFavorite] = useState(false)
