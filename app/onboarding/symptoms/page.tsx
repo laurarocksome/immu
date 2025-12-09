@@ -76,22 +76,18 @@ export default function SymptomsPage() {
       setSelectedSymptoms(selectedSymptoms.filter((s) => s !== symptom))
       setError("")
     } else {
-      if (selectedSymptoms.length < 5) {
-        setSelectedSymptoms([...selectedSymptoms, symptom])
-        setError("")
-      } else {
-        setError("You can select only 5 symptoms")
-      }
+      setSelectedSymptoms([...selectedSymptoms, symptom])
+      setError("")
     }
   }
 
   const handleContinue = () => {
-    if (selectedSymptoms.length === 5) {
+    if (selectedSymptoms.length === 0) {
+      setError("Please select at least 1 symptom to continue")
+    } else {
       // Save selected symptoms
       localStorage.setItem("selectedSymptoms", JSON.stringify(selectedSymptoms))
       router.push("/onboarding/stress")
-    } else {
-      setError("Please select exactly 5 symptoms to continue")
     }
   }
 
@@ -124,7 +120,7 @@ export default function SymptomsPage() {
           <div className="mb-6 text-center">
             <h2 className="text-2xl font-bold mb-2">What symptoms are you experiencing?</h2>
             <p className="text-brand-dark/70 mb-4">
-              Select 5 symptoms that you're currently experiencing. You must select exactly 5 symptoms to continue.
+              Select symptoms that you're currently experiencing. You can select as many as you'd like.
             </p>
           </div>
 
@@ -152,7 +148,7 @@ export default function SymptomsPage() {
           )}
 
           {/* Selected count */}
-          <p className="text-sm text-brand-dark/70 mb-2">Selected: {selectedSymptoms.length}/5</p>
+          <p className="text-sm text-brand-dark/70 mb-2">Selected: {selectedSymptoms.length}</p>
 
           {/* Symptoms list */}
           <div className="glass-card rounded-2xl p-4 mb-8 overflow-hidden">
@@ -178,11 +174,7 @@ export default function SymptomsPage() {
           </div>
 
           {/* Navigation buttons */}
-          <button
-            className={`w-full gradient-button py-4 rounded-full ${selectedSymptoms.length !== 5 ? "opacity-70" : ""}`}
-            onClick={handleContinue}
-            disabled={selectedSymptoms.length !== 5}
-          >
+          <button className={`w-full gradient-button py-4 rounded-full`} onClick={handleContinue}>
             Continue
           </button>
         </div>

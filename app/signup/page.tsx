@@ -35,7 +35,10 @@ export default function SignUp() {
 
     try {
       await signUp(email, password, name)
-      localStorage.setItem("dietStartDate", new Date().toISOString())
+      localStorage.clear()
+      const today = new Date().toISOString()
+      localStorage.setItem("dietStartDate", today)
+      localStorage.setItem("userAccount", JSON.stringify({ name, email, createdAt: today }))
       // After signup, redirect to onboarding to complete profile
       router.push("/onboarding/conditions")
     } catch (err: any) {

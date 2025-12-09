@@ -37,17 +37,19 @@ export default function CreateAccountPage() {
 
     setIsLoading(true)
 
+    const today = new Date().toISOString()
+
     // Save account info to local storage
     const accountInfo = {
       name,
       email,
-      createdAt: new Date().toISOString(),
+      createdAt: today,
     }
 
     localStorage.setItem("userAccount", JSON.stringify(accountInfo))
 
-    // Set the diet start date to today
-    localStorage.setItem("dietStartDate", new Date().toISOString())
+    // Set the diet start date to today (not some past date)
+    localStorage.setItem("dietStartDate", today)
 
     // Simulate API call delay
     setTimeout(() => {

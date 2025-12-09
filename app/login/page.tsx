@@ -100,7 +100,7 @@ export default function Login() {
             </form>
           </div>
 
-          <div className="flex flex-col gap-3">
+          <div className="mt-4">
             <button
               onClick={handleSkip}
               disabled={isLoading}

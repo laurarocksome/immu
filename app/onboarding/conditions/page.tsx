@@ -101,6 +101,7 @@ export default function ConditionsPage() {
     "Chronic pelvic pain",
     "Burning mouth syndrome",
     "Oral lichen planus",
+    "Joint Pain",
   ].sort()
 
   const filteredConditions = conditionsList.filter((condition) =>
