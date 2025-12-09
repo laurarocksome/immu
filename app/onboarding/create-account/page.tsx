@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Logo from "@/app/components/logo"
-import { saveUserProfile, saveUserConditions, saveUserSymptoms, saveDietInfo } from "@/lib/user-data"
-import { getCurrentUser } from "@/lib/auth"
+import { saveUserProfile, saveUserConditions, saveUserSymptoms, saveDietInfo, saveUserName } from "@/lib/user-data"
+import { getSession } from "@/lib/auth"
 
 export default function CreateAccountPage() {
   const router = useRouter()
@@ -31,15 +31,6 @@ export default function CreateAccountPage() {
     setError("")
 
     try {
-      // Check if user is authenticated
-      const user = await getCurrentUser()
-
-      if (!user) {
-        setError("Please sign up or log in first")
-        setIsLoading(false)
-        return
-      }
-
       const today = new Date().toISOString()
 
       // Get all data from localStorage
@@ -50,50 +41,57 @@ export default function CreateAccountPage() {
       const dietTimeline = localStorage.getItem("dietTimeline") || "90"
       const adaptationChoice = localStorage.getItem("adaptationChoice") || "yes"
 
-      console.log("[v0] Saving user data to Supabase...", {
-        profile: userProfile,
-        conditions: selectedConditions,
-        symptoms: selectedSymptoms,
-      })
+      const session = await getSession()
 
-      await saveUserProfile({
-        name: userAccount.name || userName,
-        gender: userProfile.gender,
-        age: userProfile.age,
-        weight: userProfile.weight,
-        weightUnit: userProfile.weightUnit || "kg",
-        height: userProfile.height,
-        heightUnit: userProfile.heightUnit || "cm",
-      })
+      if (session) {
+        // User is authenticated, save directly to Supabase
+        if (userAccount.name || userName) {
+          await saveUserName(userAccount.name || userName)
+        }
 
-      // Save conditions
-      if (selectedConditions.length > 0) {
-        await saveUserConditions(selectedConditions)
+        await saveUserProfile({
+          gender: userProfile.gender,
+          age: userProfile.age,
+          weight: userProfile.weight,
+          weightUnit: userProfile.weightUnit || "kg",
+          height: userProfile.height,
+          heightUnit: userProfile.heightUnit || "cm",
+        })
+
+        if (selectedConditions.length > 0) {
+          await saveUserConditions(selectedConditions)
+        }
+
+        if (selectedSymptoms.length > 0) {
+          await saveUserSymptoms(selectedSymptoms)
+        }
+
+        await saveDietInfo({
+          startDate: today,
+          timelineDays: Number.parseInt(dietTimeline),
+          adaptationChoice: adaptationChoice,
+          currentPhase: "adaptation",
+        })
+      } else {
+        localStorage.setItem("pendingSync", "true")
       }
-
-      // Save symptoms
-      if (selectedSymptoms.length > 0) {
-        await saveUserSymptoms(selectedSymptoms)
-      }
-
-      // Save diet info
-      await saveDietInfo({
-        startDate: today,
-        timelineDays: Number.parseInt(dietTimeline),
-        adaptationChoice: adaptationChoice,
-        currentPhase: "adaptation",
-      })
 
       // Keep dietStartDate in localStorage for compatibility
       localStorage.setItem("dietStartDate", today)
-
-      console.log("[v0] Successfully saved all data to Supabase")
+      localStorage.setItem("onboardingComplete", "true")
 
       // Navigate to dashboard
       router.push("/dashboard")
     } catch (err: any) {
-      console.error("[v0] Error saving user data:", err)
-      setError(err.message || "Failed to save your data. Please try again.")
+      console.error("Error saving user data:", err)
+      if (err.message?.includes("Auth session missing")) {
+        localStorage.setItem("pendingSync", "true")
+        localStorage.setItem("dietStartDate", new Date().toISOString())
+        localStorage.setItem("onboardingComplete", "true")
+        router.push("/dashboard")
+      } else {
+        setError(err.message || "Failed to save your data. Please try again.")
+      }
     } finally {
       setIsLoading(false)
     }
@@ -103,7 +101,7 @@ export default function CreateAccountPage() {
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-brand-lightest to-white text-brand-dark">
       {/* Header */}
       <header className="p-4 flex justify-center items-center bg-brand-dark text-white">
-        <Logo />
+        <Logo variant="light" />
       </header>
 
       {/* Main Content */}
@@ -132,6 +130,12 @@ export default function CreateAccountPage() {
               <p className="text-sm text-brand-dark/60 mt-2">
                 We've collected all the information needed to personalize your AIP diet experience.
               </p>
+              <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-700">
+                  <span className="font-medium">Check your email!</span> We've sent you a confirmation link to verify
+                  your account. Please confirm your email to sync your data across devices.
+                </p>
+              </div>
             </div>
 
             <div className="border-t border-brand-dark/10 pt-4">
@@ -171,16 +175,9 @@ export default function CreateAccountPage() {
       {/* Progress indicator */}
       <div className="p-4 flex justify-center">
         <div className="flex space-x-2">
-          <div className="w-2 h-2 rounded-full bg-pink-400"></div>
-          <div className="w-2 h-2 rounded-full bg-pink-400"></div>
-          <div className="w-2 h-2 rounded-full bg-pink-400"></div>
-          <div className="w-2 h-2 rounded-full bg-pink-400"></div>
-          <div className="w-2 h-2 rounded-full bg-pink-400"></div>
-          <div className="w-2 h-2 rounded-full bg-pink-400"></div>
-          <div className="w-2 h-2 rounded-full bg-pink-400"></div>
-          <div className="w-2 h-2 rounded-full bg-pink-400"></div>
-          <div className="w-2 h-2 rounded-full bg-pink-400"></div>
-          <div className="w-2 h-2 rounded-full bg-pink-400"></div>
+          {[...Array(10)].map((_, i) => (
+            <div key={i} className="w-2 h-2 rounded-full bg-pink-400"></div>
+          ))}
         </div>
       </div>
     </div>

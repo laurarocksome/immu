@@ -23,6 +23,8 @@ import {
 } from "lucide-react"
 import Logo from "@/app/components/logo"
 import ConfettiCelebration from "@/app/components/confetti-celebration"
+import { getSession } from "@/lib/auth"
+import { saveUserProfile, saveUserConditions, saveUserSymptoms, saveDietInfo, saveUserName } from "@/lib/user-data"
 
 // Update the chart dates to show daily data
 const chartDates = ["Day 1", "Day 2", "Day 3", "Day 4", "Day 5", "Day 6", "Day 7"]
@@ -123,6 +125,69 @@ export default function Dashboard() {
   // Add a new state for reintroduction phase day
   const [reintroductionDay, setReintroductionDay] = useState(0)
   const [currentPhase, setCurrentPhase] = useState<"adaptation" | "elimination" | "reintroduction">("elimination")
+
+  const syncPendingDataToSupabase = async () => {
+    if (typeof window === "undefined") return
+
+    const pendingSync = localStorage.getItem("pendingSync")
+    if (pendingSync !== "true") return
+
+    try {
+      const session = await getSession()
+      if (!session) return // User not authenticated yet
+
+      // Get all data from localStorage
+      const userProfile = JSON.parse(localStorage.getItem("userProfile") || "{}")
+      const userAccount = JSON.parse(localStorage.getItem("userAccount") || "{}")
+      const selectedConditions = JSON.parse(localStorage.getItem("selectedConditions") || "[]")
+      const selectedSymptoms = JSON.parse(localStorage.getItem("selectedSymptoms") || "[]")
+      const dietTimeline = localStorage.getItem("dietTimeline") || "90"
+      const adaptationChoice = localStorage.getItem("adaptationChoice") || "yes"
+      const dietStartDate = localStorage.getItem("dietStartDate") || new Date().toISOString()
+
+      // Sync name
+      if (userAccount.name) {
+        await saveUserName(userAccount.name)
+      }
+
+      // Sync profile
+      if (userProfile.gender || userProfile.age || userProfile.weight || userProfile.height) {
+        await saveUserProfile({
+          gender: userProfile.gender,
+          age: userProfile.age,
+          weight: userProfile.weight,
+          weightUnit: userProfile.weightUnit || "kg",
+          height: userProfile.height,
+          heightUnit: userProfile.heightUnit || "cm",
+        })
+      }
+
+      // Sync conditions
+      if (selectedConditions.length > 0) {
+        await saveUserConditions(selectedConditions)
+      }
+
+      // Sync symptoms
+      if (selectedSymptoms.length > 0) {
+        await saveUserSymptoms(selectedSymptoms)
+      }
+
+      // Sync diet info
+      await saveDietInfo({
+        startDate: dietStartDate,
+        timelineDays: Number.parseInt(dietTimeline),
+        adaptationChoice: adaptationChoice,
+        currentPhase: "adaptation",
+      })
+
+      // Clear the pending sync flag
+      localStorage.removeItem("pendingSync")
+      console.log("Successfully synced pending data to Supabase")
+    } catch (err) {
+      console.error("Error syncing pending data:", err)
+      // Don't remove pendingSync flag so it retries next time
+    }
+  }
 
   // Function to handle symptom selection
   const handleSymptomSelect = (symptomName: string) => {
@@ -481,8 +546,8 @@ export default function Dashboard() {
             isSpecial: true,
           },
           ...commonItems,
-          { id: "log_feelings", text: "Log how you feel 2–3 times" },
           { id: "extra_water", text: "Drink extra water" },
+          { id: "log_feelings", text: "Log how you feel 2–3 times" },
         ]
       case 12:
         return [
@@ -918,7 +983,7 @@ export default function Dashboard() {
     }
 
     // Save updated completed todos to localStorage
-    localStorage.setItem("completedTodos", JSON.stringify(completedTodos))
+    localStorage.setItem("completedTodos", JSON.JSON.stringify(completedTodos))
 
     // Show confetti if all items are completed
     if (updatedCompletedIds.length === todoItems.length) {
@@ -927,6 +992,9 @@ export default function Dashboard() {
   }
 
   useEffect(() => {
+    // Sync pending data to Supabase on initial load
+    syncPendingDataToSupabase()
+
     // Format current date
     const date = new Date()
     const options: Intl.DateTimeFormatOptions = { weekday: "long", month: "long", day: "numeric" }

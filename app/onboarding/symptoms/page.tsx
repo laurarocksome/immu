@@ -112,7 +112,7 @@ export default function SymptomsPage() {
           <ArrowLeft className="h-5 w-5 mr-1" />
           <span>Back</span>
         </button>
-        <Logo />
+        <Logo variant="light" />
       </header>
 
       <main className="flex-1 px-4 pb-8 overflow-auto">

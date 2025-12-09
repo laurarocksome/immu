@@ -31,7 +31,7 @@ export default function AdaptationPeriodPage() {
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-brand-lightest to-white text-brand-dark">
       {/* Header */}
       <header className="p-4 flex justify-center items-center bg-brand-dark text-white">
-        <Logo />
+        <Logo variant="light" />
       </header>
 
       {/* Main Content */}

@@ -85,7 +85,7 @@ export default function VegetablePage() {
           <ArrowLeft className="h-5 w-5 mr-1" />
           <span>Back</span>
         </button>
-        <Logo />
+        <Logo variant="light" />
       </header>
 
       {/* Main Content */}

@@ -2,7 +2,6 @@ import { supabase } from "./supabase/client"
 
 // Store user profile information
 export async function saveUserProfile(profileData: {
-  name?: string
   gender?: string
   age?: number
   weight?: number
@@ -17,7 +16,6 @@ export async function saveUserProfile(profileData: {
     .from("user_profiles")
     .upsert({
       user_id: user.data.user.id,
-      name: profileData.name,
       gender: profileData.gender,
       age: profileData.age,
       weight: profileData.weight,
@@ -237,4 +235,19 @@ export async function getDailyLogs(startDate: string, endDate: string) {
 
   if (error) throw error
   return data || []
+}
+
+// Update user name in 'users' table
+export async function saveUserName(name: string) {
+  const user = await supabase.auth.getUser()
+  if (!user.data.user) throw new Error("Not authenticated")
+
+  const { error } = await supabase.from("users").upsert({
+    id: user.data.user.id,
+    email: user.data.user.email,
+    name: name,
+    updated_at: new Date().toISOString(),
+  })
+
+  if (error) throw error
 }
