@@ -69,12 +69,7 @@ export default function SymptomsPage() {
 
   const filteredSymptoms = symptomsList.filter((symptom) => symptom.toLowerCase().includes(searchTerm.toLowerCase()))
 
-  // Determine which symptoms to display
-  const displayedSymptoms = searchTerm
-    ? filteredSymptoms
-    : showAllSymptoms
-      ? filteredSymptoms
-      : filteredSymptoms.slice(0, 5)
+  const displayedSymptoms = filteredSymptoms
 
   const handleSymptomClick = (symptom: string) => {
     if (selectedSymptoms.includes(symptom)) {
@@ -107,10 +102,6 @@ export default function SymptomsPage() {
 
   const clearSearch = () => {
     setSearchTerm("")
-  }
-
-  const toggleShowAllSymptoms = () => {
-    setShowAllSymptoms(!showAllSymptoms)
   }
 
   return (
@@ -165,7 +156,7 @@ export default function SymptomsPage() {
 
           {/* Symptoms list */}
           <div className="glass-card rounded-2xl p-4 mb-8 overflow-hidden">
-            <div className="max-h-64 overflow-y-auto">
+            <div className="max-h-96 overflow-y-auto">
               {displayedSymptoms.map((symptom) => (
                 <div
                   key={symptom}
@@ -184,16 +175,6 @@ export default function SymptomsPage() {
               ))}
               {filteredSymptoms.length === 0 && <p className="text-center p-4 text-brand-dark/70">No symptoms found</p>}
             </div>
-
-            {/* Show more/less button */}
-            {!searchTerm && filteredSymptoms.length > 5 && (
-              <button
-                className="w-full mt-2 py-2 text-pink-400 font-medium bg-white/80 rounded-xl hover:bg-white border border-pink-400/20"
-                onClick={toggleShowAllSymptoms}
-              >
-                {showAllSymptoms ? "Show less" : `Show more (${filteredSymptoms.length - 5} more)`}
-              </button>
-            )}
           </div>
 
           {/* Navigation buttons */}

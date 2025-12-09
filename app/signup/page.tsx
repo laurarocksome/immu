@@ -35,6 +35,7 @@ export default function SignUp() {
 
     try {
       await signUp(email, password, name)
+      localStorage.setItem("dietStartDate", new Date().toISOString())
       // After signup, redirect to onboarding to complete profile
       router.push("/onboarding/conditions")
     } catch (err: any) {
@@ -134,7 +135,7 @@ export default function SignUp() {
             </form>
           </div>
 
-          <div className="text-center">
+          <div className="text-center space-y-2">
             <p className="text-sm text-secondary-color">
               Already have an account?{" "}
               <Link href="/login" className="text-accent-color hover:underline">

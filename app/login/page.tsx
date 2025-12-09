@@ -1,7 +1,5 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-
 import type React from "react"
 
 import Link from "next/link"
@@ -100,14 +98,16 @@ export default function Login() {
                 {isLoading ? "Logging in..." : "Log In"}
               </button>
             </form>
+          </div>
 
-            <Button
+          <div className="flex flex-col gap-3">
+            <button
               onClick={handleSkip}
               disabled={isLoading}
-              className="w-full h-12 rounded-full border-2 border-dashed border-pink-300 bg-transparent text-pink-500 hover:bg-pink-50"
+              className="w-full h-12 rounded-full border-2 border-dashed border-pink-300 bg-transparent text-pink-500 hover:bg-pink-50 disabled:opacity-50 transition-colors"
             >
               {isLoading ? "Loading..." : "Skip (Testing)"}
-            </Button>
+            </button>
           </div>
 
           <div className="text-center space-y-3">
