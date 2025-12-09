@@ -949,18 +949,19 @@ export default function Dashboard() {
       // Get streak days from localStorage or calculate it
       const savedStreakDays = localStorage.getItem("streakDays")
 
-      // If no start date is set, this is a new user - set it now
       if (!startDate) {
-        localStorage.setItem("dietStartDate", new Date().toISOString())
+        const today = new Date().toISOString()
+        localStorage.setItem("dietStartDate", today)
+        // Set streak to 1 for new users
+        setStreakDays(1)
+        setProgress(1)
+        return
       }
 
       // Calculate days elapsed since diet start
-      const daysElapsed = startDate
-        ? Math.floor((new Date().getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24))
-        : 0
+      const daysElapsed = Math.floor((new Date().getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24))
 
-      // Set streak to saved value, days elapsed, or 1 for new users (minimum 1 day)
-      setStreakDays(savedStreakDays ? Number.parseInt(savedStreakDays, 10) : Math.max(daysElapsed, 1))
+      setStreakDays(Math.max(daysElapsed + 1, 1))
 
       // Calculate progress percentage
       const totalDays = dietTimeline ? Number.parseInt(dietTimeline) : 30
@@ -1704,6 +1705,14 @@ export default function Dashboard() {
 
                 {/* Chart area */}
                 <div className="absolute left-12 right-0 top-0 bottom-8 px-4 pt-4">
+                  {/* Grid lines */}
+                  <div className="absolute inset-0">
+                    <div className="border-b border-[#f0eaf9] absolute top-[20%] left-0 right-0"></div>
+                    <div className="border-b border-[#f0eaf9] absolute top-[40%] left-0 right-0"></div>
+                    <div className="border-b border-[#f0eaf9] absolute top-[60%] left-0 right-0"></div>
+                    <div className="border-b border-[#f0eaf9] absolute top-[80%] left-0 right-0"></div>
+                  </div>
+
                   {/* Wellness curve */}
                   <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
                     {/* Filled area */}
