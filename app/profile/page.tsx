@@ -4,7 +4,8 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { List, Home, Plus, BookOpen, UtensilsCrossed, ArrowLeft, Edit, Trash2 } from "lucide-react"
 import Logo from "@/app/components/logo"
-import { deleteUser } from "@/lib/auth"
+import { deleteUser, getSession } from "@/lib/auth"
+import { supabase } from "@/lib/supabase/client"
 
 type UserProfile = {
   gender: string
@@ -15,30 +16,131 @@ type UserProfile = {
   heightUnit: string
 }
 
+type DietInfo = {
+  timeline: string
+  adaptationPeriod: boolean
+}
+
 export default function ProfilePage() {
   const router = useRouter()
+  const [userName, setUserName] = useState<string>("")
   const [profile, setProfile] = useState<UserProfile | null>(null)
+  const [dietInfo, setDietInfo] = useState<DietInfo | null>(null)
+  const [conditions, setConditions] = useState<string[]>([])
+  const [symptoms, setSymptoms] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
 
   useEffect(() => {
-    // Load profile data
-    const profileData = JSON.parse(localStorage.getItem("userProfile") || "null")
-    setProfile(profileData)
+    const loadUserData = async () => {
+      try {
+        // First try to load from Supabase
+        const session = await getSession()
 
-    // Try to load conditions from both possible localStorage keys
-    const conditions = JSON.parse(localStorage.getItem("userConditions") || "[]")
-    if (conditions.length === 0) {
-      // If userConditions is empty, try selectedConditions
-      const selectedConditions = JSON.parse(localStorage.getItem("selectedConditions") || "[]")
-      if (selectedConditions.length > 0) {
-        // If found in selectedConditions, save to userConditions for future use
-        localStorage.setItem("userConditions", JSON.stringify(selectedConditions))
+        if (session?.user) {
+          const userId = session.user.id
+
+          // Load user name from users table
+          const { data: userData } = await supabase.from("users").select("name").eq("id", userId).single()
+
+          if (userData?.name) {
+            setUserName(userData.name)
+          }
+
+          // Load profile from user_profiles table
+          const { data: profileData } = await supabase.from("user_profiles").select("*").eq("user_id", userId).single()
+
+          if (profileData) {
+            setProfile({
+              gender: profileData.gender || "",
+              age: profileData.age || 0,
+              weight: profileData.weight || 0,
+              weightUnit: profileData.weight_unit || "kg",
+              height: profileData.height || 0,
+              heightUnit: profileData.height_unit || "cm",
+            })
+          }
+
+          // Load diet info
+          const { data: dietData } = await supabase.from("diet_info").select("*").eq("user_id", userId).single()
+
+          if (dietData) {
+            setDietInfo({
+              timeline: dietData.diet_timeline?.toString() || "Not set",
+              adaptationPeriod: dietData.adaptation_period || false,
+            })
+          }
+
+          // Load conditions
+          const { data: conditionsData } = await supabase
+            .from("user_conditions")
+            .select("condition_name")
+            .eq("user_id", userId)
+
+          if (conditionsData && conditionsData.length > 0) {
+            setConditions(conditionsData.map((c) => c.condition_name))
+          }
+
+          // Load symptoms
+          const { data: symptomsData } = await supabase
+            .from("user_symptoms")
+            .select("symptom_name")
+            .eq("user_id", userId)
+
+          if (symptomsData && symptomsData.length > 0) {
+            setSymptoms(symptomsData.map((s) => s.symptom_name))
+          }
+        }
+
+        // Fall back to localStorage if Supabase data not available
+        if (!profile) {
+          const profileData = JSON.parse(localStorage.getItem("userProfile") || "null")
+          if (profileData) setProfile(profileData)
+        }
+
+        if (!dietInfo) {
+          setDietInfo({
+            timeline: localStorage.getItem("userDietTimeline") || "Not set",
+            adaptationPeriod: localStorage.getItem("userAdaptationChoice") === "Yes",
+          })
+        }
+
+        if (conditions.length === 0) {
+          const storedConditions = JSON.parse(localStorage.getItem("userConditions") || "[]")
+          const selectedConditions = JSON.parse(localStorage.getItem("selectedConditions") || "[]")
+          setConditions(storedConditions.length > 0 ? storedConditions : selectedConditions)
+        }
+
+        if (symptoms.length === 0) {
+          const storedSymptoms = JSON.parse(localStorage.getItem("userSymptoms") || "[]")
+          setSymptoms(storedSymptoms)
+        }
+
+        if (!userName) {
+          const storedName = localStorage.getItem("userName") || ""
+          setUserName(storedName)
+        }
+      } catch (error) {
+        console.error("Error loading user data:", error)
+        // Fall back to localStorage on error
+        const profileData = JSON.parse(localStorage.getItem("userProfile") || "null")
+        setProfile(profileData)
+        setDietInfo({
+          timeline: localStorage.getItem("userDietTimeline") || "Not set",
+          adaptationPeriod: localStorage.getItem("userAdaptationChoice") === "Yes",
+        })
+        const storedConditions = JSON.parse(localStorage.getItem("userConditions") || "[]")
+        setConditions(storedConditions)
+        const storedSymptoms = JSON.parse(localStorage.getItem("userSymptoms") || "[]")
+        setSymptoms(storedSymptoms)
+        setUserName(localStorage.getItem("userName") || "")
+      } finally {
+        setIsLoading(false)
       }
     }
 
-    setIsLoading(false)
+    loadUserData()
   }, [])
 
   const handleBackToDashboard = () => {
@@ -49,9 +151,7 @@ export default function ProfilePage() {
     setIsDeleting(true)
     try {
       await deleteUser()
-      // Clear all localStorage
       localStorage.clear()
-      // Redirect to home page
       router.push("/")
     } catch (error) {
       console.error("Error deleting account:", error)
@@ -76,8 +176,8 @@ export default function ProfilePage() {
           <ArrowLeft className="h-5 w-5 mr-1" />
           <span>Back</span>
         </button>
-        <Logo />
-        <div className="w-20"></div> {/* Empty div for spacing */}
+        <Logo variant="light" />
+        <div className="w-20"></div>
       </header>
 
       {/* Main Content */}
@@ -85,6 +185,7 @@ export default function ProfilePage() {
         <div className="max-w-md mx-auto">
           <div className="mb-6 text-center">
             <h2 className="text-2xl font-bold mb-2">Your Profile</h2>
+            {userName && <p className="text-brand-dark/70">Welcome, {userName}!</p>}
           </div>
 
           {/* Personal Information */}
@@ -92,7 +193,10 @@ export default function ProfilePage() {
             <div className="glass-card rounded-2xl p-6 mb-6">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="font-semibold text-lg">Personal Information</h3>
-                <button className="text-pink-400 flex items-center">
+                <button
+                  className="text-pink-400 flex items-center"
+                  onClick={() => router.push("/onboarding/user-profile")}
+                >
                   <Edit className="h-4 w-4 mr-1" />
                   Edit
                 </button>
@@ -101,23 +205,19 @@ export default function ProfilePage() {
               <div className="space-y-3">
                 <div>
                   <p className="text-brand-dark/60 text-sm">Gender</p>
-                  <p>{profile.gender}</p>
+                  <p>{profile.gender || "Not set"}</p>
                 </div>
                 <div>
                   <p className="text-brand-dark/60 text-sm">Age</p>
-                  <p>{profile.age} years</p>
+                  <p>{profile.age ? `${profile.age} years` : "Not set"}</p>
                 </div>
                 <div>
                   <p className="text-brand-dark/60 text-sm">Weight</p>
-                  <p>
-                    {profile.weight} {profile.weightUnit}
-                  </p>
+                  <p>{profile.weight ? `${profile.weight} ${profile.weightUnit}` : "Not set"}</p>
                 </div>
                 <div>
                   <p className="text-brand-dark/60 text-sm">Height</p>
-                  <p>
-                    {profile.height} {profile.heightUnit}
-                  </p>
+                  <p>{profile.height ? `${profile.height} ${profile.heightUnit}` : "Not set"}</p>
                 </div>
               </div>
             </div>
@@ -127,7 +227,10 @@ export default function ProfilePage() {
           <div className="glass-card rounded-2xl p-6 mb-6">
             <div className="flex justify-between items-center mb-4">
               <h3 className="font-semibold text-lg">Diet Information</h3>
-              <button className="text-pink-400 flex items-center">
+              <button
+                className="text-pink-400 flex items-center"
+                onClick={() => router.push("/onboarding/diet-timeline")}
+              >
                 <Edit className="h-4 w-4 mr-1" />
                 Edit
               </button>
@@ -136,11 +239,11 @@ export default function ProfilePage() {
             <div className="space-y-3">
               <div>
                 <p className="text-brand-dark/60 text-sm">Diet Timeline</p>
-                <p>{localStorage.getItem("userDietTimeline") || "Not set"} days</p>
+                <p>{dietInfo?.timeline || "Not set"} days</p>
               </div>
               <div>
                 <p className="text-brand-dark/60 text-sm">Adaptation Period</p>
-                <p>{localStorage.getItem("userAdaptationChoice") === "Yes" ? "Yes" : "No"}</p>
+                <p>{dietInfo?.adaptationPeriod ? "Yes" : "No"}</p>
               </div>
             </div>
           </div>
@@ -156,32 +259,51 @@ export default function ProfilePage() {
             </div>
 
             <div>
-              {(() => {
-                // Try to get conditions from both possible localStorage keys
-                const conditions = JSON.parse(localStorage.getItem("userConditions") || "[]")
-                const selectedConditions = JSON.parse(localStorage.getItem("selectedConditions") || "[]")
+              {conditions.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {conditions.map((condition, index) => (
+                    <span key={index} className="bg-pink-200/70 text-brand-dark px-3 py-1 rounded-full text-sm">
+                      {condition}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-brand-dark/60">No conditions selected</p>
+              )}
+            </div>
+          </div>
 
-                // Use whichever has data, preferring userConditions
-                const displayConditions = conditions.length > 0 ? conditions : selectedConditions
+          {/* Symptoms */}
+          <div className="glass-card rounded-2xl p-6 mb-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-semibold text-lg">Symptoms to Track</h3>
+              <button className="text-pink-400 flex items-center" onClick={() => router.push("/onboarding/symptoms")}>
+                <Edit className="h-4 w-4 mr-1" />
+                Edit
+              </button>
+            </div>
 
-                return displayConditions.length > 0 ? (
-                  <div className="flex flex-wrap gap-2">
-                    {displayConditions.map((condition, index) => (
-                      <span key={index} className="bg-pink-200/70 text-brand-dark px-3 py-1 rounded-full text-sm">
-                        {condition}
-                      </span>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-brand-dark/60">No conditions selected</p>
-                )
-              })()}
+            <div>
+              {symptoms.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {symptoms.map((symptom, index) => (
+                    <span key={index} className="bg-purple-200/70 text-brand-dark px-3 py-1 rounded-full text-sm">
+                      {symptom}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-brand-dark/60">No symptoms selected</p>
+              )}
             </div>
           </div>
 
           {/* Logout Button */}
           <button
-            onClick={() => router.push("/")}
+            onClick={() => {
+              localStorage.clear()
+              router.push("/")
+            }}
             className="w-full border border-brand-dark/30 text-brand-dark hover:bg-white/50 py-3 rounded-full transition-colors mb-3"
           >
             Log Out

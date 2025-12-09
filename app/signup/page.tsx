@@ -34,7 +34,12 @@ export default function SignUp() {
     setIsLoading(true)
 
     try {
-      await signUp(email, password, name)
+      const result = await signUp(email, password, name)
+
+      if (!result.user) {
+        throw new Error("Failed to create account. Please try again.")
+      }
+
       localStorage.clear()
       const today = new Date().toISOString()
       localStorage.setItem("dietStartDate", today)
@@ -42,7 +47,11 @@ export default function SignUp() {
       // After signup, redirect to onboarding to complete profile
       router.push("/onboarding/conditions")
     } catch (err: any) {
-      setError(err.message || "Failed to create account. Please try again.")
+      if (err.message?.includes("already exists")) {
+        setError("An account with this email already exists. Please log in instead.")
+      } else {
+        setError(err.message || "Failed to create account. Please try again.")
+      }
     } finally {
       setIsLoading(false)
     }
