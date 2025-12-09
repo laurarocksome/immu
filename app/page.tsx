@@ -1,19 +1,47 @@
 "use client"
 
+import type React from "react"
+
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import Logo from "@/components/Logo"
+import Logo from "@/app/components/logo"
 import { useRouter } from "next/navigation"
 import { setupTestData } from "./utils/test-utils"
 import { useState } from "react"
+import { signIn } from "@/lib/auth"
 
 export default function Home() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [error, setError] = useState("")
+
+  const handleSignIn = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError("")
+    setIsLoading(true)
+
+    try {
+      // Clear any old localStorage data
+      localStorage.clear()
+
+      await signIn(email, password)
+
+      // Set diet start date for new login
+      localStorage.setItem("dietStartDate", new Date().toISOString())
+
+      router.push("/dashboard")
+    } catch (err: any) {
+      setError(err.message || "Failed to sign in")
+      setIsLoading(false)
+    }
+  }
 
   const handleSkip = async () => {
     setIsLoading(true)
     try {
+      localStorage.clear()
       setupTestData()
       router.push("/dashboard")
     } catch (error) {
@@ -23,39 +51,84 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center app-gradient p-6">
-      <div className="w-full max-w-md flex flex-col items-center gap-8">
-        {/* Logo */}
-        <Logo />
+    <main className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-purple-50 via-pink-50 to-purple-100 p-6">
+      <div className="w-full max-w-md">
+        <div className="bg-white rounded-3xl shadow-xl p-8 space-y-6">
+          {/* Logo and branding */}
+          <div className="flex flex-col items-center space-y-4">
+            <Logo />
+            <p className="text-center text-slate-600 text-base">
+              Immu Health, your personal guide to the Autoimmune Protocol diet
+            </p>
+          </div>
 
-        {/* Main content */}
-        <div className="w-full space-y-6">
-          <p className="text-lg text-secondary-color text-center mb-8">
-            Your personal guide to the Autoimmune Protocol diet
-          </p>
+          {/* Login form */}
+          <form onSubmit={handleSignIn} className="space-y-4">
+            {/* Email field */}
+            <div className="space-y-2">
+              <label htmlFor="email" className="block text-sm font-semibold text-slate-700">
+                Email Address
+              </label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                required
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-pink-400 focus:ring-2 focus:ring-pink-200 outline-none transition-all text-slate-800 placeholder:text-slate-400"
+              />
+            </div>
 
-          <div className="glass-card p-6 space-y-5">
-            <Link href="/login" passHref>
-              <Button className="w-full h-12 text-lg gradient-button">Login</Button>
-            </Link>
+            {/* Password field */}
+            <div className="space-y-2">
+              <label htmlFor="password" className="block text-sm font-semibold text-slate-700">
+                Password
+              </label>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-pink-400 focus:ring-2 focus:ring-pink-200 outline-none transition-all text-slate-800 placeholder:text-slate-400"
+              />
+            </div>
 
-            <Link href="/signup" passHref>
-              <Button className="w-full h-12 text-lg secondary-button">Get Started</Button>
-            </Link>
+            {/* Error message */}
+            {error && <p className="text-sm text-red-500 text-center">{error}</p>}
 
+            {/* Sign In button */}
             <Button
-              onClick={handleSkip}
+              type="submit"
               disabled={isLoading}
-              className="w-full h-12 rounded-full border-2 border-dashed border-pink-300 bg-transparent text-pink-500 hover:bg-pink-50"
+              className="w-full h-12 text-lg font-semibold bg-gradient-to-r from-pink-400 to-purple-400 hover:from-pink-500 hover:to-purple-500 text-white rounded-xl shadow-md transition-all"
             >
-              {isLoading ? "Loading..." : "Skip (Testing)"}
+              {isLoading ? "Signing in..." : "Sign In"}
             </Button>
+          </form>
+
+          {/* Sign up link */}
+          <div className="text-center">
+            <p className="text-slate-600">
+              Don't have an account?{" "}
+              <Link href="/signup" className="text-pink-500 font-semibold hover:text-pink-600 transition-colors">
+                Sign Up
+              </Link>
+            </p>
           </div>
         </div>
-      </div>
 
-      <div className="w-full pt-8 opacity-70 mt-auto">
-        <p className="text-center text-sm text-secondary-color">Your journey to better health starts here</p>
+        <div className="mt-6 text-center">
+          <button
+            onClick={handleSkip}
+            disabled={isLoading}
+            className="text-slate-500 hover:text-slate-700 text-sm font-medium transition-colors"
+          >
+            Skip (Testing)
+          </button>
+        </div>
       </div>
     </main>
   )
