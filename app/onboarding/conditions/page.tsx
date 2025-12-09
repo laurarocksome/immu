@@ -172,8 +172,8 @@ export default function ConditionsPage() {
           <div className="mb-6 text-center">
             <h2 className="text-2xl font-bold mb-2">What conditions are you managing?</h2>
             <p className="text-brand-dark/70 mb-4">
-              Select up to 3 conditions that you're currently experiencing or have been diagnosed with. You can also
-              continue without selecting any conditions.
+              Select up to 3 conditions (optional). You can continue without selecting any, or choose 1-3 conditions
+              that you're currently experiencing.
             </p>
           </div>
 
@@ -201,7 +201,9 @@ export default function ConditionsPage() {
           )}
 
           {/* Selected count */}
-          <p className="text-sm text-brand-dark/70 mb-2">Selected: {selectedConditions.length}/3</p>
+          <p className="text-sm text-brand-dark/70 mb-2">
+            Selected: {selectedConditions.length}/3 {selectedConditions.length === 0 && "(optional)"}
+          </p>
 
           {/* Conditions list */}
           <div className="glass-card rounded-2xl p-4 mb-8 overflow-hidden">

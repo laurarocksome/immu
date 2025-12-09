@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { List, Home, Plus, BookOpen, UtensilsCrossed, ArrowLeft, Edit } from "lucide-react"
+import { List, Home, Plus, BookOpen, UtensilsCrossed, ArrowLeft, Edit, Trash2 } from "lucide-react"
 import Logo from "@/app/components/logo"
+import { deleteUser } from "@/lib/auth"
 
 type UserProfile = {
   gender: string
@@ -18,6 +19,8 @@ export default function ProfilePage() {
   const router = useRouter()
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   useEffect(() => {
     // Load profile data
@@ -40,6 +43,21 @@ export default function ProfilePage() {
 
   const handleBackToDashboard = () => {
     router.push("/dashboard")
+  }
+
+  const handleDeleteAccount = async () => {
+    setIsDeleting(true)
+    try {
+      await deleteUser()
+      // Clear all localStorage
+      localStorage.clear()
+      // Redirect to home page
+      router.push("/")
+    } catch (error) {
+      console.error("Error deleting account:", error)
+      alert("Failed to delete account. Please try again.")
+      setIsDeleting(false)
+    }
   }
 
   if (isLoading) {
@@ -164,12 +182,50 @@ export default function ProfilePage() {
           {/* Logout Button */}
           <button
             onClick={() => router.push("/")}
-            className="w-full border border-brand-dark/30 text-brand-dark hover:bg-white/50 py-3 rounded-full transition-colors"
+            className="w-full border border-brand-dark/30 text-brand-dark hover:bg-white/50 py-3 rounded-full transition-colors mb-3"
           >
             Log Out
           </button>
+
+          {/* Delete Account Button */}
+          <button
+            onClick={() => setShowDeleteConfirm(true)}
+            className="w-full border border-red-500/50 text-red-600 hover:bg-red-50 py-3 rounded-full transition-colors flex items-center justify-center gap-2"
+          >
+            <Trash2 className="h-4 w-4" />
+            Delete Account
+          </button>
         </div>
       </main>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-sm w-full">
+            <h3 className="text-xl font-bold mb-2 text-brand-dark">Delete Account?</h3>
+            <p className="text-brand-dark/70 mb-6">
+              This will permanently delete your account and all your data including logs, symptoms, and conditions. This
+              action cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={isDeleting}
+                className="flex-1 border border-brand-dark/30 text-brand-dark hover:bg-white/50 py-3 rounded-full transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteAccount}
+                disabled={isDeleting}
+                className="flex-1 bg-red-600 text-white hover:bg-red-700 py-3 rounded-full transition-colors disabled:opacity-50"
+              >
+                {isDeleting ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Bottom Navigation */}
       <nav className="grid grid-cols-5 border-t border-brand-dark/10 bg-white/80 backdrop-blur-sm">
