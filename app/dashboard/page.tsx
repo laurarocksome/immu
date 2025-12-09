@@ -1594,7 +1594,7 @@ export default function Dashboard() {
                           d={createSmoothCurvePath(symptom.values)}
                           fill="none"
                           stroke={symptom.color}
-                          strokeWidth="2.5"
+                          strokeWidth="1"
                           strokeLinecap="round"
                           strokeLinejoin="round"
                         />
@@ -1607,15 +1607,7 @@ export default function Dashboard() {
                           const y = 100 - (value / 5) * 100
 
                           return (
-                            <circle
-                              key={i}
-                              cx={x}
-                              cy={y}
-                              r="3.5"
-                              fill={symptom.color}
-                              stroke="white"
-                              strokeWidth="1.5"
-                            />
+                            <circle key={i} cx={x} cy={y} r="1.5" fill={symptom.color} stroke="white" strokeWidth="1" />
                           )
                         })}
                       </svg>
@@ -1734,7 +1726,7 @@ export default function Dashboard() {
                       d={createWellnessCurvePath(wellnessHistoryData.scores)}
                       fill="none"
                       stroke={wellnessHistoryData.color}
-                      strokeWidth="2"
+                      strokeWidth="1"
                       strokeLinecap="round"
                       strokeLinejoin="round"
                     />
@@ -1747,14 +1739,15 @@ export default function Dashboard() {
                       const y = 100 - value
 
                       return (
+                        // reduced radius from 3 to 1.5 for smaller bubbles
                         <circle
                           key={i}
                           cx={x}
                           cy={y}
-                          r="3"
+                          r="1.5"
                           fill="white"
                           stroke={wellnessHistoryData.color}
-                          strokeWidth="2"
+                          strokeWidth="1.5"
                         />
                       )
                     })}

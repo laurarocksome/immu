@@ -5,16 +5,21 @@ import { Button } from "@/components/ui/button"
 import Logo from "@/components/Logo"
 import { useRouter } from "next/navigation"
 import { setupTestData } from "./utils/test-utils"
-import TestUsers from "./components/test-users"
 import { useState } from "react"
 
 export default function Home() {
   const router = useRouter()
-  const [showTestUsers, setShowTestUsers] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
-  const handleSkip = () => {
-    setupTestData()
-    router.push("/dashboard")
+  const handleSkip = async () => {
+    setIsLoading(true)
+    try {
+      setupTestData()
+      router.push("/dashboard")
+    } catch (error) {
+      console.error("Error:", error)
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -34,30 +39,17 @@ export default function Home() {
               <Button className="w-full h-12 text-lg gradient-button">Login</Button>
             </Link>
 
-            <Link href="/onboarding/conditions" passHref>
+            <Link href="/signup" passHref>
               <Button className="w-full h-12 text-lg secondary-button">Get Started</Button>
             </Link>
 
-            {/* Toggle test users section */}
-            <button
-              onClick={() => setShowTestUsers(!showTestUsers)}
-              className="w-full py-2 text-pink-500 text-sm hover:underline"
+            <Button
+              onClick={handleSkip}
+              disabled={isLoading}
+              className="w-full h-12 rounded-full border-2 border-dashed border-pink-300 bg-transparent text-pink-500 hover:bg-pink-50"
             >
-              {showTestUsers ? "Hide Test Users" : "Show Test Users"}
-            </button>
-
-            {/* Test Users Section */}
-            {showTestUsers && <TestUsers />}
-
-            {/* Skip button for testing */}
-            {!showTestUsers && (
-              <Button
-                onClick={handleSkip}
-                className="w-full h-12 text-lg border-2 border-dashed border-pink-300 bg-transparent text-pink-500 hover:bg-pink-50"
-              >
-                Skip (Testing)
-              </Button>
-            )}
+              {isLoading ? "Loading..." : "Skip (Testing)"}
+            </Button>
           </div>
         </div>
       </div>

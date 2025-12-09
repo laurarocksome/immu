@@ -1,45 +1,45 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-
 import type React from "react"
 
 import Link from "next/link"
 import Logo from "@/components/Logo"
 import { useRouter } from "next/navigation"
-import { setupTestData } from "../utils/test-utils"
 import { useState } from "react"
-import { signIn } from "@/lib/auth"
+import { signUp } from "@/lib/auth"
 
-export default function Login() {
+export default function SignUp() {
   const router = useRouter()
+  const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
-    setIsLoading(true)
 
-    try {
-      await signIn(email, password)
-      router.push("/dashboard")
-    } catch (err: any) {
-      setError(err.message || "Failed to login. Please check your credentials.")
-    } finally {
-      setIsLoading(false)
+    if (password !== confirmPassword) {
+      setError("Passwords do not match")
+      return
     }
-  }
 
-  const handleSkip = async () => {
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters long")
+      return
+    }
+
     setIsLoading(true)
+
     try {
-      setupTestData()
-      router.push("/dashboard")
-    } catch (err) {
-      console.error("Error:", err)
+      await signUp(email, password, name)
+      // After signup, redirect to onboarding to complete profile
+      router.push("/onboarding/conditions")
+    } catch (err: any) {
+      setError(err.message || "Failed to create account. Please try again.")
+    } finally {
       setIsLoading(false)
     }
   }
@@ -52,10 +52,26 @@ export default function Login() {
 
         {/* Main content */}
         <div className="w-full space-y-6">
-          <h2 className="text-2xl font-semibold text-center text-primary-color">Welcome Back</h2>
+          <h2 className="text-2xl font-semibold text-center text-primary-color">Create Account</h2>
 
           <div className="glass-card p-6 space-y-5">
-            <form onSubmit={handleLogin} className="space-y-4">
+            <form onSubmit={handleSignUp} className="space-y-4">
+              <div className="space-y-3">
+                <label htmlFor="name" className="text-sm text-secondary-color">
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  id="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full p-3 rounded-xl bg-white border border-[#e4e0f0] focus:outline-none focus:ring-2 focus:ring-[#da83d2]"
+                  placeholder="Enter your full name"
+                  required
+                  disabled={isLoading}
+                />
+              </div>
+
               <div className="space-y-3">
                 <label htmlFor="email" className="text-sm text-secondary-color">
                   Email
@@ -82,7 +98,23 @@ export default function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full p-3 rounded-xl bg-white border border-[#e4e0f0] focus:outline-none focus:ring-2 focus:ring-[#da83d2]"
-                  placeholder="Enter your password"
+                  placeholder="Create a password (min 6 characters)"
+                  required
+                  disabled={isLoading}
+                />
+              </div>
+
+              <div className="space-y-3">
+                <label htmlFor="confirm-password" className="text-sm text-secondary-color">
+                  Confirm Password
+                </label>
+                <input
+                  type="password"
+                  id="confirm-password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full p-3 rounded-xl bg-white border border-[#e4e0f0] focus:outline-none focus:ring-2 focus:ring-[#da83d2]"
+                  placeholder="Confirm your password"
                   required
                   disabled={isLoading}
                 />
@@ -97,29 +129,16 @@ export default function Login() {
                 disabled={isLoading}
                 className="w-full gradient-button py-4 rounded-full disabled:opacity-50"
               >
-                {isLoading ? "Logging in..." : "Log In"}
+                {isLoading ? "Creating Account..." : "Create Account"}
               </button>
             </form>
-
-            <Button
-              onClick={handleSkip}
-              disabled={isLoading}
-              className="w-full h-12 rounded-full border-2 border-dashed border-pink-300 bg-transparent text-pink-500 hover:bg-pink-50"
-            >
-              {isLoading ? "Loading..." : "Skip (Testing)"}
-            </Button>
           </div>
 
-          <div className="text-center space-y-3">
+          <div className="text-center">
             <p className="text-sm text-secondary-color">
-              <Link href="/forgot-password" className="text-accent-color hover:underline">
-                Forgot password?
-              </Link>
-            </p>
-            <p className="text-sm text-secondary-color">
-              Don't have an account?{" "}
-              <Link href="/signup" className="text-accent-color hover:underline">
-                Sign up
+              Already have an account?{" "}
+              <Link href="/login" className="text-accent-color hover:underline">
+                Log in
               </Link>
             </p>
           </div>
