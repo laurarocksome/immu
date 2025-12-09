@@ -2,6 +2,7 @@ import { supabase } from "./supabase/client"
 
 // Store user profile information
 export async function saveUserProfile(profileData: {
+  name?: string
   gender?: string
   age?: number
   weight?: number
@@ -16,7 +17,13 @@ export async function saveUserProfile(profileData: {
     .from("user_profiles")
     .upsert({
       user_id: user.data.user.id,
-      ...profileData,
+      name: profileData.name,
+      gender: profileData.gender,
+      age: profileData.age,
+      weight: profileData.weight,
+      weight_unit: profileData.weightUnit,
+      height: profileData.height,
+      height_unit: profileData.heightUnit,
       updated_at: new Date().toISOString(),
     })
     .select()

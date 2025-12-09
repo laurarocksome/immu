@@ -3,6 +3,8 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Logo from "@/app/components/logo"
+import { saveUserProfile, saveUserConditions, saveUserSymptoms, saveDietInfo } from "@/lib/user-data"
+import { getCurrentUser } from "@/lib/auth"
 
 export default function CreateAccountPage() {
   const router = useRouter()
@@ -13,7 +15,7 @@ export default function CreateAccountPage() {
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // Validate inputs
     if (!name.trim()) {
       setError("Please enter your name")
@@ -36,27 +38,75 @@ export default function CreateAccountPage() {
     }
 
     setIsLoading(true)
+    setError("")
 
-    const today = new Date().toISOString()
+    try {
+      // Check if user is authenticated
+      const user = await getCurrentUser()
 
-    // Save account info to local storage
-    const accountInfo = {
-      name,
-      email,
-      createdAt: today,
-    }
+      if (!user) {
+        setError("Please sign up or log in first")
+        setIsLoading(false)
+        return
+      }
 
-    localStorage.setItem("userAccount", JSON.stringify(accountInfo))
+      const today = new Date().toISOString()
 
-    // Set the diet start date to today (not some past date)
-    localStorage.setItem("dietStartDate", today)
+      // Get all data from localStorage
+      const userProfile = JSON.parse(localStorage.getItem("userProfile") || "{}")
+      const selectedConditions = JSON.parse(localStorage.getItem("selectedConditions") || "[]")
+      const selectedSymptoms = JSON.parse(localStorage.getItem("selectedSymptoms") || "[]")
+      const dietTimeline = localStorage.getItem("dietTimeline") || "90"
+      const adaptationChoice = localStorage.getItem("adaptationChoice") || "yes"
 
-    // Simulate API call delay
-    setTimeout(() => {
+      console.log("[v0] Saving user data to Supabase...", {
+        profile: userProfile,
+        conditions: selectedConditions,
+        symptoms: selectedSymptoms,
+      })
+
+      // Save user profile with name
+      await saveUserProfile({
+        name,
+        gender: userProfile.gender,
+        age: userProfile.age,
+        weight: userProfile.weight,
+        weightUnit: userProfile.weightUnit || "kg",
+        height: userProfile.height,
+        heightUnit: userProfile.heightUnit || "cm",
+      })
+
+      // Save conditions
+      if (selectedConditions.length > 0) {
+        await saveUserConditions(selectedConditions)
+      }
+
+      // Save symptoms
+      if (selectedSymptoms.length > 0) {
+        await saveUserSymptoms(selectedSymptoms)
+      }
+
+      // Save diet info
+      await saveDietInfo({
+        startDate: today,
+        timelineDays: Number.parseInt(dietTimeline),
+        adaptationChoice: adaptationChoice,
+        currentPhase: "adaptation",
+      })
+
+      // Keep dietStartDate in localStorage for compatibility
+      localStorage.setItem("dietStartDate", today)
+
+      console.log("[v0] Successfully saved all data to Supabase")
+
       // Navigate to dashboard
       router.push("/dashboard")
+    } catch (err: any) {
+      console.error("[v0] Error saving user data:", err)
+      setError(err.message || "Failed to save your data. Please try again.")
+    } finally {
       setIsLoading(false)
-    }, 1000)
+    }
   }
 
   return (
