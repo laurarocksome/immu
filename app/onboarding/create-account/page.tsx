@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Logo from "@/app/components/logo"
 import { saveUserProfile, saveUserConditions, saveUserSymptoms, saveDietInfo } from "@/lib/user-data"
@@ -8,30 +8,20 @@ import { getCurrentUser } from "@/lib/auth"
 
 export default function CreateAccountPage() {
   const router = useRouter()
-  const [name, setName] = useState("")
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
   const [agreedToTerms, setAgreedToTerms] = useState(false)
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [userName, setUserName] = useState("")
+
+  useEffect(() => {
+    // Get user name from localStorage
+    const userAccount = JSON.parse(localStorage.getItem("userAccount") || "{}")
+    if (userAccount.name) {
+      setUserName(userAccount.name)
+    }
+  }, [])
 
   const handleSubmit = async () => {
-    // Validate inputs
-    if (!name.trim()) {
-      setError("Please enter your name")
-      return
-    }
-
-    if (!email.trim()) {
-      setError("Please enter your email")
-      return
-    }
-
-    if (!password.trim() || password.length < 6) {
-      setError("Please enter a password (minimum 6 characters)")
-      return
-    }
-
     if (!agreedToTerms) {
       setError("Please agree to the terms and conditions")
       return
@@ -54,6 +44,7 @@ export default function CreateAccountPage() {
 
       // Get all data from localStorage
       const userProfile = JSON.parse(localStorage.getItem("userProfile") || "{}")
+      const userAccount = JSON.parse(localStorage.getItem("userAccount") || "{}")
       const selectedConditions = JSON.parse(localStorage.getItem("selectedConditions") || "[]")
       const selectedSymptoms = JSON.parse(localStorage.getItem("selectedSymptoms") || "[]")
       const dietTimeline = localStorage.getItem("dietTimeline") || "90"
@@ -65,9 +56,8 @@ export default function CreateAccountPage() {
         symptoms: selectedSymptoms,
       })
 
-      // Save user profile with name
       await saveUserProfile({
-        name,
+        name: userAccount.name || userName,
         gender: userProfile.gender,
         age: userProfile.age,
         weight: userProfile.weight,
@@ -119,9 +109,9 @@ export default function CreateAccountPage() {
       {/* Main Content */}
       <main className="flex-1 px-4 pb-8 overflow-auto">
         <div className="max-w-md mx-auto">
-          <div className="mb-6">
-            <h2 className="text-2xl font-bold mb-2">Create Your Account</h2>
-            <p className="text-brand-dark/70">Register to save your data and track progress.</p>
+          <div className="mb-6 text-center">
+            <h2 className="text-2xl font-bold mb-2">Almost Done{userName ? `, ${userName}` : ""}!</h2>
+            <p className="text-brand-dark/70">Review and confirm to start your AIP journey.</p>
           </div>
 
           {/* Error message */}
@@ -131,74 +121,49 @@ export default function CreateAccountPage() {
             </div>
           )}
 
-          {/* Form */}
           <div className="glass-card rounded-2xl p-6 space-y-4 mb-6">
-            <div>
-              <label htmlFor="name" className="block mb-2">
-                Name
-              </label>
-              <input
-                type="text"
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full p-3 rounded-xl bg-white/80 border border-brand-dark/20 focus:outline-none focus:ring-2 focus:ring-pink-400"
-                placeholder="Enter your name"
-              />
+            <div className="text-center mb-4">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-pink-400 to-pink-500 flex items-center justify-center">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h3 className="font-semibold text-lg">Your profile is ready</h3>
+              <p className="text-sm text-brand-dark/60 mt-2">
+                We've collected all the information needed to personalize your AIP diet experience.
+              </p>
             </div>
 
-            <div>
-              <label htmlFor="email" className="block mb-2">
-                Email
-              </label>
-              <input
-                type="email"
-                id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-3 rounded-xl bg-white/80 border border-brand-dark/20 focus:outline-none focus:ring-2 focus:ring-pink-400"
-                placeholder="Enter your email"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="password" className="block mb-2">
-                Password
-              </label>
-              <input
-                type="password"
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full p-3 rounded-xl bg-white/80 border border-brand-dark/20 focus:outline-none focus:ring-2 focus:ring-pink-400"
-                placeholder="Create a password"
-              />
-            </div>
-
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="terms"
-                checked={agreedToTerms}
-                onChange={() => setAgreedToTerms(!agreedToTerms)}
-                className="h-5 w-5 rounded border-brand-dark/30 bg-white/80 text-pink-400 focus:ring-pink-400"
-              />
-              <label htmlFor="terms" className="ml-2 text-brand-dark">
-                I agree to{" "}
-                <a href="/terms" className="text-pink-500 hover:underline">
-                  terms and conditions
-                </a>
-              </label>
+            <div className="border-t border-brand-dark/10 pt-4">
+              <div className="flex items-start">
+                <input
+                  type="checkbox"
+                  id="terms"
+                  checked={agreedToTerms}
+                  onChange={() => setAgreedToTerms(!agreedToTerms)}
+                  className="h-5 w-5 mt-0.5 rounded border-brand-dark/30 bg-white/80 text-pink-400 focus:ring-pink-400"
+                />
+                <label htmlFor="terms" className="ml-3 text-sm text-brand-dark">
+                  I agree to the{" "}
+                  <a href="/terms" className="text-pink-500 hover:underline">
+                    terms and conditions
+                  </a>{" "}
+                  and{" "}
+                  <a href="/privacy" className="text-pink-500 hover:underline">
+                    privacy policy
+                  </a>
+                </label>
+              </div>
             </div>
           </div>
 
-          {/* Next button */}
+          {/* Start button */}
           <button
             onClick={handleSubmit}
             disabled={isLoading}
             className={`w-full gradient-button py-4 rounded-full ${isLoading ? "opacity-70 cursor-not-allowed" : ""}`}
           >
-            {isLoading ? "Creating Account..." : "Next"}
+            {isLoading ? "Setting up..." : "Start My AIP Journey"}
           </button>
         </div>
       </main>
