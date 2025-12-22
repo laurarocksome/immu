@@ -11,6 +11,31 @@ const config = {
   ],
   prefix: "",
   theme: {
+    colors: {
+      transparent: "transparent",
+      current: "currentColor",
+      black: "#000000",
+      white: "#ffffff",
+      // Use modern Tailwind v3 color names
+      slate: require("tailwindcss/colors").slate,
+      gray: require("tailwindcss/colors").gray,
+      neutral: require("tailwindcss/colors").neutral,
+      stone: require("tailwindcss/colors").stone,
+      red: require("tailwindcss/colors").red,
+      orange: require("tailwindcss/colors").orange,
+      amber: require("tailwindcss/colors").amber,
+      lime: require("tailwindcss/colors").lime,
+      emerald: require("tailwindcss/colors").emerald,
+      teal: require("tailwindcss/colors").teal,
+      cyan: require("tailwindcss/colors").cyan,
+      sky: require("tailwindcss/colors").sky, // Replaces lightBlue
+      blue: require("tailwindcss/colors").blue,
+      indigo: require("tailwindcss/colors").indigo,
+      violet: require("tailwindcss/colors").violet,
+      purple: require("tailwindcss/colors").purple,
+      fuchsia: require("tailwindcss/colors").fuchsia,
+      rose: require("tailwindcss/colors").rose,
+    },
     container: {
       center: true,
       padding: "2rem",

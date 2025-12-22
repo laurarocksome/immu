@@ -2012,7 +2012,7 @@ export default function FoodList() {
     // Load user modified statuses from localStorage
     const savedStatuses = localStorage.getItem("userModifiedStatuses")
     if (savedStatuses) {
-      setUserModifiedStatuses(JSON.parse(savedStatuses))
+      setUserModifiedStatuses(JSON.JSON.parse(savedStatuses))
     }
   }, [])
 
@@ -2199,11 +2199,10 @@ export default function FoodList() {
   // Replace the existing alphabetical view with this:
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-brand-lightest to-white text-brand-dark">
-      {/* Header */}
-      <header className="p-4 border-b border-brand-dark/10 flex justify-between items-center bg-brand-dark text-white">
-        <Logo />
+      <header className="p-4 border-b border-pink-200/30 flex justify-between items-center bg-gradient-to-r from-pink-300 to-peach-300">
+        <Logo variant="light" />
         <button
-          className="w-10 h-10 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 transition-colors"
+          className="w-10 h-10 rounded-full flex items-center justify-center bg-white/20 hover:bg-white/30 transition-colors"
           onClick={() => router.push("/profile")}
         >
           <User className="h-5 w-5 text-white" />
@@ -2212,8 +2211,9 @@ export default function FoodList() {
 
       {/* Main Content */}
       <main className="flex-1 p-4 overflow-auto">
-        <div className="mb-4">
-          <h2 className="text-2xl font-bold mb-1">Food List</h2>
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold mb-2">Food List</h2>
+
           <div className={`inline-block px-3 py-1 rounded-full text-sm ${getPhaseIndicatorClasses()}`}>
             {getPhaseIndicator()}
           </div>

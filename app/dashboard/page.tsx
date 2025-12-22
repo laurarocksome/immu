@@ -25,6 +25,7 @@ import Logo from "@/app/components/logo"
 import ConfettiCelebration from "@/app/components/confetti-celebration"
 import { getSession } from "@/lib/auth"
 import { saveUserProfile, saveUserConditions, saveUserSymptoms, saveDietInfo, saveUserName } from "@/lib/user-data"
+import { createBrowserClient } from "@supabase/ssr"
 
 // Update the chart dates to show daily data
 const chartDates = ["Day 1", "Day 2", "Day 3", "Day 4", "Day 5", "Day 6", "Day 7"]
@@ -191,10 +192,13 @@ export default function Dashboard() {
 
   // Function to handle symptom selection
   const handleSymptomSelect = (symptomName: string) => {
+    console.log("[v0] Symptom clicked:", symptomName, "Current selection:", selectedSymptom)
     if (selectedSymptom === symptomName) {
       setSelectedSymptom(null) // Deselect if already selected
+      console.log("[v0] Deselected symptom")
     } else {
       setSelectedSymptom(symptomName) // Select the symptom
+      console.log("[v0] Selected symptom:", symptomName)
     }
   }
 
@@ -358,44 +362,83 @@ export default function Dashboard() {
   }
 
   // Function to update user weight
-  const updateWeight = () => {
+  const updateWeight = async () => {
     if (!currentWeight || isNaN(Number(currentWeight)) || Number(currentWeight) <= 0) {
+      console.log("[v0] Invalid weight input:", currentWeight)
       return
     }
 
     setIsUpdatingWeight(true)
+    console.log("[v0] Starting weight update:", currentWeight, weightUnit)
 
-    // Get current profile data
-    const profileData = localStorage.getItem("userProfile")
-    if (profileData) {
-      const profile = JSON.parse(profileData) as UserProfile
+    try {
+      // Get authenticated user
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      )
 
-      // Update weight
-      profile.weight = Number(currentWeight)
-      profile.weightUnit = weightUnit
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser()
 
-      // Add to weight history if it doesn't exist
-      if (!profile.weightHistory) {
-        profile.weightHistory = []
+      if (authError || !user) {
+        console.log("[v0] Auth error:", authError)
+        setIsUpdatingWeight(false)
+        return
       }
 
-      // Add current weight to history
-      profile.weightHistory.push({
-        date: new Date().toISOString(),
-        weight: Number(currentWeight),
-      })
+      console.log("[v0] User authenticated:", user.id)
 
-      // Save updated profile
-      localStorage.setItem("userProfile", JSON.stringify(profile))
-      setUserProfile(profile)
+      const { data, error } = await supabase
+        .from("user_profiles")
+        .update({
+          weight: Number(currentWeight),
+          updated_at: new Date().toISOString(),
+        })
+        .eq("user_id", user.id)
+        .select()
+
+      if (error) {
+        console.log("[v0] Supabase update error:", error)
+        setIsUpdatingWeight(false)
+        return
+      }
+
+      console.log("[v0] Weight updated successfully in Supabase:", data)
+
+      // Update local state
+      if (userProfile) {
+        const updatedProfile = {
+          ...userProfile,
+          weight: Number(currentWeight),
+          weightUnit: weightUnit,
+        }
+
+        // Add to weight history
+        if (!updatedProfile.weightHistory) {
+          updatedProfile.weightHistory = []
+        }
+        updatedProfile.weightHistory.push({
+          date: new Date().toISOString(),
+          weight: Number(currentWeight),
+        })
+
+        setUserProfile(updatedProfile)
+        localStorage.setItem("userProfile", JSON.stringify(updatedProfile))
+      }
 
       // Show success message
       setWeightUpdateSuccess(true)
+      setCurrentWeight("") // Clear input after successful update
+
       setTimeout(() => {
         setWeightUpdateSuccess(false)
         setIsUpdatingWeight(false)
       }, 2000)
-    } else {
+    } catch (err) {
+      console.log("[v0] Unexpected error:", err)
       setIsUpdatingWeight(false)
     }
   }

@@ -68,18 +68,18 @@ export default function AdaptationPhasePage() {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-brand-lightest to-white text-brand-dark">
       {/* Header */}
-      <header className="p-4 border-b border-brand-dark/10 flex justify-between items-center bg-brand-dark text-white">
+      <header className="p-4 border-b border-pink-200/30 flex justify-between items-center bg-gradient-to-r from-pink-300 to-peach-300">
         <div className="flex items-center">
           <button
-            className="mr-2 w-8 h-8 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 transition-colors"
+            className="mr-2 w-8 h-8 rounded-full flex items-center justify-center bg-white/20 hover:bg-white/30 transition-colors"
             onClick={handleBackClick}
           >
             <ArrowLeft className="h-4 w-4 text-white" />
           </button>
-          <Logo />
+          <Logo variant="light" />
         </div>
         <button
-          className="w-10 h-10 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 transition-colors"
+          className="w-10 h-10 rounded-full flex items-center justify-center bg-white/20 hover:bg-white/30 transition-colors"
           onClick={handleProfileClick}
         >
           <User className="h-5 w-5 text-white" />
