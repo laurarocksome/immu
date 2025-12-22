@@ -1,76 +1,20 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { List, Home, Plus, BookOpen, UtensilsCrossed, User, Search, Filter } from "lucide-react"
 import Logo from "@/app/components/logo"
+import { createBrowserClient } from "@supabase/ssr"
 
-// Sample recipe data
-const sampleRecipes = [
-  {
-    id: 1,
-    title: "Turmeric Ginger Chicken Soup",
-    category: "Lunch",
-    prepTime: "15 min",
-    cookTime: "30 min",
-    tags: ["Anti-inflammatory", "Protein-rich"],
-    image: "/placeholder.svg?height=200&width=300",
-  },
-  {
-    id: 2,
-    title: "Avocado & Salmon Salad",
-    category: "Dinner",
-    prepTime: "10 min",
-    cookTime: "0 min",
-    tags: ["Omega-3", "Quick"],
-    image: "/placeholder.svg?height=200&width=300",
-  },
-  {
-    id: 3,
-    title: "Sweet Potato Breakfast Hash",
-    category: "Breakfast",
-    prepTime: "10 min",
-    cookTime: "20 min",
-    tags: ["Energizing", "Fiber-rich"],
-    image: "/placeholder.svg?height=200&width=300",
-  },
-  {
-    id: 4,
-    title: "Bone Broth with Vegetables",
-    category: "Lunch",
-    prepTime: "15 min",
-    cookTime: "4 hrs",
-    tags: ["Gut-healing", "Nutrient-dense"],
-    image: "/placeholder.svg?height=200&width=300",
-  },
-  {
-    id: 5,
-    title: "Coconut Yogurt with Berries",
-    category: "Breakfast",
-    prepTime: "5 min",
-    cookTime: "0 min",
-    tags: ["Probiotic", "Quick"],
-    image: "/placeholder.svg?height=200&width=300",
-  },
-  {
-    id: 6,
-    title: "Herb-Roasted Chicken with Root Vegetables",
-    category: "Dinner",
-    prepTime: "20 min",
-    cookTime: "1 hr",
-    tags: ["Protein-rich", "One-pan"],
-    image: "/placeholder.svg?height=200&width=300",
-  },
-  {
-    id: 7,
-    title: "Shrimp Pesto Pasta",
-    category: "Dinner",
-    prepTime: "15 min",
-    cookTime: "15 min",
-    tags: ["AIP-Friendly", "Seafood", "Pasta Alternative"],
-    image: "/images/chatgpt-20image-20apr-2018-2c-202025-2c-2011-14-18-20am.png",
-  },
-]
+type Recipe = {
+  id: string
+  title: string
+  category: string
+  prep_time: string
+  cook_time: string
+  tags: string[]
+  image_url?: string
+}
 
 // Categories for filtering
 const categories = ["All", "Breakfast", "Lunch", "Dinner", "Snacks"]
@@ -80,25 +24,46 @@ export default function RecipesPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("All")
   const [showFilters, setShowFilters] = useState(false)
+  const [recipes, setRecipes] = useState<Recipe[]>([])
+  const [loading, setLoading] = useState(true)
+
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  )
+
+  useEffect(() => {
+    loadRecipes()
+  }, [])
+
+  const loadRecipes = async () => {
+    setLoading(true)
+    const { data, error } = await supabase
+      .from("recipes")
+      .select("id, title, category, prep_time, cook_time, tags, image_url")
+      .order("title")
+
+    if (error) {
+      console.error("[v0] Error loading recipes:", error)
+    } else {
+      setRecipes(data || [])
+    }
+    setLoading(false)
+  }
 
   const handleProfileClick = () => {
     router.push("/profile")
   }
 
-  const handleRecipeClick = (id: number) => {
-    if (id === 7) {
-      router.push(`/recipes/aip-shrimp-pesto-pasta`)
-    } else {
-      router.push(`/recipes/${id}`)
-    }
+  const handleRecipeClick = (id: string) => {
+    router.push(`/recipes/${id}`)
   }
 
   const handleNavigation = (path: string) => {
     router.push(path)
   }
 
-  // Filter recipes based on search query and selected category
-  const filteredRecipes = sampleRecipes.filter((recipe) => {
+  const filteredRecipes = recipes.filter((recipe) => {
     const matchesSearch =
       recipe.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       recipe.tags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase()))
@@ -170,7 +135,9 @@ export default function RecipesPage() {
 
         {/* Recipe Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          {filteredRecipes.length > 0 ? (
+          {loading ? (
+            <div className="col-span-full text-center py-8 text-brand-dark/60">Loading recipes...</div>
+          ) : filteredRecipes.length > 0 ? (
             filteredRecipes.map((recipe) => (
               <div
                 key={recipe.id}
@@ -179,7 +146,7 @@ export default function RecipesPage() {
               >
                 <div className="h-40 bg-gray-200 relative">
                   <img
-                    src={recipe.image || "/placeholder.svg"}
+                    src={recipe.image_url || "/placeholder.svg?height=200&width=300"}
                     alt={recipe.title}
                     className="w-full h-full object-cover"
                   />
@@ -190,8 +157,8 @@ export default function RecipesPage() {
                 <div className="p-4">
                   <h3 className="font-bold text-lg mb-2">{recipe.title}</h3>
                   <div className="flex justify-between text-sm text-brand-dark/70 mb-3">
-                    <span>Prep: {recipe.prepTime}</span>
-                    <span>Cook: {recipe.cookTime}</span>
+                    <span>Prep: {recipe.prep_time}</span>
+                    <span>Cook: {recipe.cook_time}</span>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {recipe.tags.map((tag, index) => (
