@@ -3,9 +3,9 @@
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 44, 48, 96;
-  --background-start-rgb: 232, 228, 243;
-  --background-end-rgb: 248, 246, 255;
+  --foreground-rgb: 31, 31, 31;
+  --background-start-rgb: 255, 255, 255;
+  --background-end-rgb: 255, 255, 255;
 }
 
 body {
@@ -15,65 +15,70 @@ body {
 
 @layer base {
   :root {
+    /* Updated to soft pink primary color system per brand book */
     --background: 0 0% 100%;
-    --foreground: 240 19% 20%;
+    --foreground: 0 0% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 240 19% 20%;
+    --card-foreground: 0 0% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 240 19% 20%;
+    --popover-foreground: 0 0% 12%;
 
-    --primary: 300 57% 68%;
+    /* Primary pink: #F4A6B8 */
+    --primary: 343 81% 81%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 240 19% 20%;
-    --secondary-foreground: 0 0% 100%;
+    /* Muted peach: #F6C1B0 */
+    --secondary: 16 77% 83%;
+    --secondary-foreground: 0 0% 12%;
 
-    --muted: 240 5% 96%;
-    --muted-foreground: 240 4% 46%;
+    /* Soft blush background: #FCE6EC */
+    --muted: 343 70% 95%;
+    --muted-foreground: 0 0% 48%;
 
-    --accent: 240 5% 96%;
-    --accent-foreground: 240 19% 20%;
+    /* Warm yellow accent: #F6D84C */
+    --accent: 48 90% 63%;
+    --accent-foreground: 0 0% 12%;
 
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 240 5% 84%;
-    --input: 240 5% 84%;
-    --ring: 300 57% 68%;
+    --border: 343 30% 92%;
+    --input: 343 30% 92%;
+    --ring: 343 81% 81%;
 
-    --radius: 1rem;
+    --radius: 1.25rem;
   }
 
   .dark {
-    --background: 240 19% 20%;
+    --background: 0 0% 12%;
     --foreground: 0 0% 98%;
 
-    --card: 240 19% 20%;
+    --card: 0 0% 15%;
     --card-foreground: 0 0% 98%;
 
-    --popover: 240 19% 20%;
+    --popover: 0 0% 15%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 300 57% 68%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 343 81% 81%;
+    --primary-foreground: 0 0% 12%;
 
-    --secondary: 240 4% 16%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 16 77% 83%;
+    --secondary-foreground: 0 0% 12%;
 
-    --muted: 240 4% 16%;
-    --muted-foreground: 240 5% 65%;
+    --muted: 0 0% 20%;
+    --muted-foreground: 0 0% 65%;
 
-    --accent: 240 4% 16%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 48 90% 63%;
+    --accent-foreground: 0 0% 12%;
 
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 63% 31%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 240 4% 16%;
-    --input: 240 4% 16%;
-    --ring: 300 57% 68%;
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 343 81% 81%;
   }
 }
 
@@ -86,67 +91,165 @@ body {
   }
 }
 
-/* Updated component styles with direct CSS */
-.glass-card {
-  background-color: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(4px);
-  border: 1px solid rgba(228, 224, 240, 0.3);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  border-radius: 1rem;
+/* Updated component styles to match soft, calm pink aesthetic */
+@layer utilities {
+  /* Soft card with subtle shadow */
+  .glass-card {
+    background-color: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(252, 230, 236, 0.4);
+    box-shadow: 0 2px 8px rgba(244, 166, 184, 0.08);
+    border-radius: 1.25rem;
+  }
+
+  /* Soft pink background gradient */
+  .gradient-bg {
+    background: linear-gradient(to bottom right, #ffffff, #fce6ec, #fff5f8);
+  }
+
+  /* Soft pink card with gentle gradient */
+  .gradient-card {
+    background: linear-gradient(to bottom right, rgba(252, 230, 236, 0.3), rgba(255, 255, 255, 0.95));
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(244, 166, 184, 0.2);
+    box-shadow: 0 2px 8px rgba(244, 166, 184, 0.06);
+    border-radius: 1.25rem;
+  }
+
+  /* Primary pink pill button */
+  .gradient-button {
+    background: linear-gradient(to right, #f4a6b8, #f095ab);
+    color: white;
+    font-weight: 500;
+    border-radius: 9999px;
+    padding: 0.75rem 1.5rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(244, 166, 184, 0.2);
+  }
+
+  .gradient-button:hover {
+    box-shadow: 0 4px 12px rgba(244, 166, 184, 0.3);
+    transform: translateY(-1px);
+  }
+
+  /* Secondary white button */
+  .secondary-button {
+    background-color: white;
+    color: #1f1f1f;
+    border: 1.5px solid rgba(244, 166, 184, 0.3);
+    font-weight: 500;
+    border-radius: 9999px;
+    padding: 0.75rem 1.5rem;
+    transition: all 0.3s ease;
+  }
+
+  .secondary-button:hover {
+    border-color: #f4a6b8;
+    box-shadow: 0 2px 8px rgba(244, 166, 184, 0.15);
+  }
+
+  /* Yellow accent button (micro-highlights only) */
+  .accent-button {
+    background: #f6d84c;
+    color: #1f1f1f;
+    font-weight: 600;
+    border-radius: 9999px;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    transition: all 0.3s ease;
+  }
+
+  .accent-button:hover {
+    background: #f5d23a;
+    box-shadow: 0 2px 6px rgba(246, 216, 76, 0.3);
+  }
+
+  /* App background - soft and calm */
+  .app-gradient {
+    background: linear-gradient(to bottom, #ffffff, #fce6ec 50%, #fff5f8);
+  }
+
+  /* Header with soft pink gradient */
+  .header-gradient {
+    background: linear-gradient(to right, #f4a6b8, #f6c1b0);
+  }
+
+  /* Text utilities */
+  .text-primary-color {
+    color: #1f1f1f;
+  }
+
+  .text-secondary-color {
+    color: #7a7a7a;
+  }
+
+  .text-accent-color {
+    color: #f4a6b8;
+  }
+
+  /* Soft shadows */
+  .shadow-soft {
+    box-shadow: 0 2px 12px rgba(244, 166, 184, 0.08);
+  }
+
+  .shadow-soft-lg {
+    box-shadow: 0 4px 20px rgba(244, 166, 184, 0.12);
+  }
+
+  /* Rounded cards (per brand) */
+  .rounded-card {
+    border-radius: 1.5rem;
+  }
+
+  .rounded-card-lg {
+    border-radius: 2rem;
+  }
+
+  /* Pink background utilities */
+  .bg-primary-pink {
+    background-color: #f4a6b8;
+  }
+
+  .bg-soft-blush {
+    background-color: #fce6ec;
+  }
+
+  .bg-muted-peach {
+    background-color: #f6c1b0;
+  }
+
+  .bg-calm-green {
+    background-color: #9bb8a0;
+  }
+
+  .bg-warm-yellow {
+    background-color: #f6d84c;
+  }
+
+  /* Utility for white space emphasis */
+  .spacious {
+    padding: 2rem;
+  }
+
+  .spacious-lg {
+    padding: 3rem;
+  }
 }
 
-.gradient-bg {
-  background: linear-gradient(to bottom right, #e8e4f3, #f0eaf9, #f8f6ff);
-}
+@layer utilities {
+  .bg-card {
+    background-color: hsl(var(--card));
+  }
 
-.gradient-card {
-  background: linear-gradient(to bottom right, rgba(240, 234, 249, 0.8), rgba(255, 255, 255, 0.8));
-  backdrop-filter: blur(4px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  border-radius: 1rem;
-}
+  .text-card-foreground {
+    color: hsl(var(--card-foreground));
+  }
 
-.gradient-button {
-  background: linear-gradient(to right, #da83d2, #c45fbc);
-  color: white;
-  font-weight: 500;
-  transition: all 0.3s ease;
-}
+  .shadow-card {
+    box-shadow: 0 2px 12px rgba(244, 166, 184, 0.08);
+  }
 
-.gradient-button:hover {
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.secondary-button {
-  background-color: white;
-  color: #2c3060;
-  border: 1px solid #e4e0f0;
-  font-weight: 500;
-  transition: all 0.3s ease;
-}
-
-.secondary-button:hover {
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-/* New utility classes with direct CSS */
-.app-gradient {
-  background: linear-gradient(to bottom right, #e8e4f3, #f0eaf9, #f8f6ff);
-}
-
-.header-gradient {
-  background: linear-gradient(to right, #2c3060, #3a3e7a);
-}
-
-.text-primary-color {
-  color: #2c3060;
-}
-
-.text-secondary-color {
-  color: #6e6d8f;
-}
-
-.text-accent-color {
-  color: #da83d2;
+  .shadow-button {
+    box-shadow: 0 2px 8px rgba(244, 166, 184, 0.2);
+  }
 }
