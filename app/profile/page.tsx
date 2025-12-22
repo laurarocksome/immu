@@ -170,91 +170,97 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-brand-lightest to-white text-brand-dark">
-      {/* Header */}
-      <header className="p-4 flex justify-between items-center bg-brand-dark text-white">
-        <button onClick={handleBackToDashboard} className="flex items-center text-white/80 hover:text-white">
+      <header className="p-4 flex justify-between items-center bg-gradient-to-r from-pink-50 to-peach-50">
+        <button onClick={handleBackToDashboard} className="flex items-center text-brand-dark/70 hover:text-brand-dark">
           <ArrowLeft className="h-5 w-5 mr-1" />
-          <span>Back</span>
+          <span className="text-sm font-medium">Back</span>
         </button>
-        <Logo variant="light" />
+        <Logo variant="dark" />
         <div className="w-20"></div>
       </header>
 
       {/* Main Content */}
       <main className="flex-1 px-4 pb-8 overflow-auto">
         <div className="max-w-md mx-auto">
-          <div className="mb-6 text-center">
-            <h2 className="text-2xl font-bold mb-2">Your Profile</h2>
-            {userName && <p className="text-brand-dark/70">Welcome, {userName}!</p>}
+          <div className="my-8 text-center">
+            <h2 className="text-3xl font-bold mb-2 text-brand-dark">Your Profile</h2>
+            {userName && <p className="text-brand-dark/60 text-base">Welcome back, {userName}!</p>}
           </div>
 
           {/* Personal Information */}
           {profile && (
-            <div className="glass-card rounded-2xl p-6 mb-6">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="font-semibold text-lg">Personal Information</h3>
+            <div className="bg-white rounded-3xl p-6 mb-4 shadow-soft">
+              <div className="flex justify-between items-center mb-5">
+                <h3 className="font-semibold text-xl text-brand-dark">Personal Information</h3>
                 <button
-                  className="text-pink-400 flex items-center"
+                  className="text-brand-primary flex items-center gap-1 hover:text-brand-primary/80 transition-colors"
                   onClick={() => router.push("/onboarding/user-profile")}
                 >
-                  <Edit className="h-4 w-4 mr-1" />
-                  Edit
+                  <Edit className="h-4 w-4" />
+                  <span className="text-sm font-medium">Edit</span>
                 </button>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div>
-                  <p className="text-brand-dark/60 text-sm">Gender</p>
-                  <p>{profile.gender || "Not set"}</p>
+                  <p className="text-brand-dark/50 text-sm font-medium mb-1">Gender</p>
+                  <p className="text-brand-dark font-medium">{profile.gender || "Not set"}</p>
                 </div>
                 <div>
-                  <p className="text-brand-dark/60 text-sm">Age</p>
-                  <p>{profile.age ? `${profile.age} years` : "Not set"}</p>
+                  <p className="text-brand-dark/50 text-sm font-medium mb-1">Age</p>
+                  <p className="text-brand-dark font-medium">{profile.age ? `${profile.age} years` : "Not set"}</p>
                 </div>
                 <div>
-                  <p className="text-brand-dark/60 text-sm">Weight</p>
-                  <p>{profile.weight ? `${profile.weight} ${profile.weightUnit}` : "Not set"}</p>
+                  <p className="text-brand-dark/50 text-sm font-medium mb-1">Weight</p>
+                  <p className="text-brand-dark font-medium">
+                    {profile.weight ? `${profile.weight} ${profile.weightUnit}` : "Not set"}
+                  </p>
                 </div>
                 <div>
-                  <p className="text-brand-dark/60 text-sm">Height</p>
-                  <p>{profile.height ? `${profile.height} ${profile.heightUnit}` : "Not set"}</p>
+                  <p className="text-brand-dark/50 text-sm font-medium mb-1">Height</p>
+                  <p className="text-brand-dark font-medium">
+                    {profile.height ? `${profile.height} ${profile.heightUnit}` : "Not set"}
+                  </p>
                 </div>
               </div>
             </div>
           )}
 
           {/* Diet Information */}
-          <div className="glass-card rounded-2xl p-6 mb-6">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="font-semibold text-lg">Diet Information</h3>
+          <div className="bg-white rounded-3xl p-6 mb-4 shadow-soft">
+            <div className="flex justify-between items-center mb-5">
+              <h3 className="font-semibold text-xl text-brand-dark">Diet Information</h3>
               <button
-                className="text-pink-400 flex items-center"
+                className="text-brand-primary flex items-center gap-1 hover:text-brand-primary/80 transition-colors"
                 onClick={() => router.push("/onboarding/diet-timeline")}
               >
-                <Edit className="h-4 w-4 mr-1" />
-                Edit
+                <Edit className="h-4 w-4" />
+                <span className="text-sm font-medium">Edit</span>
               </button>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div>
-                <p className="text-brand-dark/60 text-sm">Diet Timeline</p>
-                <p>{dietInfo?.timeline || "Not set"} days</p>
+                <p className="text-brand-dark/50 text-sm font-medium mb-1">Diet Timeline</p>
+                <p className="text-brand-dark font-medium">{dietInfo?.timeline || "Not set"} days</p>
               </div>
               <div>
-                <p className="text-brand-dark/60 text-sm">Adaptation Period</p>
-                <p>{dietInfo?.adaptationPeriod ? "Yes" : "No"}</p>
+                <p className="text-brand-dark/50 text-sm font-medium mb-1">Adaptation Period</p>
+                <p className="text-brand-dark font-medium">{dietInfo?.adaptationPeriod ? "Yes" : "No"}</p>
               </div>
             </div>
           </div>
 
           {/* Conditions */}
-          <div className="glass-card rounded-2xl p-6 mb-6">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="font-semibold text-lg">Conditions</h3>
-              <button className="text-pink-400 flex items-center" onClick={() => router.push("/onboarding/conditions")}>
-                <Edit className="h-4 w-4 mr-1" />
-                Edit
+          <div className="bg-white rounded-3xl p-6 mb-4 shadow-soft">
+            <div className="flex justify-between items-center mb-5">
+              <h3 className="font-semibold text-xl text-brand-dark">Conditions</h3>
+              <button
+                className="text-brand-primary flex items-center gap-1 hover:text-brand-primary/80 transition-colors"
+                onClick={() => router.push("/onboarding/conditions")}
+              >
+                <Edit className="h-4 w-4" />
+                <span className="text-sm font-medium">Edit</span>
               </button>
             </div>
 
@@ -262,24 +268,30 @@ export default function ProfilePage() {
               {conditions.length > 0 ? (
                 <div className="flex flex-wrap gap-2">
                   {conditions.map((condition, index) => (
-                    <span key={index} className="bg-pink-200/70 text-brand-dark px-3 py-1 rounded-full text-sm">
+                    <span
+                      key={index}
+                      className="bg-gradient-to-r from-pink-100 to-peach-100 text-brand-dark px-4 py-2 rounded-full text-sm font-medium"
+                    >
                       {condition}
                     </span>
                   ))}
                 </div>
               ) : (
-                <p className="text-brand-dark/60">No conditions selected</p>
+                <p className="text-brand-dark/50">No conditions selected</p>
               )}
             </div>
           </div>
 
           {/* Symptoms */}
-          <div className="glass-card rounded-2xl p-6 mb-6">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="font-semibold text-lg">Symptoms to Track</h3>
-              <button className="text-pink-400 flex items-center" onClick={() => router.push("/onboarding/symptoms")}>
-                <Edit className="h-4 w-4 mr-1" />
-                Edit
+          <div className="bg-white rounded-3xl p-6 mb-6 shadow-soft">
+            <div className="flex justify-between items-center mb-5">
+              <h3 className="font-semibold text-xl text-brand-dark">Symptoms to Track</h3>
+              <button
+                className="text-brand-primary flex items-center gap-1 hover:text-brand-primary/80 transition-colors"
+                onClick={() => router.push("/onboarding/symptoms")}
+              >
+                <Edit className="h-4 w-4" />
+                <span className="text-sm font-medium">Edit</span>
               </button>
             </div>
 
@@ -287,13 +299,16 @@ export default function ProfilePage() {
               {symptoms.length > 0 ? (
                 <div className="flex flex-wrap gap-2">
                   {symptoms.map((symptom, index) => (
-                    <span key={index} className="bg-purple-200/70 text-brand-dark px-3 py-1 rounded-full text-sm">
+                    <span
+                      key={index}
+                      className="bg-gradient-to-r from-pink-100 to-peach-100 text-brand-dark px-4 py-2 rounded-full text-sm font-medium"
+                    >
                       {symptom}
                     </span>
                   ))}
                 </div>
               ) : (
-                <p className="text-brand-dark/60">No symptoms selected</p>
+                <p className="text-brand-dark/50">No symptoms selected</p>
               )}
             </div>
           </div>
@@ -304,7 +319,7 @@ export default function ProfilePage() {
               localStorage.clear()
               router.push("/")
             }}
-            className="w-full border border-brand-dark/30 text-brand-dark hover:bg-white/50 py-3 rounded-full transition-colors mb-3"
+            className="w-full bg-white border-2 border-brand-dark/20 text-brand-dark hover:border-brand-dark/40 hover:shadow-soft py-4 rounded-full transition-all mb-3 font-medium"
           >
             Log Out
           </button>
@@ -312,7 +327,7 @@ export default function ProfilePage() {
           {/* Delete Account Button */}
           <button
             onClick={() => setShowDeleteConfirm(true)}
-            className="w-full border border-red-500/50 text-red-600 hover:bg-red-50 py-3 rounded-full transition-colors flex items-center justify-center gap-2"
+            className="w-full bg-white border-2 border-red-400/30 text-red-600 hover:border-red-400/50 hover:shadow-soft py-4 rounded-full transition-all flex items-center justify-center gap-2 font-medium"
           >
             <Trash2 className="h-4 w-4" />
             Delete Account
@@ -323,9 +338,9 @@ export default function ProfilePage() {
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-sm w-full">
+          <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-xl">
             <h3 className="text-xl font-bold mb-2 text-brand-dark">Delete Account?</h3>
-            <p className="text-brand-dark/70 mb-6">
+            <p className="text-brand-dark/60 mb-6 text-sm leading-relaxed">
               This will permanently delete your account and all your data including logs, symptoms, and conditions. This
               action cannot be undone.
             </p>
@@ -333,14 +348,14 @@ export default function ProfilePage() {
               <button
                 onClick={() => setShowDeleteConfirm(false)}
                 disabled={isDeleting}
-                className="flex-1 border border-brand-dark/30 text-brand-dark hover:bg-white/50 py-3 rounded-full transition-colors disabled:opacity-50"
+                className="flex-1 bg-white border-2 border-brand-dark/20 text-brand-dark hover:border-brand-dark/40 py-3 rounded-full transition-all disabled:opacity-50 font-medium"
               >
                 Cancel
               </button>
               <button
                 onClick={handleDeleteAccount}
                 disabled={isDeleting}
-                className="flex-1 bg-red-600 text-white hover:bg-red-700 py-3 rounded-full transition-colors disabled:opacity-50"
+                className="flex-1 bg-red-600 text-white hover:bg-red-700 py-3 rounded-full transition-colors disabled:opacity-50 font-medium shadow-soft"
               >
                 {isDeleting ? "Deleting..." : "Delete"}
               </button>

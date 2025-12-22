@@ -61,6 +61,8 @@ const config = {
           "warm-yellow": "#F6D84C",
           "text-primary": "#1F1F1F",
           "text-secondary": "#7A7A7A",
+          dark: "#273071", // Deep navy for headers
+          lightest: "#FFF5F8", // Lightest pink tint for backgrounds
         },
         // Pink scale for various uses
         pink: {

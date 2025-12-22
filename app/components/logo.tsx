@@ -1,5 +1,4 @@
 export default function Logo({ variant = "dark" }: { variant?: "dark" | "light" }) {
-  // Use white text for dark backgrounds, #273071 for light backgrounds
   const textColor = variant === "light" ? "#ffffff" : "#273071"
 
   return (

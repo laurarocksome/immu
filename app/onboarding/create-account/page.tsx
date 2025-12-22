@@ -130,8 +130,9 @@ export default function CreateAccountPage() {
               <p className="text-sm text-brand-dark/60 mt-2">
                 We've collected all the information needed to personalize your AIP diet experience.
               </p>
-              <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-sm text-blue-700">
+              {/* Updated email confirmation message colors from blue to pink */}
+              <div className="mt-4 p-3 bg-pink-50 border border-pink-200 rounded-lg">
+                <p className="text-sm text-pink-700">
                   <span className="font-medium">Check your email!</span> We've sent you a confirmation link to verify
                   your account. Please confirm your email to sync your data across devices.
                 </p>

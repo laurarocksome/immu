@@ -441,11 +441,11 @@ export default function LogDayPage() {
             <div className="flex gap-4">
               <button
                 onClick={() => handleDietSuccess(true)}
-                className="flex-1 flex flex-col items-center justify-center p-4 rounded-xl bg-green-100 hover:bg-green-200 transition-colors"
+                className="flex-1 flex flex-col items-center justify-center p-4 rounded-xl bg-brand-calm-green hover:bg-brand-calm-green-light transition-colors"
               >
-                <Check className="h-12 w-12 mb-2 text-green-600" />
-                <span className="font-medium text-green-800">Yes</span>
-                <p className="text-xs text-green-700 mt-1">I followed the AIP diet today</p>
+                <Check className="h-12 w-12 mb-2 text-brand-calm-green-dark" />
+                <span className="font-medium text-brand-calm-green-dark">Yes</span>
+                <p className="text-xs text-brand-calm-green-dark mt-1">I followed the AIP diet today</p>
               </button>
 
               <button

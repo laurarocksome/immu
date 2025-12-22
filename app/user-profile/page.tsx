@@ -13,9 +13,9 @@ export default function UserProfilePage() {
   }, [router])
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#2a3158] text-white">
-      <Logo />
-      <p className="mt-4">Redirecting to dashboard...</p>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-brand-lightest to-white text-brand-dark">
+      <Logo variant="light" />
+      <p className="mt-4 text-brand-dark/70">Redirecting to dashboard...</p>
     </div>
   )
 }

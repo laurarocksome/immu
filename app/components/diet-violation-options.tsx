@@ -6,7 +6,7 @@ interface DietViolationOptionsProps {
 
 export default function DietViolationOptions({ onSelect }: DietViolationOptionsProps) {
   return (
-    <div className="glass-card rounded-2xl p-6 overflow-hidden border border-blue-100">
+    <div className="glass-card rounded-2xl p-6 overflow-hidden border border-pink-100">
       <h2 className="text-xl font-bold mb-6 text-center">What type of diet violation?</h2>
 
       <div className="space-y-6">

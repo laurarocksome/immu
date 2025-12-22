@@ -102,7 +102,7 @@ function ProgressBar() {
         <div className="h-2 bg-gray-200 rounded-full">
           {progressData.adaptationDays > 0 && (
             <div
-              className={`absolute h-2 bg-amber-400 rounded-l-full ${progressData.currentPhase !== "adaptation" ? "rounded-r-full" : ""}`}
+              className={`absolute h-2 bg-yellow-400 rounded-l-full ${progressData.currentPhase !== "adaptation" ? "rounded-r-full" : ""}`}
               style={{
                 width: `${(progressData.adaptationDays / (progressData.adaptationDays + progressData.eliminationDays + progressData.reintroductionDays)) * 100}%`,
                 left: 0,
@@ -117,7 +117,7 @@ function ProgressBar() {
             }}
           ></div>
           <div
-            className="absolute h-2 bg-green-400 rounded-r-full"
+            className="absolute h-2 bg-green-300 rounded-r-full"
             style={{
               width: `${(progressData.reintroductionDays / (progressData.adaptationDays + progressData.eliminationDays + progressData.reintroductionDays)) * 100}%`,
               left: `${((progressData.adaptationDays + progressData.eliminationDays) / (progressData.adaptationDays + progressData.eliminationDays + progressData.reintroductionDays)) * 100}%`,
@@ -128,7 +128,7 @@ function ProgressBar() {
         {/* Phase Labels */}
         {progressData.adaptationDays > 0 && (
           <div
-            className="absolute text-xs font-medium text-amber-600 -top-6"
+            className="absolute text-xs font-medium text-yellow-600 -top-6"
             style={{
               left: `${(progressData.adaptationDays / (progressData.adaptationDays + progressData.eliminationDays + progressData.reintroductionDays)) * 50}%`,
               transform: "translateX(-50%)",
@@ -197,10 +197,10 @@ function ProgressBar() {
             <div
               className={`h-2 rounded-full ${
                 progressData.currentPhase === "adaptation"
-                  ? "bg-amber-400"
+                  ? "bg-yellow-400"
                   : progressData.currentPhase === "elimination"
                     ? "bg-pink-400"
-                    : "bg-green-400"
+                    : "bg-green-300"
               }`}
               style={{ width: `${progressData.progressPercentage}%` }}
             ></div>
@@ -226,7 +226,7 @@ function ProgressBar() {
       <div className="grid grid-cols-3 gap-2 mt-4 text-center text-xs">
         {progressData.adaptationDays > 0 && (
           <div
-            className={`p-2 rounded-lg ${progressData.currentPhase === "adaptation" ? "bg-amber-100 text-amber-800" : "bg-gray-100"}`}
+            className={`p-2 rounded-lg ${progressData.currentPhase === "adaptation" ? "bg-yellow-100 text-yellow-800" : "bg-gray-100"}`}
           >
             <p className="font-medium">Adaptation</p>
             <p>{progressData.adaptationDays} days</p>
@@ -419,9 +419,9 @@ export default function CalendarPage() {
                 key={index}
                 className={`glass-card rounded-2xl p-4 ${
                   event.type === "meal"
-                    ? "border-l-4 border-green-400"
+                    ? "border-l-4 border-pink-400"
                     : event.type === "symptom"
-                      ? "border-l-4 border-amber-400"
+                      ? "border-l-4 border-yellow-400"
                       : "border-l-4 border-pink-400"
                 }`}
               >

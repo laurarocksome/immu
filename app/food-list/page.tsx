@@ -118,7 +118,6 @@ const containsCaffeine = (product) => {
     product.name === "Energy drinks" ||
     product.name === "Espresso" ||
     product.name === "Cappuccino" ||
-    product.name === "Latte" ||
     product.name === "Americano" ||
     product.name === "Cold brew coffee" ||
     product.name === "Iced coffee" ||
@@ -2157,7 +2156,7 @@ export default function FoodList() {
       case "Can't eat":
         return "bg-red-100 text-red-800"
       case "Under evaluation":
-        return "bg-blue-100 text-blue-800"
+        return "bg-peach-100 text-peach-800"
       default:
         return "bg-gray-100 text-gray-800"
     }
@@ -2181,7 +2180,7 @@ export default function FoodList() {
   const getPhaseIndicatorClasses = () => {
     switch (currentPhase) {
       case "adaptation":
-        return "bg-amber-100 text-amber-800"
+        return "bg-yellow-100 text-yellow-800"
       case "elimination":
         return "bg-pink-100 text-pink-800"
       case "reintroduction":

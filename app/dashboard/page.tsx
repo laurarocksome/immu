@@ -39,8 +39,8 @@ const symptomHistoryData = {
 const wellnessHistoryData = {
   dates: chartDates,
   scores: [0, 0, 0, 0, 0, 0, 0], // Will be populated with wellness scores
-  color: "#4ade80", // Green color for wellness
-  gradient: ["#4ade80", "#4ade8033"],
+  color: "#f4a6b8",
+  gradient: ["#f4a6b8", "#f4a6b833"],
 }
 
 // Interface for logged symptom data
@@ -308,7 +308,7 @@ export default function Dashboard() {
     }
 
     // Define colors for the symptoms
-    const colors = ["#38bdf8", "#2dd4bf", "#4ade80", "#a78bfa", "#fb7185"]
+    const colors = ["#f4a6b8", "#f6c1b0", "#f9cdd9", "#e87a97", "#f09f88"]
 
     // Get the symptoms to display (either from user preferences or from logged symptoms)
     const symptomsToDisplay = userSymptoms.length > 0 ? userSymptoms : [...new Set(loggedSymptoms.map((s) => s.name))]
@@ -983,7 +983,7 @@ export default function Dashboard() {
     }
 
     // Save updated completed todos to localStorage
-    localStorage.setItem("completedTodos", JSON.JSON.stringify(completedTodos))
+    localStorage.setItem("completedTodos", JSON.stringify(completedTodos))
 
     // Show confetti if all items are completed
     if (updatedCompletedIds.length === todoItems.length) {
@@ -1343,7 +1343,7 @@ export default function Dashboard() {
                 <p className="font-medium mb-2 text-primary-color">Your Conditions:</p>
                 <div className="flex flex-wrap gap-2">
                   {conditions.map((condition, index) => (
-                    <span key={index} className="bg-[#f0eaf9] text-primary-color px-3 py-1 rounded-full text-sm">
+                    <span key={index} className="bg-pink-100 text-primary-color px-3 py-1 rounded-full text-sm">
                       {condition}
                     </span>
                   ))}
@@ -1512,8 +1512,8 @@ export default function Dashboard() {
                 </div>
 
                 <div className="relative w-32">
-                  <div className="h-2 bg-[#e4e0f0] rounded-full">
-                    <div className="h-2 bg-[#da83d2] rounded-full" style={{ width: `${progress}%` }}></div>
+                  <div className="h-2 bg-pink-100 rounded-full">
+                    <div className="h-2 bg-pink-400 rounded-full" style={{ width: `${progress}%` }}></div>
                   </div>
                   <div className="absolute -top-5 right-0 text-xs font-medium text-primary-color">{progress}%</div>
                 </div>
@@ -1573,12 +1573,12 @@ export default function Dashboard() {
         {/* Chart Tabs */}
         <div className="glass-card p-6 mb-6">
           {/* Tab Navigation */}
-          <div className="flex border-b border-[#e4e0f0] mb-4">
+          <div className="flex border-b border-pink-200 mb-4">
             <button
               onClick={() => setActiveTab("symptoms")}
               className={`pb-2 px-4 font-medium text-lg transition-colors ${
                 activeTab === "symptoms"
-                  ? "border-b-2 border-[#38bdf8] text-[#38bdf8]"
+                  ? "border-b-2 border-pink-400 text-pink-600"
                   : "text-secondary-color hover:text-primary-color"
               }`}
             >
@@ -1588,7 +1588,7 @@ export default function Dashboard() {
               onClick={() => setActiveTab("wellness")}
               className={`pb-2 px-4 font-medium text-lg transition-colors ${
                 activeTab === "wellness"
-                  ? "border-b-2 border-[#4ade80] text-[#4ade80]"
+                  ? "border-b-2 border-peach-400 text-peach-600"
                   : "text-secondary-color hover:text-primary-color"
               }`}
             >
@@ -1598,9 +1598,6 @@ export default function Dashboard() {
 
           {/* Tab Content */}
           <div className="flex justify-between items-center mb-4">
-            <h3 className="font-medium text-xl text-[#38bdf8]">
-              {activeTab === "symptoms" ? "Symptom Improvement" : "Wellness Score"}
-            </h3>
             <button className="text-accent-color text-sm flex items-center" onClick={() => router.push("/log-day")}>
               Log Day
               <ChevronRight className="h-4 w-4 ml-1" />
@@ -1609,249 +1606,238 @@ export default function Dashboard() {
 
           {/* Symptom Chart */}
           {activeTab === "symptoms" && (
-            <>
-              {/* Chart Container */}
-              <div className="h-64 relative mb-8 bg-white rounded-lg shadow-sm">
-                {/* Y-axis labels */}
-                <div className="absolute left-0 top-0 bottom-0 w-12 flex flex-col justify-between text-xs text-secondary-color py-4">
-                  <span>Severe</span>
-                  <span>Moderate</span>
-                  <span>Mild</span>
-                  <span>Very mild</span>
-                  <span>None</span>
-                </div>
-
-                {/* Vertical grid lines */}
-                <div className="absolute left-12 right-0 top-0 bottom-0 flex justify-between">
-                  {symptomHistoryData.dates.map((date, index) => (
-                    <div
-                      key={index}
-                      className="h-full border-r border-[#f0eaf9] flex flex-col justify-end items-center"
-                      style={{ width: `${100 / symptomHistoryData.dates.length}%` }}
-                    >
-                      <span className="text-xs text-secondary-color mb-2">{date}</span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Chart area */}
-                <div className="absolute left-12 right-0 top-0 bottom-8 px-4 pt-4">
-                  {/* Grid lines */}
-                  <div className="absolute inset-0">
-                    <div className="border-b border-[#f0eaf9] absolute top-[20%] left-0 right-0"></div>
-                    <div className="border-b border-[#f0eaf9] absolute top-[40%] left-0 right-0"></div>
-                    <div className="border-b border-[#f0eaf9] absolute top-[60%] left-0 right-0"></div>
-                    <div className="border-b border-[#f0eaf9] absolute top-[80%] left-0 right-0"></div>
-                  </div>
-
-                  {/* Only show the selected symptom or all if none selected */}
-                  {symptomData.map((symptom, index) => {
-                    // Only render if this is the selected symptom or no selection
-                    if (selectedSymptom !== null && selectedSymptom !== symptom.name) {
-                      return null
-                    }
-
-                    return (
-                      <svg
-                        key={index}
-                        className="absolute inset-0 h-full w-full transition-opacity duration-300"
-                        viewBox="0 0 100 100"
-                        preserveAspectRatio="none"
-                      >
-                        {/* Line */}
-                        <path
-                          d={createSmoothCurvePath(symptom.values)}
-                          fill="none"
-                          stroke={symptom.color}
-                          strokeWidth="1"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-
-                        {/* Add dots for data points */}
-                        {symptom.values.map((value, i) => {
-                          if (value === 0) return null // Don't show dots for zero values
-
-                          const x = (i / (symptom.values.length - 1)) * 100
-                          const y = 100 - (value / 5) * 100
-
-                          return (
-                            <circle key={i} cx={x} cy={y} r="1.5" fill={symptom.color} stroke="white" strokeWidth="1" />
-                          )
-                        })}
-                      </svg>
-                    )
-                  })}
-                </div>
+            <div className="relative min-h-[280px]">
+              {/* Y-axis labels */}
+              <div className="absolute left-0 top-0 bottom-0 w-12 flex flex-col justify-between text-xs text-secondary-color py-4">
+                <span>Severe</span>
+                <span>Moderate</span>
+                <span>Mild</span>
+                <span>Very mild</span>
+                <span>None</span>
               </div>
 
-              {/* Legend */}
-              <div className="flex flex-wrap gap-4 mt-4">
-                {symptomData.slice(0, 5).map((symptom, index) => (
-                  <button
+              {/* Vertical grid lines */}
+              <div className="absolute left-12 right-0 top-0 bottom-0 flex justify-between">
+                {symptomHistoryData.dates.map((date, index) => (
+                  <div
                     key={index}
-                    className={`flex items-center transition-opacity duration-200 ${
-                      selectedSymptom !== null && selectedSymptom !== symptom.name ? "opacity-50" : "opacity-100"
-                    }`}
-                    onClick={() => handleSymptomSelect(symptom.name)}
+                    className="h-full border-r border-pink-100 flex flex-col justify-end items-center"
+                    style={{ width: `${100 / symptomHistoryData.dates.length}%` }}
                   >
-                    <div
-                      className={`w-3 h-3 rounded-full mr-2 ${
-                        selectedSymptom === symptom.name ? "ring-2 ring-offset-2 ring-[#e4e0f0]" : ""
-                      }`}
-                      style={{ backgroundColor: symptom.color }}
-                    ></div>
-                    <span className="text-sm text-primary-color">{symptom.name}</span>
+                    <span className="text-xs text-secondary-color mb-2">{date}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Chart area */}
+              <div className="absolute left-12 right-0 top-0 bottom-8 px-4 pt-4">
+                {/* Grid lines */}
+                <div className="absolute inset-0">
+                  <div className="border-b border-pink-100 absolute top-[20%] left-0 right-0"></div>
+                  <div className="border-b border-pink-100 absolute top-[40%] left-0 right-0"></div>
+                  <div className="border-b border-pink-100 absolute top-[60%] left-0 right-0"></div>
+                  <div className="border-b border-pink-100 absolute top-[80%] left-0 right-0"></div>
+                </div>
+
+                {/* Only show the selected symptom or all if none selected */}
+                {symptomData.map((symptom, index) => {
+                  // Only render if this is the selected symptom or no selection
+                  if (selectedSymptom !== null && selectedSymptom !== symptom.name) {
+                    return null
+                  }
+
+                  return (
+                    <svg
+                      key={index}
+                      className="absolute inset-0 h-full w-full transition-opacity duration-300"
+                      viewBox="0 0 100 100"
+                      preserveAspectRatio="none"
+                    >
+                      {/* Line */}
+                      <path
+                        d={createSmoothCurvePath(symptom.values)}
+                        fill="none"
+                        stroke={symptom.color}
+                        strokeWidth="0.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+
+                      {/* Add dots for data points */}
+                      {symptom.values.map((value, i) => {
+                        if (value === 0) return null // Don't show dots for zero values
+
+                        const x = (i / (symptom.values.length - 1)) * 100
+                        const y = 100 - (value / 5) * 100
+
+                        return (
+                          <circle key={i} cx={x} cy={y} r="0.8" fill={symptom.color} stroke="white" strokeWidth="0.5" />
+                        )
+                      })}
+                    </svg>
+                  )
+                })}
+              </div>
+
+              {/* Symptom Selector */}
+              <div className="mt-6 flex flex-wrap gap-2 justify-center">
+                {symptomData.map((symptom) => (
+                  <button
+                    key={symptom.name}
+                    onClick={() => handleSymptomSelect(symptom.name)}
+                    className={`flex items-center px-3 py-1 rounded-full text-sm border ${
+                      selectedSymptom === symptom.name ? "ring-2 ring-offset-2 ring-pink-300" : ""
+                    }`}
+                    style={{
+                      borderColor: symptom.color,
+                      backgroundColor: selectedSymptom === symptom.name ? symptom.color : "transparent",
+                      color: selectedSymptom === symptom.name ? "white" : symptom.color,
+                    }}
+                  >
+                    <div className="w-2 h-2 rounded-full mr-2" style={{ backgroundColor: symptom.color }}></div>
+                    {symptom.name}
                   </button>
                 ))}
               </div>
 
-              {/* Message for users who haven't logged symptoms yet */}
-              {!hasLoggedSymptoms && userSymptoms.length > 0 && (
-                <div className="mt-4 text-center text-sm text-secondary-color p-2 bg-[#f0eaf9] rounded-lg">
-                  Log your first day to start tracking your symptom improvement over time.
+              {symptomData.length === 0 && (
+                <div className="mt-4 text-center text-sm text-secondary-color p-2 bg-pink-50 rounded-lg">
+                  Log your first day to start tracking your symptoms. You can log your symptom severity daily and watch
+                  how they improve over time.
                 </div>
               )}
-            </>
+            </div>
           )}
 
           {/* Wellness Chart */}
           {activeTab === "wellness" && (
-            <>
-              {/* Chart Container */}
-              <div className="h-64 relative mb-8 bg-white rounded-lg shadow-sm">
-                {/* Y-axis labels */}
-                <div className="absolute left-0 top-0 bottom-0 w-12 flex flex-col justify-between text-xs text-secondary-color py-4">
-                  <span>100</span>
-                  <span>75</span>
-                  <span>50</span>
-                  <span>25</span>
-                  <span>0</span>
+            <div className="relative min-h-[280px]">
+              {/* Y-axis labels */}
+              <div className="absolute left-0 top-0 bottom-0 w-12 flex flex-col justify-between text-xs text-secondary-color py-4">
+                <span>100</span>
+                <span>75</span>
+                <span>50</span>
+                <span>25</span>
+                <span>0</span>
+              </div>
+
+              {/* Vertical grid lines */}
+              <div className="absolute left-12 right-0 top-0 bottom-0 flex justify-between">
+                {wellnessHistoryData.dates.map((date, index) => {
+                  // Check if this date has a period logged
+                  // For the first day (index 0), we'll use the current logged data
+                  const hasPeriod =
+                    index === 0
+                      ? (() => {
+                          try {
+                            const loggedDay = JSON.parse(localStorage.getItem("loggedDay") || "{}")
+                            return loggedDay.onPeriod === true
+                          } catch (e) {
+                            return false
+                          }
+                        })()
+                      : false // For demo purposes, only show for the first day
+
+                  return (
+                    <div
+                      key={index}
+                      className="h-full border-r border-pink-100 flex flex-col justify-end items-center relative group"
+                      style={{ width: `${100 / wellnessHistoryData.dates.length}%` }}
+                    >
+                      <span
+                        className={`text-xs mb-2 ${hasPeriod ? "text-red-500 font-semibold" : "text-secondary-color"}`}
+                      >
+                        {date}
+                      </span>
+
+                      {/* Tooltip */}
+                      {hasPeriod && (
+                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-white rounded shadow-md text-xs whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity">
+                          Period logged on this day
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+
+              {/* Chart area */}
+              <div className="absolute left-12 right-0 top-0 bottom-8 px-4 pt-4">
+                {/* Grid lines */}
+                <div className="absolute inset-0">
+                  <div className="border-b border-pink-100 absolute top-[20%] left-0 right-0"></div>
+                  <div className="border-b border-pink-100 absolute top-[40%] left-0 right-0"></div>
+                  <div className="border-b border-pink-100 absolute top-[60%] left-0 right-0"></div>
+                  <div className="border-b border-pink-100 absolute top-[80%] left-0 right-0"></div>
                 </div>
 
-                {/* Vertical grid lines */}
-                <div className="absolute left-12 right-0 top-0 bottom-0 flex justify-between">
-                  {wellnessHistoryData.dates.map((date, index) => {
-                    // Check if this date has a period logged
-                    // For the first day (index 0), we'll use the current logged data
-                    const hasPeriod =
-                      index === 0
-                        ? (() => {
-                            try {
-                              const loggedDay = JSON.parse(localStorage.getItem("loggedDay") || "{}")
-                              return loggedDay.onPeriod === true
-                            } catch (e) {
-                              return false
-                            }
-                          })()
-                        : false // For demo purposes, only show for the first day
+                {/* Wellness curve */}
+                <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                  {/* Filled area */}
+                  <defs>
+                    <linearGradient id="wellness-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stopColor={wellnessHistoryData.gradient[0]} />
+                      <stop offset="100%" stopColor={wellnessHistoryData.gradient[1]} />
+                    </linearGradient>
+                  </defs>
+
+                  {/* Area fill */}
+                  <path
+                    d={createWellnessAreaPath(wellnessHistoryData.scores)}
+                    fill="url(#wellness-gradient)"
+                    opacity="0.8"
+                  />
+
+                  {/* Line on top */}
+                  <path
+                    d={createWellnessCurvePath(wellnessHistoryData.scores)}
+                    fill="none"
+                    stroke={wellnessHistoryData.color}
+                    strokeWidth="0.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+
+                  {/* Add dots for data points */}
+                  {wellnessHistoryData.scores.map((value, i) => {
+                    if (value === 0) return null // Don't show dots for zero values
+
+                    const x = (i / (wellnessHistoryData.scores.length - 1)) * 100
+                    const y = 100 - value
 
                     return (
-                      <div
-                        key={index}
-                        className="h-full border-r border-[#f0eaf9] flex flex-col justify-end items-center relative group"
-                        style={{ width: `${100 / wellnessHistoryData.dates.length}%` }}
-                      >
-                        <span
-                          className={`text-xs mb-2 ${
-                            hasPeriod ? "text-red-500 font-semibold" : "text-secondary-color"
-                          }`}
-                        >
-                          {date}
-                        </span>
-
-                        {/* Tooltip */}
-                        {hasPeriod && (
-                          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-white rounded shadow-md text-xs whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity">
-                            Period logged on this day
-                          </div>
-                        )}
-                      </div>
+                      <circle
+                        key={i}
+                        cx={x}
+                        cy={y}
+                        r="0.8"
+                        fill="white"
+                        stroke={wellnessHistoryData.color}
+                        strokeWidth="0.8"
+                      />
                     )
                   })}
-                </div>
-
-                {/* Chart area */}
-                <div className="absolute left-12 right-0 top-0 bottom-8 px-4 pt-4">
-                  {/* Grid lines */}
-                  <div className="absolute inset-0">
-                    <div className="border-b border-[#f0eaf9] absolute top-[20%] left-0 right-0"></div>
-                    <div className="border-b border-[#f0eaf9] absolute top-[40%] left-0 right-0"></div>
-                    <div className="border-b border-[#f0eaf9] absolute top-[60%] left-0 right-0"></div>
-                    <div className="border-b border-[#f0eaf9] absolute top-[80%] left-0 right-0"></div>
-                  </div>
-
-                  {/* Wellness curve */}
-                  <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                    {/* Filled area */}
-                    <defs>
-                      <linearGradient id="wellness-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stopColor={wellnessHistoryData.gradient[0]} />
-                        <stop offset="100%" stopColor={wellnessHistoryData.gradient[1]} />
-                      </linearGradient>
-                    </defs>
-
-                    {/* Area fill */}
-                    <path
-                      d={createWellnessAreaPath(wellnessHistoryData.scores)}
-                      fill="url(#wellness-gradient)"
-                      opacity="0.8"
-                    />
-
-                    {/* Line on top */}
-                    <path
-                      d={createWellnessCurvePath(wellnessHistoryData.scores)}
-                      fill="none"
-                      stroke={wellnessHistoryData.color}
-                      strokeWidth="1"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-
-                    {/* Add dots for data points */}
-                    {wellnessHistoryData.scores.map((value, i) => {
-                      if (value === 0) return null // Don't show dots for zero values
-
-                      const x = (i / (wellnessHistoryData.scores.length - 1)) * 100
-                      const y = 100 - value
-
-                      return (
-                        // reduced radius from 3 to 1.5 for smaller bubbles
-                        <circle
-                          key={i}
-                          cx={x}
-                          cy={y}
-                          r="1.5"
-                          fill="white"
-                          stroke={wellnessHistoryData.color}
-                          strokeWidth="1.5"
-                        />
-                      )
-                    })}
-                  </svg>
-                </div>
+                </svg>
               </div>
 
               {/* Wellness Score Display */}
-              <div className="flex justify-center items-center mb-4">
+              <div className="flex items-center justify-center mt-12">
                 <div className="text-center">
-                  <p className="text-sm text-secondary-color mb-1">Current Wellness Score</p>
-                  <div className="flex items-center justify-center">
-                    <div
-                      className="w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-xl"
-                      style={{
-                        backgroundColor:
-                          wellnessScore >= 75
-                            ? "#4ade80"
-                            : wellnessScore >= 50
-                              ? "#facc15"
-                              : wellnessScore >= 25
-                                ? "#fb923c"
-                                : "#f87171",
-                      }}
-                    >
-                      {wellnessScore}
-                    </div>
+                  <p className="text-sm text-secondary-color mb-2">Current Wellness Score</p>
+                  <div
+                    className="w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-xl"
+                    style={{
+                      backgroundColor:
+                        wellnessScore >= 75
+                          ? "#9bb8a0"
+                          : wellnessScore >= 50
+                            ? "#f6d84c"
+                            : wellnessScore >= 25
+                              ? "#f6c1b0"
+                              : "#f4a6b8",
+                    }}
+                  >
+                    {wellnessScore}
                   </div>
                 </div>
               </div>
@@ -1859,27 +1845,27 @@ export default function Dashboard() {
               {/* Wellness Factors */}
               <div className="flex flex-wrap gap-4 mt-4 justify-center">
                 <div className="flex items-center">
-                  <div className="w-3 h-3 rounded-full mr-2 bg-green-400"></div>
+                  <div className="w-3 h-3 rounded-full mr-2 bg-pink-400"></div>
                   <span className="text-sm text-primary-color">Mood</span>
                 </div>
                 <div className="flex items-center">
-                  <div className="w-3 h-3 rounded-full mr-2 bg-blue-400"></div>
+                  <div className="w-3 h-3 rounded-full mr-2 bg-peach-400"></div>
                   <span className="text-sm text-primary-color">Sleep</span>
                 </div>
                 <div className="flex items-center">
-                  <div className="w-3 h-3 rounded-full mr-2 bg-amber-400"></div>
+                  <div className="w-3 h-3 rounded-full mr-2 bg-yellow-400"></div>
                   <span className="text-sm text-primary-color">Stress</span>
                 </div>
               </div>
 
               {/* Message for users who haven't logged wellness yet */}
               {!hasLoggedWellness && (
-                <div className="mt-4 text-center text-sm text-secondary-color p-2 bg-[#f0eaf9] rounded-lg">
+                <div className="mt-4 text-center text-sm text-secondary-color p-2 bg-pink-50 rounded-lg">
                   Log your first day to start tracking your wellness score over time. Your score is calculated from your
                   mood, sleep quality, and stress levels.
                 </div>
               )}
-            </>
+            </div>
           )}
         </div>
 
@@ -1969,11 +1955,11 @@ export default function Dashboard() {
           </div>
 
           {dailyObservations === null ? (
-            <div className="text-center text-sm text-secondary-color p-4 bg-[#f0eaf9] rounded-lg">
+            <div className="text-center text-sm text-secondary-color p-4 bg-pink-50 rounded-lg">
               Log your symptoms to see daily insights.
             </div>
           ) : dailyObservations.length === 0 ? (
-            <div className="text-center text-sm text-secondary-color p-4 bg-[#f0eaf9] rounded-lg">
+            <div className="text-center text-sm text-secondary-color p-4 bg-pink-50 rounded-lg">
               No insights for today. Try logging your symptoms and wellness data.
             </div>
           ) : (
@@ -2053,7 +2039,7 @@ export default function Dashboard() {
       <ConfettiCelebration active={showConfetti} onComplete={() => setShowConfetti(false)} duration={4000} />
 
       {/* Bottom Navigation */}
-      <nav className="grid grid-cols-5 border-t border-[#e4e0f0] bg-white/80 backdrop-blur-sm">
+      <nav className="grid grid-cols-5 border-t border-pink-200 bg-white/80 backdrop-blur-sm">
         <button
           className="flex flex-col items-center justify-center py-3 text-xs"
           onClick={() => router.push("/food-list")}
