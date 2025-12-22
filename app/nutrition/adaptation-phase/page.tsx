@@ -1,14 +1,18 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { List, Home, Plus, BookOpen, UtensilsCrossed, User, ArrowLeft, ChevronRight, PlusIcon } from "lucide-react"
 import Logo from "@/app/components/logo"
 import Image from "next/image"
+import { createBrowserClient } from "@/lib/supabase/client"
 
 export default function AdaptationPhasePage() {
   const router = useRouter()
   const [expandedFaq, setExpandedFaq] = useState<string | null>(null)
+  const [nutritionPlans, setNutritionPlans] = useState<any[]>([])
+  const [recipes, setRecipes] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
 
   const handleProfileClick = () => {
     router.push("/profile")
@@ -25,24 +29,6 @@ export default function AdaptationPhasePage() {
       setExpandedFaq(id)
     }
   }
-
-  const recipes = [
-    {
-      id: 1,
-      title: "Fiber-Rich Breakfast Bowl",
-      image: "/placeholder.svg?height=200&width=300",
-    },
-    {
-      id: 2,
-      title: "Vegetable Protein Stir-Fry",
-      image: "/placeholder.svg?height=200&width=300",
-    },
-    {
-      id: 3,
-      title: "Berry Smoothie Bowl",
-      image: "/placeholder.svg?height=200&width=300",
-    },
-  ]
 
   const faqs = [
     {
@@ -64,6 +50,43 @@ export default function AdaptationPhasePage() {
         "Good sources of fiber include fruits (apples, berries, pears), vegetables (broccoli, carrots, leafy greens), legumes (beans, lentils), whole grains (oats, quinoa), and nuts and seeds.",
     },
   ]
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const supabase = createBrowserClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        )
+
+        const { data: plansData, error: plansError } = await supabase
+          .from("nutrition_plans")
+          .select("*")
+          .eq("phase", "Adaptation")
+          .order("week_number")
+
+        if (plansError) throw plansError
+
+        setNutritionPlans(plansData || [])
+
+        const { data: recipesData, error: recipesError } = await supabase
+          .from("recipes")
+          .select("*")
+          .eq("phase", "Adaptation")
+          .limit(3)
+
+        if (recipesError) throw recipesError
+
+        setRecipes(recipesData || [])
+      } catch (error) {
+        console.error("Error fetching data:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-brand-lightest to-white text-brand-dark">
@@ -101,79 +124,66 @@ export default function AdaptationPhasePage() {
         {/* To-Do List */}
         <div className="glass-card rounded-2xl p-6 mb-8">
           <h2 className="text-2xl font-bold mb-4">To-Do List</h2>
-          <ul className="space-y-5">
-            <li className="flex items-start">
-              <span className="text-pink-500 mr-2 mt-1 flex-shrink-0">•</span>
-              <div>
-                <strong className="block mb-1">Week 1</strong>
-                <p>
-                  Remove all caffeinated drinks (like coffee, matcha, energy drinks), and any stimulants like
-                  pre-workout supplements. This helps reduce stress on your nervous system and improves sleep and energy
-                  stability.
-                </p>
-              </div>
-            </li>
-            <li className="flex items-start">
-              <span className="text-pink-500 mr-2 mt-1 flex-shrink-0">•</span>
-              <div>
-                <strong className="block mb-1">Week 2</strong>
-                <p>
-                  Eliminate alcohol while continuing to avoid caffeine. Start drinking 1.5–2L of water daily and
-                  increase your fruit intake to stay hydrated and ease cravings.
-                </p>
-              </div>
-            </li>
-            <li className="flex items-start">
-              <span className="text-pink-500 mr-2 mt-1 flex-shrink-0">•</span>
-              <div>
-                <strong className="block mb-1">Week 3</strong>
-                <p>
-                  Remove added sugars. You can still enjoy fruit or a little honey in moderation. To feel satisfied and
-                  avoid blood sugar dips, boost your protein intake — add more chicken, fish, or other lean proteins to
-                  your meals.
-                </p>
-              </div>
-            </li>
-            <li className="flex items-start">
-              <span className="text-pink-500 mr-2 mt-1 flex-shrink-0">•</span>
-              <div>
-                <strong className="block mb-1">Week 4</strong>
-                <p>
-                  Keep going with your new habits (no caffeine, sugar, or alcohol) and increase your vegetable intake.
-                  You're now preparing for full AIP, where proteins and vegetables are the foundation of your meals.
-                </p>
-              </div>
-            </li>
-          </ul>
+          {loading ? (
+            <div className="text-center py-4">Loading...</div>
+          ) : (
+            <ul className="space-y-5">
+              {nutritionPlans.map((plan) => (
+                <li key={plan.id} className="flex items-start">
+                  <span className="text-pink-500 mr-2 mt-1 flex-shrink-0">•</span>
+                  <div>
+                    <strong className="block mb-1">{plan.title}</strong>
+                    <p>{plan.description}</p>
+                    {plan.content?.tasks && (
+                      <ul className="mt-2 space-y-1">
+                        {plan.content.tasks.map((task: string, idx: number) => (
+                          <li key={idx} className="text-sm text-brand-dark/80">
+                            • {task}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
         {/* Related Recipes */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-4">Related Recipes</h2>
-          <div className="flex space-x-4 overflow-x-auto pb-2">
-            {recipes.map((recipe) => (
-              <div
-                key={recipe.id}
-                className="min-w-[280px] rounded-xl overflow-hidden border border-gray-200 bg-white"
-                onClick={() => router.push(`/recipes/${recipe.id}`)}
-              >
-                <div className="relative h-40 w-full">
-                  <Image src={recipe.image || "/placeholder.svg"} alt={recipe.title} fill className="object-cover" />
+        {recipes.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold mb-4">Related Recipes</h2>
+            <div className="flex space-x-4 overflow-x-auto pb-2">
+              {recipes.map((recipe) => (
+                <div
+                  key={recipe.id}
+                  className="min-w-[280px] rounded-xl overflow-hidden border border-gray-200 bg-white cursor-pointer hover:shadow-md transition-shadow"
+                  onClick={() => router.push(`/recipes/${recipe.id}`)}
+                >
+                  <div className="relative h-40 w-full">
+                    <Image
+                      src={recipe.image_url || "/placeholder.svg?height=200&width=300"}
+                      alt={recipe.title}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="p-4 flex justify-between items-center">
+                    <h3 className="font-medium">{recipe.title}</h3>
+                    <ChevronRight className="h-5 w-5 text-pink-500" />
+                  </div>
                 </div>
-                <div className="p-4 flex justify-between items-center">
-                  <h3 className="font-medium">{recipe.title}</h3>
-                  <ChevronRight className="h-5 w-5 text-pink-500" />
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
+            <button
+              onClick={() => router.push("/recipes")}
+              className="mt-4 w-full py-3 rounded-xl border border-pink-500 text-pink-500 font-medium hover:bg-pink-50 transition-colors"
+            >
+              View All Recipes
+            </button>
           </div>
-          <button
-            onClick={() => router.push("/recipes")}
-            className="mt-4 w-full py-3 rounded-xl border border-pink-500 text-pink-500 font-medium hover:bg-pink-50 transition-colors"
-          >
-            View All Recipes
-          </button>
-        </div>
+        )}
 
         {/* FAQ */}
         <div className="mb-8">

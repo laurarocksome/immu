@@ -1,14 +1,18 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { List, Home, Plus, BookOpen, UtensilsCrossed, User, ArrowLeft, ChevronRight, PlusIcon } from "lucide-react"
 import Logo from "@/app/components/logo"
 import Image from "next/image"
+import { createBrowserClient } from "@/lib/supabase/client"
 
 export default function ReintroductionPhasePage() {
   const router = useRouter()
   const [expandedFaq, setExpandedFaq] = useState<string | null>(null)
+  const [nutritionPlans, setNutritionPlans] = useState<any[]>([])
+  const [recipes, setRecipes] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
 
   const handleProfileClick = () => {
     router.push("/profile")
@@ -25,24 +29,6 @@ export default function ReintroductionPhasePage() {
       setExpandedFaq(id)
     }
   }
-
-  const recipes = [
-    {
-      id: 1,
-      title: "Egg Reintroduction Breakfast",
-      image: "/placeholder.svg?height=200&width=300",
-    },
-    {
-      id: 2,
-      title: "Seed-Based Snack Bowl",
-      image: "/placeholder.svg?height=200&width=300",
-    },
-    {
-      id: 3,
-      title: "Legume Test Meal",
-      image: "/placeholder.svg?height=200&width=300",
-    },
-  ]
 
   const faqs = [
     {
@@ -64,6 +50,44 @@ export default function ReintroductionPhasePage() {
         "Introduce one food at a time. Eat a small amount on day 1, a larger amount on day 2, and then avoid it completely for 3-5 days while monitoring for reactions. If no reactions occur, you can add that food to your safe list.",
     },
   ]
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const supabase = createBrowserClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        )
+
+        // Fetch nutrition plans
+        const { data: plansData, error: plansError } = await supabase
+          .from("nutrition_plans")
+          .select("*")
+          .eq("phase", "Reintroduction")
+          .order("created_at")
+
+        if (plansError) throw plansError
+
+        setNutritionPlans(plansData || [])
+
+        const { data: recipesData, error: recipesError } = await supabase
+          .from("recipes")
+          .select("*")
+          .eq("phase", "Reintroduction")
+          .limit(3)
+
+        if (recipesError) throw recipesError
+
+        setRecipes(recipesData || [])
+      } catch (error) {
+        console.error("Error fetching data:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-brand-lightest to-white text-brand-dark">
@@ -100,88 +124,61 @@ export default function ReintroductionPhasePage() {
 
         {/* Reintroduction Process */}
         <div className="glass-card rounded-2xl p-6 mb-8">
-          <h3 className="font-semibold text-lg mb-3 flex items-center">
-            <span className="mr-2">🔍</span> The Reintroduction Process:
-          </h3>
-          <ul className="space-y-3 mb-6">
-            <li className="flex items-start">
-              <span className="text-pink-500 mr-2 mt-1 flex-shrink-0">•</span>
-              <p>Choose one food at a time.</p>
-            </li>
-            <li className="flex items-start">
-              <span className="text-pink-500 mr-2 mt-1 flex-shrink-0">•</span>
-              <p>Only reintroduce a single ingredient — not a mix.</p>
-            </li>
-            <li className="flex items-start">
-              <span className="text-pink-500 mr-2 mt-1 flex-shrink-0">•</span>
-              <p>Example: reintroduce egg yolk before whole egg.</p>
-            </li>
-          </ul>
-
-          <h3 className="font-semibold text-lg mb-3 flex items-center">
-            <span className="mr-2">⏱️</span> Test in increasing amounts:
-          </h3>
-          <ul className="space-y-3 mb-6">
-            <li className="flex items-start">
-              <span className="text-pink-500 mr-2 mt-1 flex-shrink-0">•</span>
-              <p>Morning: Take a small bite.</p>
-            </li>
-            <li className="flex items-start">
-              <span className="text-pink-500 mr-2 mt-1 flex-shrink-0">•</span>
-              <p>Wait 15 minutes. If no reaction, have a larger bite.</p>
-            </li>
-            <li className="flex items-start">
-              <span className="text-pink-500 mr-2 mt-1 flex-shrink-0">•</span>
-              <p>Wait 2–3 hours. If still no reaction, eat a normal portion.</p>
-            </li>
-            <li className="flex items-start">
-              <span className="text-pink-500 mr-2 mt-1 flex-shrink-0">•</span>
-              <p>Then wait 3 full days before testing the next food — keep your base AIP diet otherwise unchanged.</p>
-            </li>
-          </ul>
-
-          <h3 className="font-semibold text-lg mb-3 flex items-center">
-            <span className="mr-2">📝</span> Track reactions carefully:
-          </h3>
-          <ul className="space-y-3">
-            <li className="flex items-start">
-              <span className="text-pink-500 mr-2 mt-1 flex-shrink-0">•</span>
-              <p>Note any symptoms: fatigue, mood changes, digestive discomfort, headaches, pain, etc.</p>
-            </li>
-            <li className="flex items-start">
-              <span className="text-pink-500 mr-2 mt-1 flex-shrink-0">•</span>
-              <p>Symptoms can appear immediately or be delayed, so that 3-day waiting period is important.</p>
-            </li>
-          </ul>
+          {loading ? (
+            <div className="text-center py-4">Loading...</div>
+          ) : (
+            nutritionPlans.map((plan) => (
+              <div key={plan.id} className="mb-6 last:mb-0">
+                <h3 className="font-semibold text-lg mb-3">{plan.title}</h3>
+                {plan.content?.steps && (
+                  <ul className="space-y-3">
+                    {plan.content.steps.map((step: string, idx: number) => (
+                      <li key={idx} className="flex items-start">
+                        <span className="text-pink-500 mr-2 mt-1 flex-shrink-0">•</span>
+                        <p>{step}</p>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            ))
+          )}
         </div>
 
         {/* Related Recipes */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-4">Related Recipes</h2>
-          <div className="flex space-x-4 overflow-x-auto pb-2">
-            {recipes.map((recipe) => (
-              <div
-                key={recipe.id}
-                className="min-w-[280px] rounded-xl overflow-hidden border border-gray-200 bg-white"
-                onClick={() => router.push(`/recipes/${recipe.id}`)}
-              >
-                <div className="relative h-40 w-full">
-                  <Image src={recipe.image || "/placeholder.svg"} alt={recipe.title} fill className="object-cover" />
+        {recipes.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold mb-4">Related Recipes</h2>
+            <div className="flex space-x-4 overflow-x-auto pb-2">
+              {recipes.map((recipe) => (
+                <div
+                  key={recipe.id}
+                  className="min-w-[280px] rounded-xl overflow-hidden border border-gray-200 bg-white cursor-pointer hover:shadow-md transition-shadow"
+                  onClick={() => router.push(`/recipes/${recipe.id}`)}
+                >
+                  <div className="relative h-40 w-full">
+                    <Image
+                      src={recipe.image_url || "/placeholder.svg?height=200&width=300"}
+                      alt={recipe.title}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="p-4 flex justify-between items-center">
+                    <h3 className="font-medium">{recipe.title}</h3>
+                    <ChevronRight className="h-5 w-5 text-pink-500" />
+                  </div>
                 </div>
-                <div className="p-4 flex justify-between items-center">
-                  <h3 className="font-medium">{recipe.title}</h3>
-                  <ChevronRight className="h-5 w-5 text-pink-500" />
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
+            <button
+              onClick={() => router.push("/recipes")}
+              className="mt-4 w-full py-3 rounded-xl border border-pink-500 text-pink-500 font-medium hover:bg-pink-50 transition-colors"
+            >
+              View All Recipes
+            </button>
           </div>
-          <button
-            onClick={() => router.push("/recipes")}
-            className="mt-4 w-full py-3 rounded-xl border border-pink-500 text-pink-500 font-medium hover:bg-pink-50 transition-colors"
-          >
-            View All Recipes
-          </button>
-        </div>
+        )}
 
         {/* FAQ */}
         <div className="mb-8">

@@ -1,14 +1,18 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { List, Home, Plus, BookOpen, UtensilsCrossed, User, ArrowLeft, ChevronRight, PlusIcon } from "lucide-react"
 import Logo from "@/app/components/logo"
 import Image from "next/image"
+import { createBrowserClient } from "@/lib/supabase/client"
 
 export default function EliminationPhasePage() {
   const router = useRouter()
   const [expandedFaq, setExpandedFaq] = useState<string | null>(null)
+  const [nutritionPlans, setNutritionPlans] = useState<any[]>([])
+  const [recipes, setRecipes] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
 
   const handleProfileClick = () => {
     router.push("/profile")
@@ -25,24 +29,6 @@ export default function EliminationPhasePage() {
       setExpandedFaq(id)
     }
   }
-
-  const recipes = [
-    {
-      id: 1,
-      title: "AIP-Friendly Stir Fry",
-      image: "/placeholder.svg?height=200&width=300",
-    },
-    {
-      id: 2,
-      title: "Nightshade-Free Curry",
-      image: "/placeholder.svg?height=200&width=300",
-    },
-    {
-      id: 3,
-      title: "Grain-Free Breakfast Bowl",
-      image: "/placeholder.svg?height=200&width=300",
-    },
-  ]
 
   const faqs = [
     {
@@ -64,6 +50,43 @@ export default function EliminationPhasePage() {
         "Focus on nutrient-dense foods like quality meats, seafood, bone broth, and a wide variety of vegetables (except nightshades). Fruits in moderation are also allowed, as are healthy fats like olive oil, coconut oil, and avocados.",
     },
   ]
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const supabase = createBrowserClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        )
+
+        const { data: plansData, error: plansError } = await supabase
+          .from("nutrition_plans")
+          .select("*")
+          .eq("phase", "Elimination")
+          .order("created_at")
+
+        if (plansError) throw plansError
+
+        setNutritionPlans(plansData || [])
+
+        const { data: recipesData, error: recipesError } = await supabase
+          .from("recipes")
+          .select("*")
+          .eq("phase", "Elimination")
+          .limit(3)
+
+        if (recipesError) throw recipesError
+
+        setRecipes(recipesData || [])
+      } catch (error) {
+        console.error("Error fetching data:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-brand-lightest to-white text-brand-dark">
@@ -100,77 +123,66 @@ export default function EliminationPhasePage() {
         {/* To-Do List */}
         <div className="glass-card rounded-2xl p-6 mb-8">
           <h2 className="text-2xl font-bold mb-4">To-Do List</h2>
-          <ul className="space-y-5">
-            <li className="flex items-start">
-              <span className="text-pink-500 mr-2 mt-1 flex-shrink-0">•</span>
-              <div>
-                <strong className="block mb-1">Remove All Inflammatory Foods</strong>
-                <p>
-                  Eliminate grains, legumes, dairy, eggs, nightshades, nuts, seeds, and food additives from your diet
-                  completely.
-                </p>
-              </div>
-            </li>
-            <li className="flex items-start">
-              <span className="text-pink-500 mr-2 mt-1 flex-shrink-0">•</span>
-              <div>
-                <strong className="block mb-1">Focus on Nutrient Density</strong>
-                <p>
-                  Prioritize nutrient-dense foods like quality meats, seafood, bone broth, and a wide variety of
-                  vegetables.
-                </p>
-              </div>
-            </li>
-            <li className="flex items-start">
-              <span className="text-pink-500 mr-2 mt-1 flex-shrink-0">•</span>
-              <div>
-                <strong className="block mb-1">Track Your Symptoms</strong>
-                <p>
-                  Keep a detailed journal of your symptoms, energy levels, and any changes you notice as your body
-                  adjusts to the elimination diet.
-                </p>
-              </div>
-            </li>
-            <li className="flex items-start">
-              <span className="text-pink-500 mr-2 mt-1 flex-shrink-0">•</span>
-              <div>
-                <strong className="block mb-1">Maintain for 30-90 Days</strong>
-                <p>
-                  Stay in this phase until your symptoms have significantly improved, typically 30-90 days depending on
-                  your individual response.
-                </p>
-              </div>
-            </li>
-          </ul>
+          {loading ? (
+            <div className="text-center py-4">Loading...</div>
+          ) : (
+            <ul className="space-y-5">
+              {nutritionPlans.map((plan) => (
+                <li key={plan.id} className="flex items-start">
+                  <span className="text-pink-500 mr-2 mt-1 flex-shrink-0">•</span>
+                  <div>
+                    <strong className="block mb-1">{plan.title}</strong>
+                    <p>{plan.description}</p>
+                    {plan.content?.tasks && (
+                      <ul className="mt-2 space-y-1">
+                        {plan.content.tasks.map((task: string, idx: number) => (
+                          <li key={idx} className="text-sm text-brand-dark/80">
+                            • {task}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
         {/* Related Recipes */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-4">Related Recipes</h2>
-          <div className="flex space-x-4 overflow-x-auto pb-2">
-            {recipes.map((recipe) => (
-              <div
-                key={recipe.id}
-                className="min-w-[280px] rounded-xl overflow-hidden border border-gray-200 bg-white"
-                onClick={() => router.push(`/recipes/${recipe.id}`)}
-              >
-                <div className="relative h-40 w-full">
-                  <Image src={recipe.image || "/placeholder.svg"} alt={recipe.title} fill className="object-cover" />
+        {recipes.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold mb-4">Related Recipes</h2>
+            <div className="flex space-x-4 overflow-x-auto pb-2">
+              {recipes.map((recipe) => (
+                <div
+                  key={recipe.id}
+                  className="min-w-[280px] rounded-xl overflow-hidden border border-gray-200 bg-white cursor-pointer hover:shadow-md transition-shadow"
+                  onClick={() => router.push(`/recipes/${recipe.id}`)}
+                >
+                  <div className="relative h-40 w-full">
+                    <Image
+                      src={recipe.image_url || "/placeholder.svg?height=200&width=300"}
+                      alt={recipe.title}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="p-4 flex justify-between items-center">
+                    <h3 className="font-medium">{recipe.title}</h3>
+                    <ChevronRight className="h-5 w-5 text-pink-500" />
+                  </div>
                 </div>
-                <div className="p-4 flex justify-between items-center">
-                  <h3 className="font-medium">{recipe.title}</h3>
-                  <ChevronRight className="h-5 w-5 text-pink-500" />
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
+            <button
+              onClick={() => router.push("/recipes")}
+              className="mt-4 w-full py-3 rounded-xl border border-pink-500 text-pink-500 font-medium hover:bg-pink-50 transition-colors"
+            >
+              View All Recipes
+            </button>
           </div>
-          <button
-            onClick={() => router.push("/recipes")}
-            className="mt-4 w-full py-3 rounded-xl border border-pink-500 text-pink-500 font-medium hover:bg-pink-50 transition-colors"
-          >
-            View All Recipes
-          </button>
-        </div>
+        )}
 
         {/* FAQ */}
         <div className="mb-8">

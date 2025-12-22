@@ -16,6 +16,7 @@ type Recipe = {
   cook_time: string
   tags: string[]
   image_url?: string
+  phase?: string
   ingredients: { text: string }[]
   instructions: { step: number; text: string }[]
   nutrition_info?: any
@@ -42,6 +43,7 @@ export default function RecipeManagement() {
     cook_time: "",
     tags: "",
     image_url: "",
+    phase: "General",
     ingredients: "",
     instructions: "",
   })
@@ -72,6 +74,7 @@ export default function RecipeManagement() {
       cook_time: formData.cook_time,
       tags: formData.tags.split(",").map((t) => t.trim()),
       image_url: formData.image_url || null,
+      phase: formData.phase,
       ingredients: formData.ingredients
         .split("\n")
         .filter((line) => line.trim())
@@ -127,6 +130,7 @@ export default function RecipeManagement() {
       cook_time: recipe.cook_time,
       tags: recipe.tags.join(", "),
       image_url: recipe.image_url || "",
+      phase: recipe.phase || "General",
       ingredients: recipe.ingredients.map((i) => i.text).join("\n"),
       instructions: recipe.instructions.map((i) => i.text).join("\n"),
     })
@@ -143,6 +147,7 @@ export default function RecipeManagement() {
       cook_time: "",
       tags: "",
       image_url: "",
+      phase: "General",
       ingredients: "",
       instructions: "",
     })
@@ -364,6 +369,23 @@ export default function RecipeManagement() {
                     rows={8}
                     className="w-full px-4 py-2 rounded-lg border border-brand-dark/20 focus:outline-none focus:ring-2 focus:ring-pink-400 font-mono text-sm"
                   />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Nutrition Phase</label>
+                  <select
+                    value={formData.phase}
+                    onChange={(e) => setFormData({ ...formData, phase: e.target.value })}
+                    className="w-full px-4 py-2 rounded-lg border border-brand-dark/20 focus:outline-none focus:ring-2 focus:ring-pink-400"
+                  >
+                    <option value="General">General (All Phases)</option>
+                    <option value="Adaptation">Adaptation Phase</option>
+                    <option value="Elimination">Elimination Phase</option>
+                    <option value="Reintroduction">Reintroduction Phase</option>
+                  </select>
+                  <p className="text-xs text-brand-dark/60 mt-1">
+                    Assign this recipe to a specific nutrition phase or keep it general
+                  </p>
                 </div>
 
                 <div className="flex gap-3 pt-4">

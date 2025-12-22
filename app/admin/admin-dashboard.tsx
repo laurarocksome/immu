@@ -2,14 +2,14 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Settings, List, BookOpen, FileText, LogOut } from "lucide-react"
+import { Settings, List, BookOpen, FileText, LogOut, HelpCircle } from "lucide-react"
 import Logo from "@/app/components/logo"
 
 export default function AdminDashboard() {
   const router = useRouter()
-  const [activeSection, setActiveSection] = useState<"foods" | "recipes" | "nutrition">("foods")
+  const [activeSection, setActiveSection] = useState<"foods" | "recipes" | "nutrition" | "faqs">("foods")
 
-  const handleNavigation = (section: "foods" | "recipes" | "nutrition") => {
+  const handleNavigation = (section: "foods" | "recipes" | "nutrition" | "faqs") => {
     setActiveSection(section)
     router.push(`/admin/${section}`)
   }
@@ -46,7 +46,7 @@ export default function AdminDashboard() {
           <p className="text-brand-dark/70 mb-8">Manage your app content and data</p>
 
           {/* Quick Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <div className="glass-card rounded-2xl p-6 hover:shadow-md transition-shadow">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center">
@@ -79,10 +79,21 @@ export default function AdminDashboard() {
               <p className="text-2xl font-bold mb-2">---</p>
               <p className="text-sm text-brand-dark/60">Active diet phases</p>
             </div>
+
+            <div className="glass-card rounded-2xl p-6 hover:shadow-md transition-shadow">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                  <HelpCircle className="h-5 w-5 text-blue-500" />
+                </div>
+                <h3 className="font-semibold">FAQs</h3>
+              </div>
+              <p className="text-2xl font-bold mb-2">---</p>
+              <p className="text-sm text-brand-dark/60">Frequently asked questions</p>
+            </div>
           </div>
 
           {/* Management Sections */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <button
               onClick={() => handleNavigation("foods")}
               className="glass-card rounded-2xl p-8 hover:shadow-lg transition-all hover:scale-105 text-left"
@@ -114,6 +125,17 @@ export default function AdminDashboard() {
               </div>
               <h3 className="text-xl font-bold mb-2">Nutrition Plans</h3>
               <p className="text-brand-dark/70">Edit diet phase guidelines and timelines</p>
+            </button>
+
+            <button
+              onClick={() => handleNavigation("faqs")}
+              className="glass-card rounded-2xl p-8 hover:shadow-lg transition-all hover:scale-105 text-left"
+            >
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-300 to-blue-400 flex items-center justify-center mb-4">
+                <HelpCircle className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-xl font-bold mb-2">Manage FAQs</h3>
+              <p className="text-brand-dark/70">Edit and create frequently asked questions</p>
             </button>
           </div>
         </div>
