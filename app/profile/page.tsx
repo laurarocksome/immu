@@ -67,29 +67,26 @@ export default function ProfilePage() {
 
           if (dietData) {
             setDietInfo({
-              timeline: dietData.diet_timeline?.toString() || "Not set",
-              adaptationPeriod: dietData.adaptation_period || false,
+              timeline: dietData.timeline_days?.toString() || "Not set",
+              adaptationPeriod: dietData.adaptation_choice === "yes",
             })
           }
 
           // Load conditions
           const { data: conditionsData } = await supabase
             .from("user_conditions")
-            .select("condition_name")
+            .select("condition")
             .eq("user_id", userId)
 
           if (conditionsData && conditionsData.length > 0) {
-            setConditions(conditionsData.map((c) => c.condition_name))
+            setConditions(conditionsData.map((c) => c.condition))
           }
 
           // Load symptoms
-          const { data: symptomsData } = await supabase
-            .from("user_symptoms")
-            .select("symptom_name")
-            .eq("user_id", userId)
+          const { data: symptomsData } = await supabase.from("user_symptoms").select("symptom").eq("user_id", userId)
 
           if (symptomsData && symptomsData.length > 0) {
-            setSymptoms(symptomsData.map((s) => s.symptom_name))
+            setSymptoms(symptomsData.map((s) => s.symptom))
           }
         }
 
@@ -114,7 +111,8 @@ export default function ProfilePage() {
 
         if (symptoms.length === 0) {
           const storedSymptoms = JSON.parse(localStorage.getItem("userSymptoms") || "[]")
-          setSymptoms(storedSymptoms)
+          const selectedSymptoms = JSON.parse(localStorage.getItem("selectedSymptoms") || "[]")
+          setSymptoms(storedSymptoms.length > 0 ? storedSymptoms : selectedSymptoms)
         }
 
         if (!userName) {

@@ -10,6 +10,10 @@ const config = {
     "*.{js,ts,jsx,tsx,mdx}",
   ],
   prefix: "",
+  future: {
+    removeDeprecatedGapUtilities: true,
+    purgeLayersByDefault: true,
+  },
   theme: {
     colors: {
       transparent: "transparent",

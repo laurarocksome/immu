@@ -4,6 +4,8 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { ArrowLeft } from "lucide-react"
 import Logo from "@/app/components/logo"
+import { saveUserConditions } from "@/lib/user-data"
+import { getSession } from "@/lib/auth"
 
 export default function ConditionsPage() {
   const router = useRouter()
@@ -14,14 +16,33 @@ export default function ConditionsPage() {
 
   // Load saved conditions from localStorage if available
   useEffect(() => {
-    const savedConditions = localStorage.getItem("selectedConditions")
-    if (savedConditions) {
+    const loadExistingData = async () => {
       try {
-        setSelectedConditions(JSON.parse(savedConditions))
-      } catch (e) {
-        console.error("Error parsing saved conditions:", e)
+        const session = await getSession()
+        if (session?.user) {
+          const { supabase } = await import("@/lib/supabase/client")
+          const { data: conditionsData } = await supabase
+            .from("user_conditions")
+            .select("condition")
+            .eq("user_id", session.user.id)
+
+          if (conditionsData && conditionsData.length > 0) {
+            setSelectedConditions(conditionsData.map((c) => c.condition))
+            return
+          }
+        }
+
+        // Fall back to localStorage
+        const savedConditions = localStorage.getItem("selectedConditions")
+        if (savedConditions) {
+          setSelectedConditions(JSON.parse(savedConditions))
+        }
+      } catch (error) {
+        console.error("Error loading conditions:", error)
       }
     }
+
+    loadExistingData()
   }, [])
 
   // Alphabetically sorted list of conditions
@@ -129,12 +150,22 @@ export default function ConditionsPage() {
     }
   }
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     // Save selected conditions even if empty
     localStorage.setItem("selectedConditions", JSON.stringify(selectedConditions))
 
     // Also save to userConditions for profile page compatibility
     localStorage.setItem("userConditions", JSON.stringify(selectedConditions))
+
+    try {
+      const session = await getSession()
+      if (session?.user) {
+        await saveUserConditions(selectedConditions)
+      }
+    } catch (error) {
+      console.error("Error saving to database:", error)
+      // Continue anyway - data is in localStorage
+    }
 
     router.push("/onboarding/symptoms")
   }

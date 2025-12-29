@@ -127,6 +127,9 @@ export default function Dashboard() {
   const [reintroductionDay, setReintroductionDay] = useState(0)
   const [currentPhase, setCurrentPhase] = useState<"adaptation" | "elimination" | "reintroduction">("elimination")
 
+  // Add a state for wellness data
+  const [wellnessData, setWellnessData] = useState<number[]>([0, 0, 0, 0, 0, 0, 0])
+
   const syncPendingDataToSupabase = async () => {
     if (typeof window === "undefined") return
 
@@ -395,6 +398,7 @@ export default function Dashboard() {
         .from("user_profiles")
         .update({
           weight: Number(currentWeight),
+          weight_unit: weightUnit,
           updated_at: new Date().toISOString(),
         })
         .eq("user_id", user.id)
@@ -1129,6 +1133,7 @@ export default function Dashboard() {
           const updatedScores = [...wellnessHistoryData.scores]
           updatedScores[0] = score
           wellnessHistoryData.scores = updatedScores
+          setWellnessData(updatedScores) // Update the wellnessData state
 
           // Store period data
           if (loggedDay.onPeriod === true) {
@@ -1649,263 +1654,266 @@ export default function Dashboard() {
 
           {/* Symptom Chart */}
           {activeTab === "symptoms" && (
-            <div className="relative min-h-[280px]">
-              {/* Y-axis labels */}
-              <div className="absolute left-0 top-0 bottom-0 w-12 flex flex-col justify-between text-xs text-secondary-color py-4">
-                <span>Severe</span>
-                <span>Moderate</span>
-                <span>Mild</span>
-                <span>Very mild</span>
-                <span>None</span>
-              </div>
-
-              {/* Vertical grid lines */}
-              <div className="absolute left-12 right-0 top-0 bottom-0 flex justify-between">
-                {symptomHistoryData.dates.map((date, index) => (
-                  <div
-                    key={index}
-                    className="h-full border-r border-pink-100 flex flex-col justify-end items-center"
-                    style={{ width: `${100 / symptomHistoryData.dates.length}%` }}
-                  >
-                    <span className="text-xs text-secondary-color mb-2">{date}</span>
-                  </div>
-                ))}
-              </div>
-
-              {/* Chart area */}
-              <div className="absolute left-12 right-0 top-0 bottom-8 px-4 pt-4">
-                {/* Grid lines */}
-                <div className="absolute inset-0">
-                  <div className="border-b border-pink-100 absolute top-[20%] left-0 right-0"></div>
-                  <div className="border-b border-pink-100 absolute top-[40%] left-0 right-0"></div>
-                  <div className="border-b border-pink-100 absolute top-[60%] left-0 right-0"></div>
-                  <div className="border-b border-pink-100 absolute top-[80%] left-0 right-0"></div>
+            <div className="relative">
+              {symptomData.length === 0 ? (
+                // Show empty state without chart when no data
+                <div className="text-center text-sm text-secondary-color p-6 bg-pink-50 rounded-lg min-h-[200px] flex items-center justify-center">
+                  <p className="max-w-md">
+                    Log your first day to start tracking your symptoms. You can log your symptom severity daily and
+                    watch how they improve over time.
+                  </p>
                 </div>
+              ) : (
+                <>
+                  <div className="relative min-h-[280px] md:min-h-[320px]">
+                    {/* Y-axis labels */}
+                    <div className="absolute left-0 top-0 bottom-8 w-10 md:w-16 flex flex-col justify-between text-[10px] md:text-xs text-secondary-color py-4">
+                      <span className="leading-tight">Severe</span>
+                      <span className="leading-tight">Moderate</span>
+                      <span className="leading-tight">Mild</span>
+                      <span className="leading-tight">Very mild</span>
+                      <span className="leading-tight">None</span>
+                    </div>
 
-                {/* Only show the selected symptom or all if none selected */}
-                {symptomData.map((symptom, index) => {
-                  // Only render if this is the selected symptom or no selection
-                  if (selectedSymptom !== null && selectedSymptom !== symptom.name) {
-                    return null
-                  }
+                    {/* Vertical grid lines */}
+                    <div className="absolute left-10 md:left-16 right-0 top-0 bottom-8 flex justify-between">
+                      {symptomHistoryData.dates.map((date, index) => (
+                        <div
+                          key={index}
+                          className="h-full border-r border-pink-100 flex flex-col justify-end items-center"
+                          style={{ width: `${100 / symptomHistoryData.dates.length}%` }}
+                        >
+                          <span className="text-[10px] md:text-xs text-secondary-color mb-2 whitespace-nowrap">
+                            {date}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
 
-                  return (
-                    <svg
-                      key={index}
-                      className="absolute inset-0 h-full w-full transition-opacity duration-300"
-                      viewBox="0 0 100 100"
-                      preserveAspectRatio="none"
-                    >
-                      {/* Line */}
-                      <path
-                        d={createSmoothCurvePath(symptom.values)}
-                        fill="none"
-                        stroke={symptom.color}
-                        strokeWidth="0.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
+                    {/* Chart area */}
+                    <div className="absolute left-10 md:left-16 right-0 top-0 bottom-8 px-2 md:px-4 pt-4">
+                      {/* Grid lines */}
+                      <div className="absolute inset-0">
+                        <div className="border-b border-pink-100 absolute top-[20%] left-0 right-0"></div>
+                        <div className="border-b border-pink-100 absolute top-[40%] left-0 right-0"></div>
+                        <div className="border-b border-pink-100 absolute top-[60%] left-0 right-0"></div>
+                        <div className="border-b border-pink-100 absolute top-[80%] left-0 right-0"></div>
+                      </div>
 
-                      {/* Add dots for data points */}
-                      {symptom.values.map((value, i) => {
-                        if (value === 0) return null // Don't show dots for zero values
-
-                        const x = (i / (symptom.values.length - 1)) * 100
-                        const y = 100 - (value / 5) * 100
+                      {/* Only show the selected symptom or all if none selected */}
+                      {symptomData.map((symptom, index) => {
+                        // Only render if this is the selected symptom or no selection
+                        if (selectedSymptom !== null && selectedSymptom !== symptom.name) {
+                          return null
+                        }
 
                         return (
-                          <circle key={i} cx={x} cy={y} r="0.8" fill={symptom.color} stroke="white" strokeWidth="0.5" />
+                          <svg
+                            key={index}
+                            className="absolute inset-0 h-full w-full transition-opacity duration-300"
+                            viewBox="0 0 100 100"
+                            preserveAspectRatio="none"
+                          >
+                            {/* Line */}
+                            <path
+                              d={createSmoothCurvePath(symptom.values)}
+                              fill="none"
+                              stroke={symptom.color}
+                              strokeWidth="0.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+
+                            {/* Add dots for data points */}
+                            {symptom.values.map((value, i) => {
+                              if (value === 0) return null // Don't show dots for zero values
+
+                              const x = (i / (symptom.values.length - 1)) * 100
+                              const y = 100 - (value / 5) * 100
+
+                              return (
+                                <circle
+                                  key={i}
+                                  cx={x}
+                                  cy={y}
+                                  r="0.8"
+                                  fill={symptom.color}
+                                  stroke="white"
+                                  strokeWidth="0.5"
+                                />
+                              )
+                            })}
+                          </svg>
                         )
                       })}
-                    </svg>
-                  )
-                })}
-              </div>
+                    </div>
+                  </div>
 
-              {/* Symptom Selector */}
-              <div className="mt-6 flex flex-wrap gap-2 justify-center">
-                {symptomData.map((symptom) => (
-                  <button
-                    key={symptom.name}
-                    onClick={() => handleSymptomSelect(symptom.name)}
-                    className={`flex items-center px-3 py-1 rounded-full text-sm border ${
-                      selectedSymptom === symptom.name ? "ring-2 ring-offset-2 ring-pink-300" : ""
-                    }`}
-                    style={{
-                      borderColor: symptom.color,
-                      backgroundColor: selectedSymptom === symptom.name ? symptom.color : "transparent",
-                      color: selectedSymptom === symptom.name ? "white" : symptom.color,
-                    }}
-                  >
-                    <div className="w-2 h-2 rounded-full mr-2" style={{ backgroundColor: symptom.color }}></div>
-                    {symptom.name}
-                  </button>
-                ))}
-              </div>
-
-              {symptomData.length === 0 && (
-                <div className="mt-4 text-center text-sm text-secondary-color p-2 bg-pink-50 rounded-lg">
-                  Log your first day to start tracking your symptoms. You can log your symptom severity daily and watch
-                  how they improve over time.
-                </div>
+                  {/* Symptom Selector */}
+                  <div className="mt-4 flex flex-wrap gap-2 justify-center">
+                    {symptomData.map((symptom) => (
+                      <button
+                        key={symptom.name}
+                        onClick={() => handleSymptomSelect(symptom.name)}
+                        className={`flex items-center px-2 md:px-3 py-1 rounded-full text-xs md:text-sm border ${
+                          selectedSymptom === symptom.name ? "ring-2 ring-offset-2 ring-pink-300" : ""
+                        }`}
+                        style={{
+                          borderColor: symptom.color,
+                          backgroundColor: selectedSymptom === symptom.name ? symptom.color : "transparent",
+                          color: selectedSymptom === symptom.name ? "white" : symptom.color,
+                        }}
+                      >
+                        <div
+                          className="w-2 h-2 rounded-full mr-1 md:mr-2"
+                          style={{ backgroundColor: symptom.color }}
+                        ></div>
+                        <span className="truncate max-w-[100px] md:max-w-none">{symptom.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </>
               )}
             </div>
           )}
 
           {/* Wellness Chart */}
           {activeTab === "wellness" && (
-            <div className="relative min-h-[280px]">
-              {/* Y-axis labels */}
-              <div className="absolute left-0 top-0 bottom-0 w-12 flex flex-col justify-between text-xs text-secondary-color py-4">
-                <span>100</span>
-                <span>75</span>
-                <span>50</span>
-                <span>25</span>
-                <span>0</span>
-              </div>
-
-              {/* Vertical grid lines */}
-              <div className="absolute left-12 right-0 top-0 bottom-0 flex justify-between">
-                {wellnessHistoryData.dates.map((date, index) => {
-                  // Check if this date has a period logged
-                  // For the first day (index 0), we'll use the current logged data
-                  const hasPeriod =
-                    index === 0
-                      ? (() => {
-                          try {
-                            const loggedDay = JSON.parse(localStorage.getItem("loggedDay") || "{}")
-                            return loggedDay.onPeriod === true
-                          } catch (e) {
-                            return false
-                          }
-                        })()
-                      : false // For demo purposes, only show for the first day
-
-                  return (
-                    <div
-                      key={index}
-                      className="h-full border-r border-pink-100 flex flex-col justify-end items-center relative group"
-                      style={{ width: `${100 / wellnessHistoryData.dates.length}%` }}
-                    >
-                      <span
-                        className={`text-xs mb-2 ${hasPeriod ? "text-red-500 font-semibold" : "text-secondary-color"}`}
-                      >
-                        {date}
-                      </span>
-
-                      {/* Tooltip */}
-                      {hasPeriod && (
-                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-white rounded shadow-md text-xs whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity">
-                          Period logged on this day
-                        </div>
-                      )}
-                    </div>
-                  )
-                })}
-              </div>
-
-              {/* Chart area */}
-              <div className="absolute left-12 right-0 top-0 bottom-8 px-4 pt-4">
-                {/* Grid lines */}
-                <div className="absolute inset-0">
-                  <div className="border-b border-pink-100 absolute top-[20%] left-0 right-0"></div>
-                  <div className="border-b border-pink-100 absolute top-[40%] left-0 right-0"></div>
-                  <div className="border-b border-pink-100 absolute top-[60%] left-0 right-0"></div>
-                  <div className="border-b border-pink-100 absolute top-[80%] left-0 right-0"></div>
+            <div className="relative">
+              {wellnessData.every((score) => score === 0) ? (
+                // Show empty state without chart when no data
+                <div className="text-center text-sm text-secondary-color p-6 bg-peach-50 rounded-lg min-h-[200px] flex items-center justify-center">
+                  <p className="max-w-md">
+                    Log your first day to start tracking your wellness. Your wellness score is calculated from sleep
+                    quality, stress levels, and overall mood.
+                  </p>
                 </div>
-
-                {/* Wellness curve */}
-                <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                  {/* Filled area */}
-                  <defs>
-                    <linearGradient id="wellness-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                      <stop offset="0%" stopColor={wellnessHistoryData.gradient[0]} />
-                      <stop offset="100%" stopColor={wellnessHistoryData.gradient[1]} />
-                    </linearGradient>
-                  </defs>
-
-                  {/* Area fill */}
-                  <path
-                    d={createWellnessAreaPath(wellnessHistoryData.scores)}
-                    fill="url(#wellness-gradient)"
-                    opacity="0.8"
-                  />
-
-                  {/* Line on top */}
-                  <path
-                    d={createWellnessCurvePath(wellnessHistoryData.scores)}
-                    fill="none"
-                    stroke={wellnessHistoryData.color}
-                    strokeWidth="0.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-
-                  {/* Add dots for data points */}
-                  {wellnessHistoryData.scores.map((value, i) => {
-                    if (value === 0) return null // Don't show dots for zero values
-
-                    const x = (i / (wellnessHistoryData.scores.length - 1)) * 100
-                    const y = 100 - value
-
-                    return (
-                      <circle
-                        key={i}
-                        cx={x}
-                        cy={y}
-                        r="0.8"
-                        fill="white"
-                        stroke={wellnessHistoryData.color}
-                        strokeWidth="0.8"
-                      />
-                    )
-                  })}
-                </svg>
-              </div>
-
-              {/* Wellness Score Display */}
-              <div className="flex items-center justify-center mt-12">
-                <div className="text-center">
-                  <p className="text-sm text-secondary-color mb-2">Current Wellness Score</p>
-                  <div
-                    className="w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-xl"
-                    style={{
-                      backgroundColor:
-                        wellnessScore >= 75
-                          ? "#9bb8a0"
-                          : wellnessScore >= 50
-                            ? "#f6d84c"
-                            : wellnessScore >= 25
-                              ? "#f6c1b0"
-                              : "#f4a6b8",
-                    }}
-                  >
-                    {wellnessScore}
+              ) : (
+                <div className="relative min-h-[280px] md:min-h-[320px]">
+                  {/* Y-axis labels */}
+                  <div className="absolute left-0 top-0 bottom-8 w-10 md:w-16 flex flex-col justify-between text-[10px] md:text-xs text-secondary-color py-4">
+                    <span className="leading-tight">100</span>
+                    <span className="leading-tight">75</span>
+                    <span className="leading-tight">50</span>
+                    <span className="leading-tight">25</span>
+                    <span className="leading-tight">0</span>
                   </div>
-                </div>
-              </div>
 
-              {/* Wellness Factors */}
-              <div className="flex flex-wrap gap-4 mt-4 justify-center">
-                <div className="flex items-center">
-                  <div className="w-3 h-3 rounded-full mr-2 bg-pink-400"></div>
-                  <span className="text-sm text-primary-color">Mood</span>
-                </div>
-                <div className="flex items-center">
-                  <div className="w-3 h-3 rounded-full mr-2 bg-peach-400"></div>
-                  <span className="text-sm text-primary-color">Sleep</span>
-                </div>
-                <div className="flex items-center">
-                  <div className="w-3 h-3 rounded-full mr-2 bg-yellow-400"></div>
-                  <span className="text-sm text-primary-color">Stress</span>
-                </div>
-              </div>
+                  {/* Vertical grid lines */}
+                  <div className="absolute left-10 md:left-16 right-0 top-0 bottom-8 flex justify-between">
+                    {wellnessHistoryData.dates.map((date, index) => (
+                      <div
+                        key={index}
+                        className="h-full border-r border-peach-100 flex flex-col justify-end items-center"
+                        style={{ width: `${100 / wellnessHistoryData.dates.length}%` }}
+                      >
+                        <span className="text-[10px] md:text-xs text-secondary-color mb-2 whitespace-nowrap">
+                          {date}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
 
-              {/* Message for users who haven't logged wellness yet */}
-              {!hasLoggedWellness && (
-                <div className="mt-4 text-center text-sm text-secondary-color p-2 bg-pink-50 rounded-lg">
-                  Log your first day to start tracking your wellness score over time. Your score is calculated from your
-                  mood, sleep quality, and stress levels.
+                  {/* Chart area */}
+                  <div className="absolute left-10 md:left-16 right-0 top-0 bottom-8 px-2 md:px-4 pt-4">
+                    {/* Grid lines */}
+                    <div className="absolute inset-0">
+                      <div className="border-b border-pink-100 absolute top-[20%] left-0 right-0"></div>
+                      <div className="border-b border-pink-100 absolute top-[40%] left-0 right-0"></div>
+                      <div className="border-b border-pink-100 absolute top-[60%] left-0 right-0"></div>
+                      <div className="border-b border-pink-100 absolute top-[80%] left-0 right-0"></div>
+                    </div>
+
+                    {/* Wellness curve */}
+                    <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                      {/* Filled area */}
+                      <defs>
+                        <linearGradient id="wellness-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                          <stop offset="0%" stopColor={wellnessHistoryData.gradient[0]} />
+                          <stop offset="100%" stopColor={wellnessHistoryData.gradient[1]} />
+                        </linearGradient>
+                      </defs>
+
+                      {/* Area fill */}
+                      <path d={createWellnessAreaPath(wellnessData)} fill="url(#wellness-gradient)" opacity="0.8" />
+
+                      {/* Line on top */}
+                      <path
+                        d={createWellnessCurvePath(wellnessData)}
+                        fill="none"
+                        stroke={wellnessHistoryData.color}
+                        strokeWidth="0.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+
+                      {/* Add dots for data points */}
+                      {wellnessData.map((value, i) => {
+                        if (value === 0) return null // Don't show dots for zero values
+
+                        const x = (i / (wellnessData.length - 1)) * 100
+                        const y = 100 - value
+
+                        return (
+                          <circle
+                            key={i}
+                            cx={x}
+                            cy={y}
+                            r="0.8"
+                            fill="white"
+                            stroke={wellnessHistoryData.color}
+                            strokeWidth="0.8"
+                          />
+                        )
+                      })}
+                    </svg>
+                  </div>
+
+                  {/* Wellness Score Display */}
+                  <div className="flex items-center justify-center mt-12">
+                    <div className="text-center">
+                      <p className="text-sm text-secondary-color mb-2">Current Wellness Score</p>
+                      <div
+                        className="w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-xl"
+                        style={{
+                          backgroundColor:
+                            wellnessScore >= 75
+                              ? "#9bb8a0"
+                              : wellnessScore >= 50
+                                ? "#f6d84c"
+                                : wellnessScore >= 25
+                                  ? "#f6c1b0"
+                                  : "#f4a6b8",
+                        }}
+                      >
+                        {wellnessScore}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Wellness Factors */}
+                  <div className="flex flex-wrap gap-4 mt-4 justify-center">
+                    <div className="flex items-center">
+                      <div className="w-3 h-3 rounded-full mr-2 bg-pink-400"></div>
+                      <span className="text-sm text-primary-color">Mood</span>
+                    </div>
+                    <div className="flex items-center">
+                      <div className="w-3 h-3 rounded-full mr-2 bg-peach-400"></div>
+                      <span className="text-sm text-primary-color">Sleep</span>
+                    </div>
+                    <div className="flex items-center">
+                      <div className="w-3 h-3 rounded-full mr-2 bg-yellow-400"></div>
+                      <span className="text-sm text-primary-color">Stress</span>
+                    </div>
+                  </div>
+
+                  {/* Message for users who haven't logged wellness yet */}
+                  {!hasLoggedWellness && (
+                    <div className="mt-4 text-center text-sm text-secondary-color p-2 bg-pink-50 rounded-lg">
+                      Log your first day to start tracking your wellness score over time. Your score is calculated from
+                      your mood, sleep quality, and stress levels.
+                    </div>
+                  )}
                 </div>
               )}
             </div>

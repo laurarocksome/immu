@@ -1,9 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { ChevronDown, ArrowLeft } from "lucide-react"
 import Logo from "@/app/components/logo"
+import { saveUserProfile } from "@/lib/user-data"
+import { getSession } from "@/lib/auth"
 
 type WeightUnit = "kg" | "lb"
 type HeightUnit = "cm" | "ft"
@@ -20,6 +22,46 @@ export default function UserProfilePage() {
   const [showHeightDropdown, setShowHeightDropdown] = useState(false)
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+
+  useEffect(() => {
+    const loadExistingData = async () => {
+      try {
+        const session = await getSession()
+        if (session?.user) {
+          const { supabase } = await import("@/lib/supabase/client")
+          const { data: profileData } = await supabase
+            .from("user_profiles")
+            .select("*")
+            .eq("user_id", session.user.id)
+            .single()
+
+          if (profileData) {
+            setGender(profileData.gender || null)
+            setAge(profileData.age?.toString() || "")
+            setWeight(profileData.weight?.toString() || "")
+            setWeightUnit((profileData.weight_unit as WeightUnit) || "kg")
+            setHeight(profileData.height?.toString() || "")
+            setHeightUnit((profileData.height_unit as HeightUnit) || "cm")
+          }
+        }
+
+        const storedProfile = localStorage.getItem("userProfile")
+        if (storedProfile && !gender) {
+          const profile = JSON.parse(storedProfile)
+          setGender(profile.gender || null)
+          setAge(profile.age?.toString() || "")
+          setWeight(profile.weight?.toString() || "")
+          setWeightUnit(profile.weightUnit || "kg")
+          setHeight(profile.height?.toString() || "")
+          setHeightUnit(profile.heightUnit || "cm")
+        }
+      } catch (error) {
+        console.error("Error loading profile data:", error)
+      }
+    }
+
+    loadExistingData()
+  }, [])
 
   const handleGenderSelect = (selectedGender: string) => {
     setGender(selectedGender)
@@ -69,12 +111,11 @@ export default function UserProfilePage() {
     return true
   }
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (!validateInputs()) return
 
     setIsLoading(true)
 
-    // Save user profile data to localStorage
     const userProfile = {
       gender,
       age: Number(age),
@@ -86,9 +127,16 @@ export default function UserProfilePage() {
 
     localStorage.setItem("userProfile", JSON.stringify(userProfile))
 
-    // Simulate a brief loading period
+    try {
+      const session = await getSession()
+      if (session?.user) {
+        await saveUserProfile(userProfile)
+      }
+    } catch (error) {
+      console.error("Error saving to database:", error)
+    }
+
     setTimeout(() => {
-      // Continue to the account creation page
       router.push("/onboarding/create-account")
       setIsLoading(false)
     }, 800)
@@ -100,7 +148,6 @@ export default function UserProfilePage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-brand-lightest to-white text-brand-dark">
-      {/* Header */}
       <header className="p-4 flex justify-center items-center bg-brand-dark text-white relative">
         <button
           onClick={handleBack}
@@ -113,7 +160,6 @@ export default function UserProfilePage() {
         <Logo variant="light" />
       </header>
 
-      {/* Main Content */}
       <main className="flex-1 px-4 pb-8 overflow-auto">
         <div className="max-w-md mx-auto">
           <div className="mb-8 text-center">
@@ -121,7 +167,6 @@ export default function UserProfilePage() {
             <p className="text-brand-dark/70">Please enter some basic information to personalize your experience.</p>
           </div>
 
-          {/* Error message */}
           {error && (
             <div className="mb-6 p-3 bg-red-500/20 border border-red-500/50 rounded-xl text-center text-red-700">
               {error}
@@ -129,7 +174,6 @@ export default function UserProfilePage() {
           )}
 
           <div className="glass-card rounded-2xl p-6 space-y-6">
-            {/* Gender Selection */}
             <div>
               <label className="block mb-2">Your gender at birth</label>
               <div className="grid grid-cols-2 gap-4">
@@ -158,7 +202,6 @@ export default function UserProfilePage() {
               </div>
             </div>
 
-            {/* Age Input */}
             <div>
               <label htmlFor="age" className="block mb-2">
                 Age
@@ -175,7 +218,6 @@ export default function UserProfilePage() {
               />
             </div>
 
-            {/* Weight Input */}
             <div>
               <label className="block mb-2 text-center">Weight</label>
               <div className="flex">
@@ -219,7 +261,6 @@ export default function UserProfilePage() {
               </div>
             </div>
 
-            {/* Height Input */}
             <div>
               <label className="block mb-2 text-center">Height</label>
               <div className="flex">
@@ -264,7 +305,6 @@ export default function UserProfilePage() {
             </div>
           </div>
 
-          {/* Next button */}
           <button
             onClick={handleContinue}
             disabled={isLoading}
@@ -275,7 +315,6 @@ export default function UserProfilePage() {
         </div>
       </main>
 
-      {/* Progress indicator */}
       <div className="p-4 flex justify-center">
         <div className="flex space-x-2">
           <div className="w-2 h-2 rounded-full bg-pink-400"></div>

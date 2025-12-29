@@ -102,6 +102,8 @@ export default function LogDayPage() {
   // Add userGender state near the top of the component with other state variables
   const [userGender, setUserGender] = useState<string | null>(null)
 
+  const [currentPhase, setCurrentPhase] = useState<string>("Adaptation")
+
   useEffect(() => {
     // Load user symptoms from localStorage
     const loadUserSymptoms = () => {
@@ -176,26 +178,69 @@ export default function LogDayPage() {
       }
     }
 
+    const loadUserGender = () => {
+      const profileData = localStorage.getItem("userProfile")
+      if (profileData) {
+        try {
+          const profile = JSON.parse(profileData)
+          setUserGender(profile.gender?.toLowerCase() || null)
+        } catch (e) {
+          console.error("Error parsing user profile:", e)
+        }
+      }
+    }
+
+    const loadCurrentPhase = () => {
+      const startDateStr = localStorage.getItem("dietStartDate")
+      const adaptationChoice = localStorage.getItem("userAdaptationChoice")
+
+      if (!startDateStr) {
+        setCurrentPhase("Adaptation")
+        return
+      }
+
+      const startDate = new Date(startDateStr)
+      const today = new Date()
+      const daysElapsed = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
+
+      // Calculate adaptation period duration
+      const hasAdaptation = adaptationChoice === "Yes"
+      const adaptationDays = hasAdaptation ? 28 : 0
+
+      const dietTimeline = localStorage.getItem("userDietTimeline")
+      const totalSelectedDays = dietTimeline ? Number.parseInt(dietTimeline) : 30
+      const eliminationDays = hasAdaptation ? totalSelectedDays - adaptationDays : totalSelectedDays
+
+      // Determine current phase
+      if (hasAdaptation && daysElapsed < adaptationDays) {
+        setCurrentPhase("Adaptation")
+      } else if (daysElapsed < (hasAdaptation ? adaptationDays + eliminationDays : eliminationDays)) {
+        setCurrentPhase("Elimination")
+      } else {
+        setCurrentPhase("Reintroduction")
+      }
+    }
+
     // Load user symptoms
     loadUserSymptoms()
 
-    // Check if the user has already logged their diet success today
-    checkIfDietSuccessLoggedToday()
+    // Load user gender
+    loadUserGender()
 
-    // Load user profile to get gender
-    const profileData = localStorage.getItem("userProfile")
-    if (profileData) {
-      try {
-        const profile = JSON.parse(profileData)
-        setUserGender(profile.gender?.toLowerCase() || null)
-      } catch (e) {
-        console.error("Error parsing user profile:", e)
-      }
-    }
+    // Load current phase
+    loadCurrentPhase()
+
+    // Check if the user should be shown the diet question based on the current phase
+    checkIfShouldShowDietQuestion()
   }, [])
 
-  const checkIfDietSuccessLoggedToday = () => {
-    // Get the last logged date for diet success
+  const checkIfShouldShowDietQuestion = () => {
+    if (currentPhase !== "Elimination") {
+      setShowDietQuestion(false)
+      return
+    }
+
+    // Get the last date the user was asked about diet success
     const lastLoggedDate = localStorage.getItem("lastDietSuccessLogDate")
 
     // Get today's date in YYYY-MM-DD format
@@ -435,8 +480,8 @@ export default function LogDayPage() {
       {/* Main Content */}
       <main className="flex-1 p-4 pb-24 overflow-auto">
         {/* Diet Success Question */}
-        {showDietQuestion && (
-          <div className="glass-card rounded-2xl p-6 mb-6">
+        {showDietQuestion && currentPhase === "Elimination" && (
+          <div className="glass-card p-6 mb-6">
             <h2 className="text-2xl font-bold mb-6 text-center">Did you have a successful diet day?</h2>
             <div className="flex gap-4">
               <button

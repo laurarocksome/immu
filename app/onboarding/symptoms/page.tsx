@@ -4,6 +4,9 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { ArrowLeft } from "lucide-react"
 import Logo from "@/app/components/logo"
+import { saveUserSymptoms } from "@/lib/user-data"
+import { getSession } from "@/lib/auth"
+import { supabase } from "@/lib/supabase/client"
 
 export default function SymptomsPage() {
   const router = useRouter()
@@ -14,14 +17,32 @@ export default function SymptomsPage() {
 
   // Load saved symptoms from localStorage if available
   useEffect(() => {
-    const savedSymptoms = localStorage.getItem("selectedSymptoms")
-    if (savedSymptoms) {
+    const loadExistingData = async () => {
       try {
-        setSelectedSymptoms(JSON.parse(savedSymptoms))
-      } catch (e) {
-        console.error("Error parsing saved symptoms:", e)
+        const session = await getSession()
+        if (session?.user) {
+          const { data: symptomsData } = await supabase
+            .from("user_symptoms")
+            .select("symptom")
+            .eq("user_id", session.user.id)
+
+          if (symptomsData && symptomsData.length > 0) {
+            setSelectedSymptoms(symptomsData.map((s) => s.symptom))
+            return
+          }
+        }
+
+        // Fall back to localStorage
+        const savedSymptoms = localStorage.getItem("selectedSymptoms")
+        if (savedSymptoms) {
+          setSelectedSymptoms(JSON.parse(savedSymptoms))
+        }
+      } catch (error) {
+        console.error("Error loading symptoms:", error)
       }
     }
+
+    loadExistingData()
   }, [])
 
   // Alphabetically sorted list of symptoms
@@ -81,12 +102,23 @@ export default function SymptomsPage() {
     }
   }
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (selectedSymptoms.length === 0) {
       setError("Please select at least 1 symptom to continue")
     } else {
       // Save selected symptoms
       localStorage.setItem("selectedSymptoms", JSON.stringify(selectedSymptoms))
+
+      try {
+        const session = await getSession()
+        if (session?.user) {
+          await saveUserSymptoms(selectedSymptoms)
+        }
+      } catch (error) {
+        console.error("Error saving to database:", error)
+        // Continue anyway - data is in localStorage
+      }
+
       router.push("/onboarding/stress")
     }
   }
