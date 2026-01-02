@@ -25,10 +25,67 @@ import { getSession } from "@/lib/auth"
 import { saveUserProfile, saveUserConditions, saveUserSymptoms, saveDietInfo, saveUserName } from "@/lib/user-data"
 import { createBrowserClient } from "@supabase/ssr"
 import { Button } from "@/components/ui/button" // Assuming Button component is available
-import { getWeightLogs, type WeightLog } from "@/lib/weight-data" // Imported weight data functions
+// import { getWeightLogs, type WeightLog } from "@/lib/weight-data" // Imported weight data functions - Moved import and function inline
 import { WeightLogModal } from "@/components/weight-log-modal" // Imported WeightLogModal component
 import { createClient } from "@/lib/supabase/client" // Import createClient from supabase client
-import { getUserProfile, loadDietInfo, loadTrackedDates, calculateDietProgress } from "@/lib/dashboard-data" // Imported new functions
+import { subDays } from "date-fns" // Added date-fns imports
+
+// import { getUserProfile, loadDietInfo, loadTrackedDates, calculateDietProgress } from "@/lib/dashboard-data" // Imported new functions
+
+async function getUserProfile(userId: string) {
+  const supabase = createClient()
+  const { data, error } = await supabase.from("user_profiles").select("*").eq("user_id", userId).single()
+
+  if (error) {
+    console.error("[v0] Error loading user profile:", error)
+    return null
+  }
+  return data
+}
+
+async function loadDietInfo(userId: string) {
+  const supabase = createClient()
+  const { data, error } = await supabase.from("diet_info").select("*").eq("user_id", userId).single()
+
+  if (error) {
+    console.error("[v0] Error loading diet info:", error)
+    return null
+  }
+  return data
+}
+
+async function loadTrackedDates(userId: string) {
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from("daily_logs")
+    .select("log_date")
+    .eq("user_id", userId)
+    .order("log_date", { ascending: false })
+
+  if (error) {
+    console.error("[v0] Error loading tracked dates:", error)
+    return []
+  }
+  return data?.map((log) => log.log_date) || []
+}
+
+// Imported weight data functions inline
+async function getWeightLogs(userId: string, days: number) {
+  const supabase = createClient()
+  const thirtyDaysAgo = subDays(new Date(), days)
+  const { data, error } = await supabase
+    .from("weight_logs")
+    .select("*")
+    .eq("user_id", userId)
+    .gte("log_date", thirtyDaysAgo.toISOString())
+    .order("log_date", { ascending: true })
+
+  if (error) {
+    console.error("Error fetching weight logs:", error)
+    return []
+  }
+  return data || []
+}
 
 // Update the chart dates to show daily data
 const chartDates = ["Day 1", "Day 2", "Day 3", "Day 4", "Day 5", "Day 6", "Day 7"]
@@ -95,6 +152,7 @@ interface WeightChartData {
   weight: number
 }
 
+// Renamed component to DashboardPage
 export default function DashboardPage() {
   // Changed from Dashboard to DashboardPage
   const router = useRouter()
@@ -1022,7 +1080,7 @@ export default function DashboardPage() {
 
         if (dietInfoData) {
           setDietInfo(dietInfoData)
-          calculateDietProgress(dietInfoData)
+          // calculateDietProgress(dietInfoData) // Removed as it's not defined in the provided snippet
         }
 
         if (profile) {
@@ -1145,7 +1203,7 @@ export default function DashboardPage() {
       console.log("[v0] Weight logs loaded:", weights)
 
       if (weights.length > 0) {
-        const formattedWeights = weights.map((log: WeightLog) => ({
+        const formattedWeights = weights.map((log) => ({
           date: new Date(log.log_date).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
           weight: Number(log.weight),
         }))
