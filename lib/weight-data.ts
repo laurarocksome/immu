@@ -33,30 +33,55 @@ export async function saveWeightLog(userId: string, weight: number, weightUnit: 
 
   console.log("[v0] Saving weight log:", { userId, weight, weightUnit, logDate: dateToLog })
 
-  // Upsert - update if exists for this date, insert if not
-  const { data, error } = await supabase
+  const { data: existing } = await supabase
     .from("weight_logs")
-    .upsert(
-      {
+    .select("id")
+    .eq("user_id", userId)
+    .eq("log_date", dateToLog)
+    .single()
+
+  let result
+  if (existing) {
+    // Update existing entry
+    console.log("[v0] Updating existing weight log:", existing.id)
+    const { data, error } = await supabase
+      .from("weight_logs")
+      .update({
+        weight,
+        weight_unit: weightUnit,
+      })
+      .eq("id", existing.id)
+      .select()
+      .single()
+
+    if (error) {
+      console.error("[v0] Error updating weight log:", error)
+      throw error
+    }
+    result = data
+  } else {
+    // Insert new entry
+    console.log("[v0] Inserting new weight log")
+    const { data, error } = await supabase
+      .from("weight_logs")
+      .insert({
         user_id: userId,
         weight,
         weight_unit: weightUnit,
         log_date: dateToLog,
-      },
-      {
-        onConflict: "user_id,log_date",
-      },
-    )
-    .select()
-    .single()
+      })
+      .select()
+      .single()
 
-  if (error) {
-    console.error("[v0] Error saving weight log:", error)
-    throw error
+    if (error) {
+      console.error("[v0] Error inserting weight log:", error)
+      throw error
+    }
+    result = data
   }
 
-  console.log("[v0] Weight log saved successfully:", data)
-  return data
+  console.log("[v0] Weight log saved successfully:", result)
+  return result
 }
 
 export async function getLatestWeight(userId: string): Promise<WeightLog | null> {
