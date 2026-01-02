@@ -26,6 +26,9 @@ import ConfettiCelebration from "@/app/components/confetti-celebration"
 import { getSession } from "@/lib/auth"
 import { saveUserProfile, saveUserConditions, saveUserSymptoms, saveDietInfo, saveUserName } from "@/lib/user-data"
 import { createBrowserClient } from "@supabase/ssr"
+import { Button } from "@/components/ui/button" // Assuming Button component is available
+import { getWeightLogs, type WeightLog } from "@/lib/weight-data" // Imported weight data functions
+import { WeightLogModal } from "@/components/weight-log-modal" // Imported WeightLogModal component
 
 // Update the chart dates to show daily data
 const chartDates = ["Day 1", "Day 2", "Day 3", "Day 4", "Day 5", "Day 6", "Day 7"]
@@ -86,7 +89,14 @@ interface CompletedTodos {
   completedIds: string[]
 }
 
-export default function Dashboard() {
+// Type for weight data for the chart
+interface WeightChartData {
+  date: string
+  weight: number
+}
+
+export default function DashboardPage() {
+  // Changed from Dashboard to DashboardPage
   const router = useRouter()
   const [conditions, setConditions] = useState<string[]>([])
   const [showWelcome, setShowWelcome] = useState(false)
@@ -99,7 +109,7 @@ export default function Dashboard() {
   const [hasLoggedSymptoms, setHasLoggedSymptoms] = useState(false)
   const [hasLoggedWellness, setHasLoggedWellness] = useState(false)
   const [selectedSymptom, setSelectedSymptom] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<"symptoms" | "wellness">("symptoms")
+  const [activeTab, setActiveTab] = useState<"symptoms" | "wellness" | "weight">("symptoms")
   const [wellnessScore, setWellnessScore] = useState<number>(0)
   const [symptomData, setSymptomData] = useState<any[]>([])
   const [loggedPeriodSymptoms, setLoggedPeriodSymptoms] = useState<string[]>([])
@@ -107,8 +117,10 @@ export default function Dashboard() {
   const [isOnPeriod, setIsOnPeriod] = useState<boolean>(false)
 
   // Weight tracking states
-  const [currentWeight, setCurrentWeight] = useState<string>("")
-  const [weightUnit, setWeightUnit] = useState<"kg" | "lb">("kg")
+  const [weightData, setWeightData] = useState<WeightChartData[]>([])
+  const [showWeightModal, setShowWeightModal] = useState(false)
+  const [currentWeight, setCurrentWeight] = useState<number | undefined>()
+  const [weightUnit, setWeightUnit] = useState<string>("lbs") // Changed to string for flexibility
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
   const [isUpdatingWeight, setIsUpdatingWeight] = useState(false)
   const [weightUpdateSuccess, setWeightUpdateSuccess] = useState(false)
@@ -129,6 +141,12 @@ export default function Dashboard() {
 
   // Add a state for wellness data
   const [wellnessData, setWellnessData] = useState<number[]>([0, 0, 0, 0, 0, 0, 0])
+
+  // Supabase client initialization (assuming it's needed for weight logs)
+  const supabase =
+    typeof window !== "undefined"
+      ? createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+      : null
 
   const syncPendingDataToSupabase = async () => {
     if (typeof window === "undefined") return
@@ -359,14 +377,14 @@ export default function Dashboard() {
 
       // Set current weight from profile
       if (profile.weight) {
-        setCurrentWeight(profile.weight.toString())
+        setCurrentWeight(profile.weight) // Changed to number
       }
     }
   }
 
   // Function to update user weight
   const updateWeight = async () => {
-    if (!currentWeight || isNaN(Number(currentWeight)) || Number(currentWeight) <= 0) {
+    if (currentWeight === undefined || currentWeight <= 0) {
       console.log("[v0] Invalid weight input:", currentWeight)
       return
     }
@@ -376,15 +394,10 @@ export default function Dashboard() {
 
     try {
       // Get authenticated user
-      const supabase = createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      )
-
       const {
         data: { user },
         error: authError,
-      } = await supabase.auth.getUser()
+      } = await supabase!.auth.getUser()
 
       if (authError || !user) {
         console.log("[v0] Auth error:", authError)
@@ -394,15 +407,14 @@ export default function Dashboard() {
 
       console.log("[v0] User authenticated:", user.id)
 
-      const { data, error } = await supabase
+      const { error } = await supabase!
         .from("user_profiles")
         .update({
-          weight: Number(currentWeight),
+          weight: currentWeight,
           weight_unit: weightUnit,
           updated_at: new Date().toISOString(),
         })
         .eq("user_id", user.id)
-        .select()
 
       if (error) {
         console.log("[v0] Supabase update error:", error)
@@ -410,14 +422,14 @@ export default function Dashboard() {
         return
       }
 
-      console.log("[v0] Weight updated successfully in Supabase:", data)
+      console.log("[v0] Weight updated successfully in Supabase")
 
       // Update local state
       if (userProfile) {
         const updatedProfile = {
           ...userProfile,
-          weight: Number(currentWeight),
-          weightUnit: weightUnit,
+          weight: currentWeight,
+          weightUnit: weightUnit as "kg" | "lb", // Cast to correct type
         }
 
         // Add to weight history
@@ -426,7 +438,7 @@ export default function Dashboard() {
         }
         updatedProfile.weightHistory.push({
           date: new Date().toISOString(),
-          weight: Number(currentWeight),
+          weight: currentWeight,
         })
 
         setUserProfile(updatedProfile)
@@ -435,7 +447,7 @@ export default function Dashboard() {
 
       // Show success message
       setWeightUpdateSuccess(true)
-      setCurrentWeight("") // Clear input after successful update
+      setCurrentWeight(undefined) // Clear input after successful update
 
       setTimeout(() => {
         setWeightUpdateSuccess(false)
@@ -1038,9 +1050,10 @@ export default function Dashboard() {
     }
   }
 
-  useEffect(() => {
+  // Helper function to load all user data
+  async function loadUserData() {
     // Sync pending data to Supabase on initial load
-    syncPendingDataToSupabase()
+    await syncPendingDataToSupabase()
 
     // Format current date
     const date = new Date()
@@ -1070,11 +1083,11 @@ export default function Dashboard() {
         // Set streak to 1 for new users
         setStreakDays(1)
         setProgress(1)
-        return
+        // return // Removed return to allow other loading logic to proceed
       }
 
       // Calculate days elapsed since diet start
-      const daysElapsed = Math.floor((new Date().getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24))
+      const daysElapsed = Math.floor((new Date().getTime() - new Date(startDate!).getTime()) / (1000 * 60 * 60 * 24))
 
       setStreakDays(Math.max(daysElapsed + 1, 1))
 
@@ -1151,7 +1164,29 @@ export default function Dashboard() {
           console.error("Error parsing logged day data:", e)
         }
       }
+
+      console.log("[v0] Loading weight logs")
+      const weights = await getWeightLogs(
+        supabase!.auth.getUser() ? (await supabase!.auth.getUser()).data.user!.id : "",
+        30,
+      ) // Ensure user is logged in
+      console.log("[v0] Weight logs loaded:", weights)
+
+      if (weights.length > 0) {
+        const formattedWeights = weights.map((log: WeightLog) => ({
+          // Explicitly type 'log'
+          date: new Date(log.log_date).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+          weight: Number(log.weight),
+        }))
+        setWeightData(formattedWeights)
+        setCurrentWeight(Number(weights[weights.length - 1].weight))
+        setWeightUnit(weights[weights.length - 1].weight_unit)
+      }
     }
+  }
+
+  useEffect(() => {
+    loadUserData()
   }, [])
 
   // Effect to generate to-do items when adaptation phase or day changes
@@ -1371,6 +1406,54 @@ export default function Dashboard() {
     } else {
       return `Reintroduction Phase - Day ${reintroductionDay}`
     }
+  }
+
+  const createWeightCurvePath = (data: WeightChartData[]) => {
+    if (data.length === 0) return ""
+    if (data.length === 1) {
+      const y =
+        100 -
+        ((data[0].weight - Math.min(...data.map((d) => d.weight))) /
+          (Math.max(...data.map((d) => d.weight)) - Math.min(...data.map((d) => d.weight)) || 1)) *
+          100
+      return `M 0 ${y} L 100 ${y}`
+    }
+
+    const minWeight = Math.min(...data.map((d) => d.weight))
+    const maxWeight = Math.max(...data.map((d) => d.weight))
+    const range = maxWeight - minWeight || 1
+
+    const points = data.map((item, i) => {
+      const x = (i / (data.length - 1)) * 100
+      const y = 100 - ((item.weight - minWeight) / range) * 100
+      return { x, y }
+    })
+
+    let path = `M ${points[0].x} ${points[0].y}`
+
+    for (let i = 0; i < points.length - 1; i++) {
+      const current = points[i]
+      const next = points[i + 1]
+      const controlX = (current.x + next.x) / 2
+
+      path += ` Q ${controlX} ${current.y}, ${controlX} ${(current.y + next.y) / 2}`
+      path += ` Q ${controlX} ${next.y}, ${next.x} ${next.y}`
+    }
+
+    return path
+  }
+
+  const createWeightAreaPath = (data: WeightChartData[]) => {
+    if (data.length === 0) return ""
+
+    const curvePath = createWeightCurvePath(data)
+    return `${curvePath} L 100 100 L 0 100 Z`
+  }
+
+  const handleWeightSaved = async () => {
+    // Reload user data to update the chart and current weight
+    await loadUserData()
+    setShowWeightModal(false) // Close the modal after saving
   }
 
   return (
@@ -1641,6 +1724,16 @@ export default function Dashboard() {
               }`}
             >
               Wellness Score
+            </button>
+            <button
+              onClick={() => setActiveTab("weight")}
+              className={`pb-2 px-4 font-medium text-lg transition-colors ${
+                activeTab === "weight"
+                  ? "border-b-2 border-green-400 text-green-600"
+                  : "text-secondary-color hover:text-primary-color"
+              }`}
+            >
+              Weight
             </button>
           </div>
 
@@ -1918,6 +2011,129 @@ export default function Dashboard() {
               )}
             </div>
           )}
+
+          {activeTab === "weight" && (
+            <div className="relative">
+              {weightData.length === 0 ? (
+                <div className="text-center text-sm text-secondary-color p-6 bg-green-50 rounded-lg min-h-[200px] flex items-center justify-center">
+                  <div>
+                    <p className="max-w-md mb-4">
+                      Start tracking your weight to see how your body responds to the AIP diet. Log your weight
+                      regularly to see trends over time.
+                    </p>
+                    <Button
+                      onClick={() => setShowWeightModal(true)}
+                      className="bg-green-400 hover:bg-green-500 text-white"
+                    >
+                      Log First Weight
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="relative min-h-[280px] md:min-h-[320px]">
+                  {/* Y-axis labels */}
+                  <div className="absolute left-0 top-0 bottom-8 w-10 md:w-16 flex flex-col justify-between text-[10px] md:text-xs text-secondary-color py-4">
+                    <span className="leading-tight">{Math.max(...weightData.map((d) => d.weight)).toFixed(1)}</span>
+                    <span className="leading-tight">
+                      {(
+                        (Math.max(...weightData.map((d) => d.weight)) + Math.min(...weightData.map((d) => d.weight))) /
+                        2
+                      ).toFixed(1)}
+                    </span>
+                    <span className="leading-tight">{Math.min(...weightData.map((d) => d.weight)).toFixed(1)}</span>
+                  </div>
+
+                  {/* Vertical grid lines */}
+                  <div className="absolute left-10 md:left-16 right-0 top-0 bottom-8 flex justify-between">
+                    {weightData.map((item, index) => (
+                      <div
+                        key={index}
+                        className="h-full border-r border-green-100 flex flex-col justify-end items-center"
+                        style={{ width: `${100 / weightData.length}%` }}
+                      >
+                        <span className="text-[10px] md:text-xs text-secondary-color mb-2 whitespace-nowrap">
+                          {item.date}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Chart area */}
+                  <div className="absolute left-10 md:left-16 right-0 top-0 bottom-8 px-2 md:px-4 pt-4">
+                    {/* Grid lines */}
+                    <div className="absolute inset-0">
+                      <div className="border-b border-green-100 absolute top-[25%] left-0 right-0"></div>
+                      <div className="border-b border-green-100 absolute top-[50%] left-0 right-0"></div>
+                      <div className="border-b border-green-100 absolute top-[75%] left-0 right-0"></div>
+                    </div>
+
+                    {/* Weight curve */}
+                    <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                      {/* Filled area */}
+                      <defs>
+                        <linearGradient id="weight-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                          <stop offset="0%" stopColor="#86efac" stopOpacity="0.3" />
+                          <stop offset="100%" stopColor="#86efac" stopOpacity="0.05" />
+                        </linearGradient>
+                      </defs>
+
+                      {/* Area fill */}
+                      <path d={createWeightAreaPath(weightData)} fill="url(#weight-gradient)" />
+
+                      {/* Line on top */}
+                      <path
+                        d={createWeightCurvePath(weightData)}
+                        fill="none"
+                        stroke="#22c55e"
+                        strokeWidth="0.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+
+                      {/* Add dots for data points */}
+                      {weightData.map((item, i) => {
+                        const minWeight = Math.min(...weightData.map((d) => d.weight))
+                        const maxWeight = Math.max(...weightData.map((d) => d.weight))
+                        const range = maxWeight - minWeight || 1
+
+                        const x = (i / (weightData.length - 1)) * 100
+                        const y = 100 - ((item.weight - minWeight) / range) * 100
+
+                        return <circle key={i} cx={x} cy={y} r="0.8" fill="white" stroke="#22c55e" strokeWidth="0.8" />
+                      })}
+                    </svg>
+                  </div>
+
+                  {/* Current Weight Display */}
+                  <div className="flex items-center justify-center mt-12">
+                    <div className="text-center">
+                      <p className="text-sm text-secondary-color mb-2">Current Weight</p>
+                      <div className="text-3xl font-bold text-green-600">
+                        {currentWeight?.toFixed(1)} {weightUnit}
+                      </div>
+                      {weightData.length > 1 && (
+                        <p className="text-xs text-secondary-color mt-2">
+                          {weightData[weightData.length - 1].weight > weightData[0].weight ? "+" : ""}
+                          {(weightData[weightData.length - 1].weight - weightData[0].weight).toFixed(1)} {weightUnit}{" "}
+                          from start
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Log Weight Button */}
+                  <div className="flex justify-center mt-4">
+                    <Button
+                      onClick={() => setShowWeightModal(true)}
+                      className="bg-green-400 hover:bg-green-500 text-white"
+                    >
+                      Update Weight
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Weight Tracking Module */}
@@ -1945,15 +2161,15 @@ export default function Dashboard() {
                 <input
                   type="number"
                   id="weight"
-                  value={currentWeight}
-                  onChange={(e) => setCurrentWeight(e.target.value)}
+                  value={currentWeight ?? ""} // Use ?? "" for undefined
+                  onChange={(e) => setCurrentWeight(Number(e.target.value))}
                   placeholder="Enter weight"
                   className="flex-1 p-3 h-12 rounded-xl bg-white/80 border border-brand-dark/20 focus:outline-none focus:ring-2 focus:ring-pink-400"
                   min="1"
                 />
                 <select
                   value={weightUnit}
-                  onChange={(e) => setWeightUnit(e.target.value as "kg" | "lb")}
+                  onChange={(e) => setWeightUnit(e.target.value)}
                   className="w-24 h-12 rounded-xl bg-white/80 border border-brand-dark/20 focus:outline-none focus:ring-2 focus:ring-pink-400"
                 >
                   <option value="kg">kg</option>
@@ -1962,7 +2178,7 @@ export default function Dashboard() {
               </div>
               <button
                 onClick={updateWeight}
-                disabled={isUpdatingWeight || !currentWeight}
+                disabled={isUpdatingWeight || currentWeight === undefined || currentWeight <= 0} // Add check for currentWeight
                 className="mt-3 py-3 px-6 w-full sm:w-auto rounded-xl gradient-button flex items-center justify-center"
               >
                 {isUpdatingWeight ? "Saving..." : weightUpdateSuccess ? <Check className="h-5 w-5" /> : "Update"}
@@ -2123,6 +2339,17 @@ export default function Dashboard() {
           <span className="text-primary-color">Recipes</span>
         </button>
       </nav>
+
+      {showWeightModal &&
+        supabase && ( // Ensure supabase is initialized
+          <WeightLogModal
+            userId={(async () => (await supabase.auth.getUser()).data.user?.id)() ?? ""} // Handle potential undefined user
+            currentWeight={currentWeight}
+            currentUnit={weightUnit}
+            onClose={() => setShowWeightModal(false)}
+            onSave={handleWeightSaved}
+          />
+        )}
     </div>
   )
 }
