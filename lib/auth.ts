@@ -49,8 +49,12 @@ export async function getCurrentUser() {
 }
 
 export async function getSession() {
-  const { data, error } = await supabase.auth.getSession()
-  if (error) throw error
+  const { data, error } = await supabase.auth.refreshSession()
+  if (error) {
+    // If refresh fails, try to get cached session
+    const sessionData = await supabase.auth.getSession()
+    return sessionData.data.session
+  }
   return data.session
 }
 

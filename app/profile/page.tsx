@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { List, Home, Plus, BookOpen, UtensilsCrossed, ArrowLeft, Edit, Trash2 } from "lucide-react"
 import Logo from "@/app/components/logo"
-import { deleteUser, getSession } from "@/lib/auth"
+import { deleteUser } from "@/lib/auth"
 import { supabase } from "@/lib/supabase/client"
 
 type UserProfile = {
@@ -31,27 +31,38 @@ export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(true)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [needsSync, setNeedsSync] = useState(false)
 
   useEffect(() => {
     const loadUserData = async () => {
+      console.log("[v0] Starting to load user data")
       try {
-        // First try to load from Supabase
-        const session = await getSession()
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser()
+        console.log("[v0] User:", user ? `User ID: ${user.id}` : "No user", "Error:", userError)
 
-        if (session?.user) {
-          const userId = session.user.id
+        if (user) {
+          const userId = user.id
+          let hasDbData = false
 
-          // Load user name from users table
           const { data: userData } = await supabase.from("users").select("name").eq("id", userId).single()
+          console.log("[v0] User name data:", userData)
 
           if (userData?.name) {
             setUserName(userData.name)
           }
 
-          // Load profile from user_profiles table
-          const { data: profileData } = await supabase.from("user_profiles").select("*").eq("user_id", userId).single()
+          const { data: profileData, error: profileError } = await supabase
+            .from("user_profiles")
+            .select("*")
+            .eq("user_id", userId)
+            .single()
+          console.log("[v0] Profile data from DB:", profileData, "Error:", profileError)
 
           if (profileData) {
+            hasDbData = true
             setProfile({
               gender: profileData.gender || "",
               age: profileData.age || 0,
@@ -60,45 +71,131 @@ export default function ProfilePage() {
               height: profileData.height || 0,
               heightUnit: profileData.height_unit || "cm",
             })
+            console.log("[v0] Set profile state:", profileData)
           }
 
-          // Load diet info
-          const { data: dietData } = await supabase.from("diet_info").select("*").eq("user_id", userId).single()
+          const { data: dietData, error: dietError } = await supabase
+            .from("diet_info")
+            .select("*")
+            .eq("user_id", userId)
+            .single()
+          console.log("[v0] Diet data from DB:", dietData, "Error:", dietError)
 
           if (dietData) {
+            hasDbData = true
             setDietInfo({
-              timeline: dietData.timeline_days?.toString() || "Not set",
-              adaptationPeriod: dietData.adaptation_choice === "yes",
+              timeline: dietData.diet_timeline || "Not set",
+              adaptationPeriod: dietData.adaptation_period || false,
             })
+            console.log("[v0] Set diet info state:", dietData)
           }
 
-          // Load conditions
           const { data: conditionsData } = await supabase
             .from("user_conditions")
             .select("condition")
             .eq("user_id", userId)
+          console.log("[v0] Conditions data from DB:", conditionsData)
 
           if (conditionsData && conditionsData.length > 0) {
+            hasDbData = true
             setConditions(conditionsData.map((c) => c.condition))
           }
 
-          // Load symptoms
           const { data: symptomsData } = await supabase.from("user_symptoms").select("symptom").eq("user_id", userId)
+          console.log("[v0] Symptoms data from DB:", symptomsData)
 
           if (symptomsData && symptomsData.length > 0) {
+            hasDbData = true
             setSymptoms(symptomsData.map((s) => s.symptom))
           }
+
+          console.log("[v0] Has DB data:", hasDbData)
+
+          if (!profileData) {
+            console.log("[v0] No profile in DB, checking localStorage")
+            const localProfile = JSON.parse(localStorage.getItem("userProfile") || "null")
+            console.log("[v0] Local profile:", localProfile)
+
+            if (localProfile) {
+              setProfile(localProfile)
+              console.log("[v0] Set profile from localStorage")
+            }
+          }
+
+          if (!dietData) {
+            console.log("[v0] No diet data in DB, checking localStorage")
+            const localDietTimeline = localStorage.getItem("userDietTimeline")
+            const localAdaptation = localStorage.getItem("userAdaptationChoice")
+            console.log("[v0] Local diet timeline:", localDietTimeline, "Adaptation:", localAdaptation)
+
+            if (localDietTimeline) {
+              setDietInfo({
+                timeline: localDietTimeline === "not-set" ? "Not set" : localDietTimeline,
+                adaptationPeriod: localAdaptation === "Yes",
+              })
+              console.log("[v0] Set diet info from localStorage")
+            }
+          }
+
+          if (!hasDbData) {
+            const localProfile = JSON.parse(localStorage.getItem("userProfile") || "null")
+            const localDietTimeline = localStorage.getItem("userDietTimeline")
+            const localAdaptation = localStorage.getItem("userAdaptationChoice")
+            const localConditions = JSON.parse(localStorage.getItem("userConditions") || "[]")
+            const localSymptoms = JSON.parse(localStorage.getItem("userSymptoms") || "[]")
+
+            console.log("[v0] Attempting auto-sync with:", {
+              localProfile,
+              localDietTimeline,
+              localConditions,
+              localSymptoms,
+            })
+
+            if (localProfile || localDietTimeline || localConditions.length > 0 || localSymptoms.length > 0) {
+              setNeedsSync(true)
+
+              try {
+                const response = await fetch("/api/sync-profile", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    profile: localProfile,
+                    dietInfo: {
+                      dietTimeline: localDietTimeline,
+                      adaptationPeriod: localAdaptation,
+                    },
+                    conditions: localConditions,
+                    symptoms: localSymptoms,
+                  }),
+                })
+
+                console.log("[v0] Sync response status:", response.status)
+
+                if (response.ok) {
+                  console.log("[v0] Sync successful, reloading page")
+                  window.location.reload()
+                  return
+                }
+              } catch (error) {
+                console.error("[v0] Failed to auto-sync:", error)
+              }
+            }
+          }
+        } else {
+          console.log("[v0] No user authenticated, loading from localStorage only")
         }
 
-        // Fall back to localStorage if Supabase data not available
         if (!profile) {
           const profileData = JSON.parse(localStorage.getItem("userProfile") || "null")
+          console.log("[v0] Final fallback - loading profile from localStorage:", profileData)
           if (profileData) setProfile(profileData)
         }
 
         if (!dietInfo) {
+          const timeline = localStorage.getItem("userDietTimeline") || "Not set"
+          console.log("[v0] Final fallback - loading diet info from localStorage:", timeline)
           setDietInfo({
-            timeline: localStorage.getItem("userDietTimeline") || "Not set",
+            timeline: timeline === "not-set" ? "Not set" : timeline,
             adaptationPeriod: localStorage.getItem("userAdaptationChoice") === "Yes",
           })
         }
@@ -106,26 +203,33 @@ export default function ProfilePage() {
         if (conditions.length === 0) {
           const storedConditions = JSON.parse(localStorage.getItem("userConditions") || "[]")
           const selectedConditions = JSON.parse(localStorage.getItem("selectedConditions") || "[]")
+          console.log(
+            "[v0] Final fallback - loading conditions from localStorage:",
+            storedConditions,
+            selectedConditions,
+          )
           setConditions(storedConditions.length > 0 ? storedConditions : selectedConditions)
         }
 
         if (symptoms.length === 0) {
           const storedSymptoms = JSON.parse(localStorage.getItem("userSymptoms") || "[]")
           const selectedSymptoms = JSON.parse(localStorage.getItem("selectedSymptoms") || "[]")
+          console.log("[v0] Final fallback - loading symptoms from localStorage:", storedSymptoms, selectedSymptoms)
           setSymptoms(storedSymptoms.length > 0 ? storedSymptoms : selectedSymptoms)
         }
 
         if (!userName) {
           const storedName = localStorage.getItem("userName") || ""
+          console.log("[v0] Final fallback - loading name from localStorage:", storedName)
           setUserName(storedName)
         }
       } catch (error) {
-        console.error("Error loading user data:", error)
-        // Fall back to localStorage on error
+        console.error("[v0] Error loading user data:", error)
         const profileData = JSON.parse(localStorage.getItem("userProfile") || "null")
         setProfile(profileData)
+        const timeline = localStorage.getItem("userDietTimeline") || "Not set"
         setDietInfo({
-          timeline: localStorage.getItem("userDietTimeline") || "Not set",
+          timeline: timeline === "not-set" ? "Not set" : timeline,
           adaptationPeriod: localStorage.getItem("userAdaptationChoice") === "Yes",
         })
         const storedConditions = JSON.parse(localStorage.getItem("userConditions") || "[]")
@@ -134,6 +238,7 @@ export default function ProfilePage() {
         setSymptoms(storedSymptoms)
         setUserName(localStorage.getItem("userName") || "")
       } finally {
+        console.log("[v0] Loading complete. Final state:", { profile, dietInfo, conditions, symptoms })
         setIsLoading(false)
       }
     }
@@ -177,7 +282,6 @@ export default function ProfilePage() {
         <div className="w-20"></div>
       </header>
 
-      {/* Main Content */}
       <main className="flex-1 px-4 pb-8 overflow-auto">
         <div className="max-w-md mx-auto">
           <div className="my-8 text-center">
@@ -185,7 +289,6 @@ export default function ProfilePage() {
             {userName && <p className="text-brand-dark/60 text-base">Welcome back, {userName}!</p>}
           </div>
 
-          {/* Personal Information */}
           {profile && (
             <div className="bg-white rounded-3xl p-6 mb-4 shadow-soft">
               <div className="flex justify-between items-center mb-5">
@@ -224,7 +327,6 @@ export default function ProfilePage() {
             </div>
           )}
 
-          {/* Diet Information */}
           <div className="bg-white rounded-3xl p-6 mb-4 shadow-soft">
             <div className="flex justify-between items-center mb-5">
               <h3 className="font-semibold text-xl text-brand-dark">Diet Information</h3>
@@ -240,7 +342,9 @@ export default function ProfilePage() {
             <div className="space-y-4">
               <div>
                 <p className="text-brand-dark/50 text-sm font-medium mb-1">Diet Timeline</p>
-                <p className="text-brand-dark font-medium">{dietInfo?.timeline || "Not set"} days</p>
+                <p className="text-brand-dark font-medium">
+                  {dietInfo?.timeline && dietInfo.timeline !== "Not set" ? `${dietInfo.timeline} days` : "Not set"}
+                </p>
               </div>
               <div>
                 <p className="text-brand-dark/50 text-sm font-medium mb-1">Adaptation Period</p>
@@ -249,7 +353,6 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Conditions */}
           <div className="bg-white rounded-3xl p-6 mb-4 shadow-soft">
             <div className="flex justify-between items-center mb-5">
               <h3 className="font-semibold text-xl text-brand-dark">Conditions</h3>
@@ -280,7 +383,6 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Symptoms */}
           <div className="bg-white rounded-3xl p-6 mb-6 shadow-soft">
             <div className="flex justify-between items-center mb-5">
               <h3 className="font-semibold text-xl text-brand-dark">Symptoms to Track</h3>
@@ -311,7 +413,6 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Logout Button */}
           <button
             onClick={() => {
               localStorage.clear()
@@ -322,7 +423,6 @@ export default function ProfilePage() {
             Log Out
           </button>
 
-          {/* Delete Account Button */}
           <button
             onClick={() => setShowDeleteConfirm(true)}
             className="w-full bg-white border-2 border-red-400/30 text-red-600 hover:border-red-400/50 hover:shadow-soft py-4 rounded-full transition-all flex items-center justify-center gap-2 font-medium"
@@ -333,7 +433,6 @@ export default function ProfilePage() {
         </div>
       </main>
 
-      {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-xl">
@@ -362,7 +461,6 @@ export default function ProfilePage() {
         </div>
       )}
 
-      {/* Bottom Navigation */}
       <nav className="grid grid-cols-5 border-t border-brand-dark/10 bg-white/80 backdrop-blur-sm">
         <button
           className="flex flex-col items-center justify-center py-3 text-xs"
