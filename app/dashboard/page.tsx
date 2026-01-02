@@ -1820,7 +1820,7 @@ export default function DashboardPage() {
               ) : (
                 <div className="relative min-h-[280px] md:min-h-[320px]">
                   {/* Y-axis labels */}
-                  <div className="absolute left-0 top-0 bottom-8 w-10 md:w-16 flex flex-col justify-between text-[10px] md:text-xs text-secondary-color py-4">
+                  <div className="absolute left-0 top-0 bottom-8 w-10 md:w-16 flex flex-col justify-between text-[10px] md:text-xs text-secondary-color py-4 z-10">
                     <span className="leading-tight">100</span>
                     <span className="leading-tight">75</span>
                     <span className="leading-tight">50</span>
@@ -1829,7 +1829,7 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Vertical grid lines */}
-                  <div className="absolute left-10 md:left-16 right-0 top-0 bottom-8 flex justify-between">
+                  <div className="absolute left-10 md:left-16 right-0 top-0 bottom-8 flex justify-between z-0">
                     {wellnessHistoryData.dates.map((date, index) => (
                       <div
                         key={index}
@@ -1844,7 +1844,7 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Chart area */}
-                  <div className="absolute left-10 md:left-16 right-0 top-0 bottom-8 px-2 md:px-4 pt-4">
+                  <div className="absolute left-10 md:left-16 right-0 top-0 bottom-8 px-2 md:px-4 pt-4 z-0">
                     {/* Grid lines */}
                     <div className="absolute inset-0">
                       <div className="border-b border-pink-100 absolute top-[20%] left-0 right-0"></div>
@@ -1899,7 +1899,7 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Wellness Score Display */}
-                  <div className="flex items-center justify-center mt-12">
+                  <div className="flex items-center justify-center mt-12 relative z-20">
                     <div className="text-center">
                       <p className="text-sm text-secondary-color mb-2">Current Wellness Score</p>
                       <div
