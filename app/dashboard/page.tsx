@@ -27,6 +27,8 @@ import { createBrowserClient } from "@supabase/ssr"
 import { Button } from "@/components/ui/button" // Assuming Button component is available
 import { getWeightLogs, type WeightLog } from "@/lib/weight-data" // Imported weight data functions
 import { WeightLogModal } from "@/components/weight-log-modal" // Imported WeightLogModal component
+import { createClient } from "@/lib/supabase/client" // Import createClient from supabase client
+import { getUserProfile, loadDietInfo, loadTrackedDates, calculateDietProgress } from "@/lib/dashboard-data" // Imported new functions
 
 // Update the chart dates to show daily data
 const chartDates = ["Day 1", "Day 2", "Day 3", "Day 4", "Day 5", "Day 6", "Day 7"]
@@ -122,6 +124,7 @@ export default function DashboardPage() {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
   // </CHANGE> Removed isUpdatingWeight and weightUpdateSuccess states - using modal for all weight updates
   const [userId, setUserId] = useState<string>("")
+  const [dietInfo, setDietInfo] = useState<any>(null) // State to store diet information
 
   // To-do list states
   const [isAdaptationPhase, setIsAdaptationPhase] = useState(false)
@@ -995,12 +998,39 @@ export default function DashboardPage() {
         return
       }
 
+      // Load user-specific data
+      const supabase = createClient()
       const {
         data: { user },
-      } = await supabase!.auth.getUser()
+        error,
+      } = await supabase.auth.getUser()
+
+      if (error) {
+        console.error("Error loading user:", error)
+        return
+      }
+
       if (user?.id) {
         setUserId(user.id)
-        console.log("[v0] User ID loaded:", user.id)
+
+        // Load user-specific data
+        const [dietInfoData, trackedDates, profile] = await Promise.all([
+          loadDietInfo(user.id),
+          loadTrackedDates(user.id),
+          getUserProfile(user.id),
+        ])
+
+        if (dietInfoData) {
+          setDietInfo(dietInfoData)
+          calculateDietProgress(dietInfoData)
+        }
+
+        if (profile) {
+          setUserProfile(profile)
+        }
+
+        // Load symptoms
+        await loadSymptomData()
       }
 
       // Load user profile data
@@ -1103,14 +1133,19 @@ export default function DashboardPage() {
           console.error("Error parsing logged day data:", e)
         }
       }
+    }
+  }
 
-      console.log("[v0] Loading weight logs")
-      const weights = await getWeightLogs(userId || "", 30)
+  useEffect(() => {
+    const loadWeightData = async () => {
+      if (!userId) return
+
+      console.log("[v0] Loading weight logs for user:", userId)
+      const weights = await getWeightLogs(userId, 30)
       console.log("[v0] Weight logs loaded:", weights)
 
       if (weights.length > 0) {
         const formattedWeights = weights.map((log: WeightLog) => ({
-          // Explicitly type 'log'
           date: new Date(log.log_date).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
           weight: Number(log.weight),
         }))
@@ -1119,7 +1154,9 @@ export default function DashboardPage() {
         setWeightUnit(weights[weights.length - 1].weight_unit)
       }
     }
-  }
+
+    loadWeightData()
+  }, [userId]) // Run when userId changes
 
   useEffect(() => {
     loadUserData()
