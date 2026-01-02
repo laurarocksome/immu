@@ -54,13 +54,19 @@ export default function DietTimelinePage() {
     try {
       const session = await getSession()
       if (session?.user) {
+        const startDate = new Date().toISOString()
+        const currentPhase = needsAdaptation ? "adaptation" : "elimination"
+
         await saveDietInfo({
-          timeline: selectedDays.toString(),
-          adaptationPeriod: needsAdaptation,
+          startDate,
+          timelineDays: selectedDays,
+          adaptationChoice: needsAdaptation ? "yes" : "no",
+          currentPhase,
         })
+        console.log("[v0] Diet info saved successfully:", { selectedDays, needsAdaptation })
       }
     } catch (error) {
-      console.error("Error saving diet info to database:", error)
+      console.error("[v0] Error saving diet info to database:", error)
     }
 
     if (isEditMode) {
