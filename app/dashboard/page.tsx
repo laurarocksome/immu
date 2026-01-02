@@ -121,6 +121,7 @@ export default function DashboardPage() {
   const [weightUnit, setWeightUnit] = useState<string>("lbs")
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
   // </CHANGE> Removed isUpdatingWeight and weightUpdateSuccess states - using modal for all weight updates
+  const [userId, setUserId] = useState<string>("")
 
   // To-do list states
   const [isAdaptationPhase, setIsAdaptationPhase] = useState(false)
@@ -987,6 +988,21 @@ export default function DashboardPage() {
     const isFirstLoad = sessionStorage.getItem("dashboardFirstLoad") !== "false"
 
     if (typeof window !== "undefined") {
+      // Get session and redirect if not authenticated
+      const session = await getSession()
+      if (!session) {
+        router.push("/auth/signin")
+        return
+      }
+
+      const {
+        data: { user },
+      } = await supabase!.auth.getUser()
+      if (user?.id) {
+        setUserId(user.id)
+        console.log("[v0] User ID loaded:", user.id)
+      }
+
       // Load user profile data
       loadUserProfile()
 
@@ -1089,10 +1105,7 @@ export default function DashboardPage() {
       }
 
       console.log("[v0] Loading weight logs")
-      const weights = await getWeightLogs(
-        supabase!.auth.getUser() ? (await supabase!.auth.getUser()).data.user!.id : "",
-        30,
-      ) // Ensure user is logged in
+      const weights = await getWeightLogs(userId || "", 30)
       console.log("[v0] Weight logs loaded:", weights)
 
       if (weights.length > 0) {
@@ -2187,9 +2200,9 @@ export default function DashboardPage() {
       </nav>
 
       {showWeightModal &&
-        supabase && ( // Ensure supabase is initialized
+        userId && ( // Only show modal when userId is available
           <WeightLogModal
-            userId={(async () => (await supabase.auth.getUser()).data.user?.id)() ?? ""} // Handle potential undefined user
+            userId={userId} // Pass userId from state
             currentWeight={currentWeight}
             currentUnit={weightUnit}
             onClose={() => setShowWeightModal(false)}
