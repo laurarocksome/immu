@@ -3,17 +3,21 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import Logo from "@/app/components/logo"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
+import { saveDietInfo } from "@/lib/user-data"
+import { getSession } from "@/lib/auth"
 
 export default function DietTimelinePage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [needsAdaptation, setNeedsAdaptation] = useState(false)
   const [selectedDays, setSelectedDays] = useState(30)
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(true)
+  const isEditMode = searchParams.get("edit") === "true"
 
   // Min and max days based on adaptation period
   const minDays = needsAdaptation ? 58 : 30
@@ -36,7 +40,7 @@ export default function DietTimelinePage() {
     setSelectedDays(Number.parseInt(e.target.value))
   }
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     // If adaptation is needed, store the total days (adaptation + elimination)
     // but also store that the user wants adaptation
     if (needsAdaptation) {
@@ -47,45 +51,64 @@ export default function DietTimelinePage() {
       localStorage.setItem("userDietTimeline", selectedDays.toString())
     }
 
-    // Continue to the user profile page
-    router.push("/onboarding/user-profile")
+    try {
+      const session = await getSession()
+      if (session?.user) {
+        await saveDietInfo({
+          timeline: selectedDays.toString(),
+          adaptationPeriod: needsAdaptation,
+        })
+      }
+    } catch (error) {
+      console.error("Error saving diet info to database:", error)
+    }
+
+    if (isEditMode) {
+      router.push("/profile")
+    } else {
+      router.push("/onboarding/user-profile")
+    }
   }
 
   const handleBack = () => {
-    // Check if user came from adaptation-period page
-    const vegetableHabits = localStorage.getItem("userVegetableHabits") || ""
-    const caffeineHabits = localStorage.getItem("userCaffeineHabits") || ""
-    const alcoholHabits = localStorage.getItem("userAlcoholHabits") || ""
-    const sugarHabits = localStorage.getItem("userSugarHabits") || ""
-
-    // Count how many habits might need adaptation
-    let adaptationCount = 0
-
-    // Check caffeine habits
-    if (caffeineHabits === "3-4 cups" || caffeineHabits === "5+ cups") {
-      adaptationCount++
-    }
-
-    // Check alcohol habits
-    if (alcoholHabits === "Weekly (1-2 times a week)" || alcoholHabits === "Frequently (3+ times a week)") {
-      adaptationCount++
-    }
-
-    // Check sugar habits
-    if (sugarHabits === "Yes, daily (in coffee, tea, etc.)" || sugarHabits === "Yes, multiple times a day") {
-      adaptationCount++
-    }
-
-    // Check vegetable habits
-    if (vegetableHabits === "1-2 servings" || vegetableHabits === "None") {
-      adaptationCount++
-    }
-
-    // If 2 or more habits need adaptation, go back to adaptation period page
-    if (adaptationCount >= 2) {
-      router.push("/onboarding/adaptation-period")
+    if (isEditMode) {
+      router.push("/profile")
     } else {
-      router.push("/onboarding/vegetable-habits")
+      // Check if user came from adaptation-period page
+      const vegetableHabits = localStorage.getItem("userVegetableHabits") || ""
+      const caffeineHabits = localStorage.getItem("userCaffeineHabits") || ""
+      const alcoholHabits = localStorage.getItem("userAlcoholHabits") || ""
+      const sugarHabits = localStorage.getItem("userSugarHabits") || ""
+
+      // Count how many habits might need adaptation
+      let adaptationCount = 0
+
+      // Check caffeine habits
+      if (caffeineHabits === "3-4 cups" || caffeineHabits === "5+ cups") {
+        adaptationCount++
+      }
+
+      // Check alcohol habits
+      if (alcoholHabits === "Weekly (1-2 times a week)" || alcoholHabits === "Frequently (3+ times a week)") {
+        adaptationCount++
+      }
+
+      // Check sugar habits
+      if (sugarHabits === "Yes, daily (in coffee, tea, etc.)" || sugarHabits === "Yes, multiple times a day") {
+        adaptationCount++
+      }
+
+      // Check vegetable habits
+      if (vegetableHabits === "1-2 servings" || vegetableHabits === "None") {
+        adaptationCount++
+      }
+
+      // If 2 or more habits need adaptation, go back to adaptation period page
+      if (adaptationCount >= 2) {
+        router.push("/onboarding/adaptation-period")
+      } else {
+        router.push("/onboarding/vegetable-habits")
+      }
     }
   }
 
@@ -204,25 +227,27 @@ export default function DietTimelinePage() {
 
           {/* Next button */}
           <button onClick={handleContinue} className="w-full gradient-button py-4 rounded-full">
-            Next
+            {isEditMode ? "Save" : "Next"}
           </button>
         </div>
       </main>
 
-      {/* Progress indicator */}
-      <div className="p-4 flex justify-center">
-        <div className="flex space-x-2">
-          <div className="w-2 h-2 rounded-full bg-pink-400"></div>
-          <div className="w-2 h-2 rounded-full bg-pink-400"></div>
-          <div className="w-2 h-2 rounded-full bg-pink-400"></div>
-          <div className="w-2 h-2 rounded-full bg-pink-400"></div>
-          <div className="w-2 h-2 rounded-full bg-pink-400"></div>
-          <div className="w-2 h-2 rounded-full bg-pink-400"></div>
-          <div className="w-2 h-2 rounded-full bg-pink-400"></div>
-          <div className="w-2 h-2 rounded-full bg-pink-400"></div>
-          <div className="w-2 h-2 rounded-full bg-pink-400"></div>
+      {/* Progress indicator - only show in onboarding mode */}
+      {!isEditMode && (
+        <div className="p-4 flex justify-center">
+          <div className="flex space-x-2">
+            <div className="w-2 h-2 rounded-full bg-pink-400"></div>
+            <div className="w-2 h-2 rounded-full bg-pink-400"></div>
+            <div className="w-2 h-2 rounded-full bg-pink-400"></div>
+            <div className="w-2 h-2 rounded-full bg-pink-400"></div>
+            <div className="w-2 h-2 rounded-full bg-pink-400"></div>
+            <div className="w-2 h-2 rounded-full bg-pink-400"></div>
+            <div className="w-2 h-2 rounded-full bg-pink-400"></div>
+            <div className="w-2 h-2 rounded-full bg-pink-400"></div>
+            <div className="w-2 h-2 rounded-full bg-pink-400"></div>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }

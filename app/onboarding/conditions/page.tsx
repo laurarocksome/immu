@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { ArrowLeft } from "lucide-react"
 import Logo from "@/app/components/logo"
 import { saveUserConditions } from "@/lib/user-data"
@@ -9,10 +9,12 @@ import { getSession } from "@/lib/auth"
 
 export default function ConditionsPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [selectedConditions, setSelectedConditions] = useState<string[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [error, setError] = useState("")
   const [showAllConditions, setShowAllConditions] = useState(false)
+  const isEditMode = searchParams.get("edit") === "true"
 
   // Load saved conditions from localStorage if available
   useEffect(() => {
@@ -167,12 +169,19 @@ export default function ConditionsPage() {
       // Continue anyway - data is in localStorage
     }
 
-    router.push("/onboarding/symptoms")
+    if (isEditMode) {
+      router.push("/profile")
+    } else {
+      router.push("/onboarding/symptoms")
+    }
   }
 
   const handleBack = () => {
-    // Navigate back to the starting page
-    router.push("/")
+    if (isEditMode) {
+      router.push("/profile")
+    } else {
+      router.push("/")
+    }
   }
 
   const clearSearch = () => {
@@ -273,20 +282,22 @@ export default function ConditionsPage() {
 
           {/* Navigation buttons */}
           <button className="w-full gradient-button py-4 rounded-full" onClick={handleContinue}>
-            Continue
+            {isEditMode ? "Save" : "Continue"}
           </button>
         </div>
 
-        {/* Progress dots */}
-        <div className="p-4 flex justify-center mt-6">
-          <div className="flex space-x-2">
-            <div className="w-2 h-2 rounded-full bg-pink-400"></div>
-            <div className="w-2 h-2 rounded-full bg-brand-dark/30"></div>
-            <div className="w-2 h-2 rounded-full bg-brand-dark/30"></div>
-            <div className="w-2 h-2 rounded-full bg-brand-dark/30"></div>
-            <div className="w-2 h-2 rounded-full bg-brand-dark/30"></div>
+        {/* Progress dots - only show in onboarding mode */}
+        {!isEditMode && (
+          <div className="p-4 flex justify-center mt-6">
+            <div className="flex space-x-2">
+              <div className="w-2 h-2 rounded-full bg-pink-400"></div>
+              <div className="w-2 h-2 rounded-full bg-brand-dark/30"></div>
+              <div className="w-2 h-2 rounded-full bg-brand-dark/30"></div>
+              <div className="w-2 h-2 rounded-full bg-brand-dark/30"></div>
+              <div className="w-2 h-2 rounded-full bg-brand-dark/30"></div>
+            </div>
           </div>
-        </div>
+        )}
       </main>
     </div>
   )

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { ChevronDown, ArrowLeft } from "lucide-react"
 import Logo from "@/app/components/logo"
 import { saveUserProfile } from "@/lib/user-data"
@@ -12,6 +12,7 @@ type HeightUnit = "cm" | "ft"
 
 export default function UserProfilePage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [gender, setGender] = useState<string | null>(null)
   const [age, setAge] = useState<string>("")
   const [weight, setWeight] = useState<string>("")
@@ -22,6 +23,7 @@ export default function UserProfilePage() {
   const [showHeightDropdown, setShowHeightDropdown] = useState(false)
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const isEditMode = searchParams.get("edit") === "true"
 
   useEffect(() => {
     const loadExistingData = async () => {
@@ -137,13 +139,21 @@ export default function UserProfilePage() {
     }
 
     setTimeout(() => {
-      router.push("/onboarding/create-account")
+      if (isEditMode) {
+        router.push("/profile")
+      } else {
+        router.push("/onboarding/create-account")
+      }
       setIsLoading(false)
     }, 800)
   }
 
   const handleBack = () => {
-    router.push("/onboarding/diet-timeline")
+    if (isEditMode) {
+      router.push("/profile")
+    } else {
+      router.push("/onboarding/diet-timeline")
+    }
   }
 
   return (
@@ -310,24 +320,26 @@ export default function UserProfilePage() {
             disabled={isLoading}
             className="w-full gradient-button py-4 rounded-full mt-8"
           >
-            {isLoading ? "Saving Profile..." : "Next"}
+            {isLoading ? "Saving..." : isEditMode ? "Save" : "Next"}
           </button>
         </div>
       </main>
 
-      <div className="p-4 flex justify-center">
-        <div className="flex space-x-2">
-          <div className="w-2 h-2 rounded-full bg-pink-400"></div>
-          <div className="w-2 h-2 rounded-full bg-pink-400"></div>
-          <div className="w-2 h-2 rounded-full bg-pink-400"></div>
-          <div className="w-2 h-2 rounded-full bg-pink-400"></div>
-          <div className="w-2 h-2 rounded-full bg-pink-400"></div>
-          <div className="w-2 h-2 rounded-full bg-pink-400"></div>
-          <div className="w-2 h-2 rounded-full bg-pink-400"></div>
-          <div className="w-2 h-2 rounded-full bg-pink-400"></div>
-          <div className="w-2 h-2 rounded-full bg-pink-400"></div>
+      {!isEditMode && (
+        <div className="p-4 flex justify-center">
+          <div className="flex space-x-2">
+            <div className="w-2 h-2 rounded-full bg-pink-400"></div>
+            <div className="w-2 h-2 rounded-full bg-pink-400"></div>
+            <div className="w-2 h-2 rounded-full bg-pink-400"></div>
+            <div className="w-2 h-2 rounded-full bg-pink-400"></div>
+            <div className="w-2 h-2 rounded-full bg-pink-400"></div>
+            <div className="w-2 h-2 rounded-full bg-pink-400"></div>
+            <div className="w-2 h-2 rounded-full bg-pink-400"></div>
+            <div className="w-2 h-2 rounded-full bg-pink-400"></div>
+            <div className="w-2 h-2 rounded-full bg-pink-400"></div>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }

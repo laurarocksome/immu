@@ -17,7 +17,7 @@ type UserProfile = {
 }
 
 type DietInfo = {
-  timeline: string
+  timelineDays: number
   adaptationPeriod: boolean
 }
 
@@ -85,7 +85,7 @@ export default function ProfilePage() {
 
           if (dietData) {
             loadedDietInfo = {
-              timeline: dietData.timeline_days ? `${dietData.timeline_days} days` : "Not set",
+              timelineDays: dietData.timeline_days || 0,
               adaptationPeriod: dietData.adaptation_choice === "yes",
             }
             console.log("[v0] Loaded diet info from DB:", loadedDietInfo)
@@ -93,22 +93,19 @@ export default function ProfilePage() {
 
           const { data: conditionsData } = await supabase
             .from("user_conditions")
-            .select("condition_name")
+            .select("condition")
             .eq("user_id", userId)
           console.log("[v0] Conditions data from DB:", conditionsData)
 
           if (conditionsData && conditionsData.length > 0) {
-            loadedConditions = conditionsData.map((c) => c.condition_name)
+            loadedConditions = [...new Set(conditionsData.map((c) => c.condition))]
           }
 
-          const { data: symptomsData } = await supabase
-            .from("user_symptoms")
-            .select("symptom_name")
-            .eq("user_id", userId)
+          const { data: symptomsData } = await supabase.from("user_symptoms").select("symptom").eq("user_id", userId)
           console.log("[v0] Symptoms data from DB:", symptomsData)
 
           if (symptomsData && symptomsData.length > 0) {
-            loadedSymptoms = symptomsData.map((s) => s.symptom_name)
+            loadedSymptoms = [...new Set(symptomsData.map((s) => s.symptom))]
           }
 
           if (!loadedProfile) {
@@ -125,8 +122,9 @@ export default function ProfilePage() {
             const localDietTimeline = localStorage.getItem("userDietTimeline")
             const localAdaptation = localStorage.getItem("userAdaptationChoice")
             if (localDietTimeline) {
+              const timelineDays = localDietTimeline === "not-set" ? 0 : Number.parseInt(localDietTimeline) || 0
               loadedDietInfo = {
-                timeline: localDietTimeline === "not-set" ? "Not set" : localDietTimeline,
+                timelineDays: timelineDays,
                 adaptationPeriod: localAdaptation === "Yes",
               }
               console.log("[v0] Loaded diet info from localStorage")
@@ -164,9 +162,10 @@ export default function ProfilePage() {
           console.log("[v0] No user authenticated, loading from localStorage only")
           const profileData = JSON.parse(localStorage.getItem("userProfile") || "null")
           setProfile(profileData)
-          const timeline = localStorage.getItem("userDietTimeline") || "Not set"
+          const timeline = localStorage.getItem("userDietTimeline") || "0"
+          const timelineDays = timeline === "not-set" ? 0 : Number.parseInt(timeline) || 0
           setDietInfo({
-            timeline: timeline === "not-set" ? "Not set" : timeline,
+            timelineDays: timelineDays,
             adaptationPeriod: localStorage.getItem("userAdaptationChoice") === "Yes",
           })
           const storedConditions = JSON.parse(localStorage.getItem("userConditions") || "[]")
@@ -178,9 +177,10 @@ export default function ProfilePage() {
         console.error("[v0] Error loading user data:", error)
         const profileData = JSON.parse(localStorage.getItem("userProfile") || "null")
         setProfile(profileData)
-        const timeline = localStorage.getItem("userDietTimeline") || "Not set"
+        const timeline = localStorage.getItem("userDietTimeline") || "0"
+        const timelineDays = timeline === "not-set" ? 0 : Number.parseInt(timeline) || 0
         setDietInfo({
-          timeline: timeline === "not-set" ? "Not set" : timeline,
+          timelineDays: timelineDays,
           adaptationPeriod: localStorage.getItem("userAdaptationChoice") === "Yes",
         })
         const storedConditions = JSON.parse(localStorage.getItem("userConditions") || "[]")
@@ -245,7 +245,7 @@ export default function ProfilePage() {
                 <h3 className="font-semibold text-xl text-brand-dark">Personal Information</h3>
                 <button
                   className="text-brand-primary flex items-center gap-1 hover:text-brand-primary/80 transition-colors"
-                  onClick={() => router.push("/onboarding/user-profile")}
+                  onClick={() => router.push("/onboarding/user-profile?edit=true")}
                 >
                   <Edit className="h-4 w-4" />
                   <span className="text-sm font-medium">Edit</span>
@@ -282,7 +282,7 @@ export default function ProfilePage() {
               <h3 className="font-semibold text-xl text-brand-dark">Diet Information</h3>
               <button
                 className="text-brand-primary flex items-center gap-1 hover:text-brand-primary/80 transition-colors"
-                onClick={() => router.push("/onboarding/diet-timeline")}
+                onClick={() => router.push("/onboarding/diet-timeline?edit=true")}
               >
                 <Edit className="h-4 w-4" />
                 <span className="text-sm font-medium">Edit</span>
@@ -293,7 +293,7 @@ export default function ProfilePage() {
               <div>
                 <p className="text-brand-dark/50 text-sm font-medium mb-1">Diet Timeline</p>
                 <p className="text-brand-dark font-medium">
-                  {dietInfo?.timeline && dietInfo.timeline !== "Not set" ? `${dietInfo.timeline} days` : "Not set"}
+                  {dietInfo?.timelineDays ? `${dietInfo.timelineDays} days` : "Not set"}
                 </p>
               </div>
               <div>
@@ -308,7 +308,7 @@ export default function ProfilePage() {
               <h3 className="font-semibold text-xl text-brand-dark">Conditions</h3>
               <button
                 className="text-brand-primary flex items-center gap-1 hover:text-brand-primary/80 transition-colors"
-                onClick={() => router.push("/onboarding/conditions")}
+                onClick={() => router.push("/onboarding/conditions?edit=true")}
               >
                 <Edit className="h-4 w-4" />
                 <span className="text-sm font-medium">Edit</span>
@@ -338,7 +338,7 @@ export default function ProfilePage() {
               <h3 className="font-semibold text-xl text-brand-dark">Symptoms to Track</h3>
               <button
                 className="text-brand-primary flex items-center gap-1 hover:text-brand-primary/80 transition-colors"
-                onClick={() => router.push("/onboarding/symptoms")}
+                onClick={() => router.push("/onboarding/symptoms?edit=true")}
               >
                 <Edit className="h-4 w-4" />
                 <span className="text-sm font-medium">Edit</span>

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { ArrowLeft } from "lucide-react"
 import Logo from "@/app/components/logo"
 import { saveUserSymptoms } from "@/lib/user-data"
@@ -10,12 +10,13 @@ import { supabase } from "@/lib/supabase/client"
 
 export default function SymptomsPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [error, setError] = useState("")
   const [showAllSymptoms, setShowAllSymptoms] = useState(false)
+  const isEditMode = searchParams.get("edit") === "true"
 
-  // Load saved symptoms from localStorage if available
   useEffect(() => {
     const loadExistingData = async () => {
       try {
@@ -34,7 +35,6 @@ export default function SymptomsPage() {
           }
         }
 
-        // Fall back to localStorage
         const savedSymptoms = localStorage.getItem("selectedSymptoms")
         if (savedSymptoms) {
           const parsed = JSON.parse(savedSymptoms)
@@ -50,7 +50,6 @@ export default function SymptomsPage() {
     loadExistingData()
   }, [])
 
-  // Alphabetically sorted list of symptoms
   const symptomsList = [
     "Abdominal pain",
     "Acid reflux",
@@ -117,7 +116,6 @@ export default function SymptomsPage() {
     if (selectedSymptoms.length === 0) {
       setError("Please select at least 1 symptom to continue")
     } else {
-      // Save selected symptoms
       localStorage.setItem("selectedSymptoms", JSON.stringify(selectedSymptoms))
 
       try {
@@ -127,16 +125,22 @@ export default function SymptomsPage() {
         }
       } catch (error) {
         console.error("Error saving to database:", error)
-        // Continue anyway - data is in localStorage
       }
 
-      router.push("/onboarding/stress")
+      if (isEditMode) {
+        router.push("/profile")
+      } else {
+        router.push("/onboarding/stress")
+      }
     }
   }
 
   const handleBack = () => {
-    // Navigate back to the conditions page
-    router.push("/onboarding/conditions")
+    if (isEditMode) {
+      router.push("/profile")
+    } else {
+      router.push("/onboarding/conditions")
+    }
   }
 
   const clearSearch = () => {
@@ -218,20 +222,22 @@ export default function SymptomsPage() {
 
           {/* Navigation buttons */}
           <button className={`w-full gradient-button py-4 rounded-full`} onClick={handleContinue}>
-            Continue
+            {isEditMode ? "Save" : "Continue"}
           </button>
         </div>
 
-        {/* Progress dots */}
-        <div className="p-4 flex justify-center mt-6">
-          <div className="flex space-x-2">
-            <div className="w-2 h-2 rounded-full bg-pink-400"></div>
-            <div className="w-2 h-2 rounded-full bg-pink-400"></div>
-            <div className="w-2 h-2 rounded-full bg-brand-dark/30"></div>
-            <div className="w-2 h-2 rounded-full bg-brand-dark/30"></div>
-            <div className="w-2 h-2 rounded-full bg-brand-dark/30"></div>
+        {/* Progress dots - only show in onboarding mode */}
+        {!isEditMode && (
+          <div className="p-4 flex justify-center mt-6">
+            <div className="flex space-x-2">
+              <div className="w-2 h-2 rounded-full bg-pink-400"></div>
+              <div className="w-2 h-2 rounded-full bg-pink-400"></div>
+              <div className="w-2 h-2 rounded-full bg-brand-dark/30"></div>
+              <div className="w-2 h-2 rounded-full bg-brand-dark/30"></div>
+              <div className="w-2 h-2 rounded-full bg-brand-dark/30"></div>
+            </div>
           </div>
-        </div>
+        )}
       </main>
     </div>
   )
