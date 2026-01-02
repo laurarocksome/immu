@@ -30,12 +30,15 @@ export function WeightLogModal({ userId, currentWeight, currentUnit = "lbs", onC
     setError("")
 
     try {
+      console.log("[v0] About to save weight log for user:", userId)
       await saveWeightLog(userId, weightNum, unit)
+      console.log("[v0] Weight log saved successfully")
       onSave()
       onClose()
     } catch (err) {
       console.error("[v0] Error saving weight:", err)
-      setError("Failed to save weight. Please try again.")
+      const errorMessage = err instanceof Error ? err.message : "Failed to save weight. Please try again."
+      setError(errorMessage)
     } finally {
       setIsSaving(false)
     }

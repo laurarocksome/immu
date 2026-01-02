@@ -1,4 +1,4 @@
-import { createBrowserClient } from "@/lib/supabase-client"
+import { createClient } from "@/lib/supabase/client"
 
 export interface WeightLog {
   id: string
@@ -10,7 +10,7 @@ export interface WeightLog {
 }
 
 export async function getWeightLogs(userId: string, limit = 30): Promise<WeightLog[]> {
-  const supabase = createBrowserClient()
+  const supabase = createClient()
 
   const { data, error } = await supabase
     .from("weight_logs")
@@ -28,7 +28,7 @@ export async function getWeightLogs(userId: string, limit = 30): Promise<WeightL
 }
 
 export async function saveWeightLog(userId: string, weight: number, weightUnit: string, logDate?: string) {
-  const supabase = createBrowserClient()
+  const supabase = createClient()
   const dateToLog = logDate || new Date().toISOString().split("T")[0]
 
   console.log("[v0] Saving weight log:", { userId, weight, weightUnit, logDate: dateToLog })
@@ -60,7 +60,7 @@ export async function saveWeightLog(userId: string, weight: number, weightUnit: 
 }
 
 export async function getLatestWeight(userId: string): Promise<WeightLog | null> {
-  const supabase = createBrowserClient()
+  const supabase = createClient()
 
   const { data, error } = await supabase
     .from("weight_logs")
