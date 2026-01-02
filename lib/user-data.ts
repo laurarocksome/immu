@@ -9,23 +9,29 @@ export async function saveUserProfile(profileData: {
   height?: number
   heightUnit?: string
 }) {
+  console.log("[v0] Saving user profile:", profileData)
   const user = await supabase.auth.getUser()
   if (!user.data.user) throw new Error("Not authenticated")
 
-  const { data, error } = await supabase
-    .from("user_profiles")
-    .upsert({
-      user_id: user.data.user.id,
-      gender: profileData.gender,
-      age: profileData.age,
-      weight: profileData.weight,
-      weight_unit: profileData.weightUnit,
-      height: profileData.height,
-      height_unit: profileData.heightUnit,
-      updated_at: new Date().toISOString(),
-    })
-    .select()
+  console.log("[v0] User ID for profile save:", user.data.user.id)
 
+  const { data: existing } = await supabase.from("user_profiles").select("id").eq("user_id", user.data.user.id).single()
+
+  const profileRecord = {
+    ...(existing?.id ? { id: existing.id } : {}),
+    user_id: user.data.user.id,
+    gender: profileData.gender,
+    age: profileData.age,
+    weight: profileData.weight,
+    weight_unit: profileData.weightUnit,
+    height: profileData.height,
+    height_unit: profileData.heightUnit,
+    updated_at: new Date().toISOString(),
+  }
+
+  const { data, error } = await supabase.from("user_profiles").upsert(profileRecord).select()
+
+  console.log("[v0] Profile save result:", { data, error })
   if (error) throw error
   return data
 }
@@ -79,19 +85,29 @@ export async function saveDietInfo(dietData: {
   adaptationChoice: string
   currentPhase?: string
 }) {
+  console.log("[v0] Saving diet info:", dietData)
   const user = await supabase.auth.getUser()
   if (!user.data.user) throw new Error("Not authenticated")
 
-  const { error } = await supabase.from("diet_info").upsert({
+  console.log("[v0] User ID for diet save:", user.data.user.id)
+
+  const { data: existing } = await supabase.from("diet_info").select("id").eq("user_id", user.data.user.id).single()
+
+  const dietRecord = {
+    ...(existing?.id ? { id: existing.id } : {}),
     user_id: user.data.user.id,
     start_date: dietData.startDate,
     timeline_days: dietData.timelineDays,
     adaptation_choice: dietData.adaptationChoice,
     current_phase: dietData.currentPhase || "adaptation",
     updated_at: new Date().toISOString(),
-  })
+  }
 
+  const { data, error } = await supabase.from("diet_info").upsert(dietRecord).select()
+
+  console.log("[v0] Diet info save result:", { data, error })
   if (error) throw error
+  return data
 }
 
 // Save daily log

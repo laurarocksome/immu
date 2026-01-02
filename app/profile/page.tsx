@@ -35,8 +35,8 @@ export default function ProfilePage() {
 
   useEffect(() => {
     const loadUserData = async () => {
-      console.log("[v0] Starting to load user data")
       try {
+        console.log("[v0] Starting to load user data")
         const {
           data: { user },
           error: userError,
@@ -45,7 +45,10 @@ export default function ProfilePage() {
 
         if (user) {
           const userId = user.id
-          let hasDbData = false
+          let loadedProfile: UserProfile | null = null
+          let loadedDietInfo: DietInfo | null = null
+          let loadedConditions: string[] = []
+          let loadedSymptoms: string[] = []
 
           const { data: userData } = await supabase.from("users").select("name").eq("id", userId).single()
           console.log("[v0] User name data:", userData)
@@ -62,16 +65,15 @@ export default function ProfilePage() {
           console.log("[v0] Profile data from DB:", profileData, "Error:", profileError)
 
           if (profileData) {
-            hasDbData = true
-            setProfile({
+            loadedProfile = {
               gender: profileData.gender || "",
               age: profileData.age || 0,
               weight: profileData.weight || 0,
               weightUnit: profileData.weight_unit || "kg",
               height: profileData.height || 0,
               heightUnit: profileData.height_unit || "cm",
-            })
-            console.log("[v0] Set profile state:", profileData)
+            }
+            console.log("[v0] Loaded profile from DB:", loadedProfile)
           }
 
           const { data: dietData, error: dietError } = await supabase
@@ -82,146 +84,95 @@ export default function ProfilePage() {
           console.log("[v0] Diet data from DB:", dietData, "Error:", dietError)
 
           if (dietData) {
-            hasDbData = true
-            setDietInfo({
-              timeline: dietData.diet_timeline || "Not set",
-              adaptationPeriod: dietData.adaptation_period || false,
-            })
-            console.log("[v0] Set diet info state:", dietData)
+            loadedDietInfo = {
+              timeline: dietData.timeline_days ? `${dietData.timeline_days} days` : "Not set",
+              adaptationPeriod: dietData.adaptation_choice === "yes",
+            }
+            console.log("[v0] Loaded diet info from DB:", loadedDietInfo)
           }
 
           const { data: conditionsData } = await supabase
             .from("user_conditions")
-            .select("condition")
+            .select("condition_name")
             .eq("user_id", userId)
           console.log("[v0] Conditions data from DB:", conditionsData)
 
           if (conditionsData && conditionsData.length > 0) {
-            hasDbData = true
-            setConditions(conditionsData.map((c) => c.condition))
+            loadedConditions = conditionsData.map((c) => c.condition_name)
           }
 
-          const { data: symptomsData } = await supabase.from("user_symptoms").select("symptom").eq("user_id", userId)
+          const { data: symptomsData } = await supabase
+            .from("user_symptoms")
+            .select("symptom_name")
+            .eq("user_id", userId)
           console.log("[v0] Symptoms data from DB:", symptomsData)
 
           if (symptomsData && symptomsData.length > 0) {
-            hasDbData = true
-            setSymptoms(symptomsData.map((s) => s.symptom))
+            loadedSymptoms = symptomsData.map((s) => s.symptom_name)
           }
 
-          console.log("[v0] Has DB data:", hasDbData)
-
-          if (!profileData) {
+          if (!loadedProfile) {
             console.log("[v0] No profile in DB, checking localStorage")
             const localProfile = JSON.parse(localStorage.getItem("userProfile") || "null")
-            console.log("[v0] Local profile:", localProfile)
-
             if (localProfile) {
-              setProfile(localProfile)
-              console.log("[v0] Set profile from localStorage")
+              loadedProfile = localProfile
+              console.log("[v0] Loaded profile from localStorage")
             }
           }
 
-          if (!dietData) {
+          if (!loadedDietInfo) {
             console.log("[v0] No diet data in DB, checking localStorage")
             const localDietTimeline = localStorage.getItem("userDietTimeline")
             const localAdaptation = localStorage.getItem("userAdaptationChoice")
-            console.log("[v0] Local diet timeline:", localDietTimeline, "Adaptation:", localAdaptation)
-
             if (localDietTimeline) {
-              setDietInfo({
+              loadedDietInfo = {
                 timeline: localDietTimeline === "not-set" ? "Not set" : localDietTimeline,
                 adaptationPeriod: localAdaptation === "Yes",
-              })
-              console.log("[v0] Set diet info from localStorage")
-            }
-          }
-
-          if (!hasDbData) {
-            const localProfile = JSON.parse(localStorage.getItem("userProfile") || "null")
-            const localDietTimeline = localStorage.getItem("userDietTimeline")
-            const localAdaptation = localStorage.getItem("userAdaptationChoice")
-            const localConditions = JSON.parse(localStorage.getItem("userConditions") || "[]")
-            const localSymptoms = JSON.parse(localStorage.getItem("userSymptoms") || "[]")
-
-            console.log("[v0] Attempting auto-sync with:", {
-              localProfile,
-              localDietTimeline,
-              localConditions,
-              localSymptoms,
-            })
-
-            if (localProfile || localDietTimeline || localConditions.length > 0 || localSymptoms.length > 0) {
-              setNeedsSync(true)
-
-              try {
-                const response = await fetch("/api/sync-profile", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    profile: localProfile,
-                    dietInfo: {
-                      dietTimeline: localDietTimeline,
-                      adaptationPeriod: localAdaptation,
-                    },
-                    conditions: localConditions,
-                    symptoms: localSymptoms,
-                  }),
-                })
-
-                console.log("[v0] Sync response status:", response.status)
-
-                if (response.ok) {
-                  console.log("[v0] Sync successful, reloading page")
-                  window.location.reload()
-                  return
-                }
-              } catch (error) {
-                console.error("[v0] Failed to auto-sync:", error)
               }
+              console.log("[v0] Loaded diet info from localStorage")
             }
           }
+
+          if (loadedConditions.length === 0) {
+            const localConditions = JSON.parse(localStorage.getItem("userConditions") || "[]")
+            if (localConditions.length > 0) {
+              loadedConditions = localConditions
+              console.log("[v0] Loaded conditions from localStorage")
+            }
+          }
+
+          if (loadedSymptoms.length === 0) {
+            const localSymptoms = JSON.parse(localStorage.getItem("userSymptoms") || "[]")
+            if (localSymptoms.length > 0) {
+              loadedSymptoms = localSymptoms
+              console.log("[v0] Loaded symptoms from localStorage")
+            }
+          }
+
+          setProfile(loadedProfile)
+          setDietInfo(loadedDietInfo)
+          setConditions(loadedConditions)
+          setSymptoms(loadedSymptoms)
+
+          console.log("[v0] Loading complete. Final state:", {
+            profile: loadedProfile,
+            dietInfo: loadedDietInfo,
+            conditions: loadedConditions,
+            symptoms: loadedSymptoms,
+          })
         } else {
           console.log("[v0] No user authenticated, loading from localStorage only")
-        }
-
-        if (!profile) {
           const profileData = JSON.parse(localStorage.getItem("userProfile") || "null")
-          console.log("[v0] Final fallback - loading profile from localStorage:", profileData)
-          if (profileData) setProfile(profileData)
-        }
-
-        if (!dietInfo) {
+          setProfile(profileData)
           const timeline = localStorage.getItem("userDietTimeline") || "Not set"
-          console.log("[v0] Final fallback - loading diet info from localStorage:", timeline)
           setDietInfo({
             timeline: timeline === "not-set" ? "Not set" : timeline,
             adaptationPeriod: localStorage.getItem("userAdaptationChoice") === "Yes",
           })
-        }
-
-        if (conditions.length === 0) {
           const storedConditions = JSON.parse(localStorage.getItem("userConditions") || "[]")
-          const selectedConditions = JSON.parse(localStorage.getItem("selectedConditions") || "[]")
-          console.log(
-            "[v0] Final fallback - loading conditions from localStorage:",
-            storedConditions,
-            selectedConditions,
-          )
-          setConditions(storedConditions.length > 0 ? storedConditions : selectedConditions)
-        }
-
-        if (symptoms.length === 0) {
+          setConditions(storedConditions)
           const storedSymptoms = JSON.parse(localStorage.getItem("userSymptoms") || "[]")
-          const selectedSymptoms = JSON.parse(localStorage.getItem("selectedSymptoms") || "[]")
-          console.log("[v0] Final fallback - loading symptoms from localStorage:", storedSymptoms, selectedSymptoms)
-          setSymptoms(storedSymptoms.length > 0 ? storedSymptoms : selectedSymptoms)
-        }
-
-        if (!userName) {
-          const storedName = localStorage.getItem("userName") || ""
-          console.log("[v0] Final fallback - loading name from localStorage:", storedName)
-          setUserName(storedName)
+          setSymptoms(storedSymptoms)
         }
       } catch (error) {
         console.error("[v0] Error loading user data:", error)
@@ -238,7 +189,6 @@ export default function ProfilePage() {
         setSymptoms(storedSymptoms)
         setUserName(localStorage.getItem("userName") || "")
       } finally {
-        console.log("[v0] Loading complete. Final state:", { profile, dietInfo, conditions, symptoms })
         setIsLoading(false)
       }
     }
@@ -425,6 +375,7 @@ export default function ProfilePage() {
 
           <button
             onClick={() => setShowDeleteConfirm(true)}
+            disabled={isDeleting}
             className="w-full bg-white border-2 border-red-400/30 text-red-600 hover:border-red-400/50 hover:shadow-soft py-4 rounded-full transition-all flex items-center justify-center gap-2 font-medium"
           >
             <Trash2 className="h-4 w-4" />

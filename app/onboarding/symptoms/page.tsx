@@ -27,7 +27,9 @@ export default function SymptomsPage() {
             .eq("user_id", session.user.id)
 
           if (symptomsData && symptomsData.length > 0) {
-            setSelectedSymptoms(symptomsData.map((s) => s.symptom))
+            const uniqueSymptoms = Array.from(new Set(symptomsData.map((s) => s.symptom)))
+            console.log("[v0] Loaded symptoms from DB:", uniqueSymptoms.length, uniqueSymptoms)
+            setSelectedSymptoms(uniqueSymptoms)
             return
           }
         }
@@ -35,7 +37,10 @@ export default function SymptomsPage() {
         // Fall back to localStorage
         const savedSymptoms = localStorage.getItem("selectedSymptoms")
         if (savedSymptoms) {
-          setSelectedSymptoms(JSON.parse(savedSymptoms))
+          const parsed = JSON.parse(savedSymptoms)
+          const uniqueSymptoms = Array.from(new Set(parsed))
+          console.log("[v0] Loaded symptoms from localStorage:", uniqueSymptoms.length, uniqueSymptoms)
+          setSelectedSymptoms(uniqueSymptoms)
         }
       } catch (error) {
         console.error("Error loading symptoms:", error)
@@ -100,6 +105,12 @@ export default function SymptomsPage() {
       setSelectedSymptoms([...selectedSymptoms, symptom])
       setError("")
     }
+    console.log(
+      "[v0] Symptom clicked:",
+      symptom,
+      "New count:",
+      selectedSymptoms.includes(symptom) ? selectedSymptoms.length - 1 : selectedSymptoms.length + 1,
+    )
   }
 
   const handleContinue = async () => {
