@@ -15,8 +15,6 @@ import {
   LightbulbIcon,
   HelpCircle,
   ExternalLink,
-  Scale,
-  Check,
   CheckCircle2,
   Circle,
   ListChecks,
@@ -120,10 +118,9 @@ export default function DashboardPage() {
   const [weightData, setWeightData] = useState<WeightChartData[]>([])
   const [showWeightModal, setShowWeightModal] = useState(false)
   const [currentWeight, setCurrentWeight] = useState<number | undefined>()
-  const [weightUnit, setWeightUnit] = useState<string>("lbs") // Changed to string for flexibility
+  const [weightUnit, setWeightUnit] = useState<string>("lbs")
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
-  const [isUpdatingWeight, setIsUpdatingWeight] = useState(false)
-  const [weightUpdateSuccess, setWeightUpdateSuccess] = useState(false)
+  // </CHANGE> Removed isUpdatingWeight and weightUpdateSuccess states - using modal for all weight updates
 
   // To-do list states
   const [isAdaptationPhase, setIsAdaptationPhase] = useState(false)
@@ -383,81 +380,7 @@ export default function DashboardPage() {
   }
 
   // Function to update user weight
-  const updateWeight = async () => {
-    if (currentWeight === undefined || currentWeight <= 0) {
-      console.log("[v0] Invalid weight input:", currentWeight)
-      return
-    }
-
-    setIsUpdatingWeight(true)
-    console.log("[v0] Starting weight update:", currentWeight, weightUnit)
-
-    try {
-      // Get authenticated user
-      const {
-        data: { user },
-        error: authError,
-      } = await supabase!.auth.getUser()
-
-      if (authError || !user) {
-        console.log("[v0] Auth error:", authError)
-        setIsUpdatingWeight(false)
-        return
-      }
-
-      console.log("[v0] User authenticated:", user.id)
-
-      const { error } = await supabase!
-        .from("user_profiles")
-        .update({
-          weight: currentWeight,
-          weight_unit: weightUnit,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("user_id", user.id)
-
-      if (error) {
-        console.log("[v0] Supabase update error:", error)
-        setIsUpdatingWeight(false)
-        return
-      }
-
-      console.log("[v0] Weight updated successfully in Supabase")
-
-      // Update local state
-      if (userProfile) {
-        const updatedProfile = {
-          ...userProfile,
-          weight: currentWeight,
-          weightUnit: weightUnit as "kg" | "lb", // Cast to correct type
-        }
-
-        // Add to weight history
-        if (!updatedProfile.weightHistory) {
-          updatedProfile.weightHistory = []
-        }
-        updatedProfile.weightHistory.push({
-          date: new Date().toISOString(),
-          weight: currentWeight,
-        })
-
-        setUserProfile(updatedProfile)
-        localStorage.setItem("userProfile", JSON.stringify(updatedProfile))
-      }
-
-      // Show success message
-      setWeightUpdateSuccess(true)
-      setCurrentWeight(undefined) // Clear input after successful update
-
-      setTimeout(() => {
-        setWeightUpdateSuccess(false)
-        setIsUpdatingWeight(false)
-      }, 2000)
-    } catch (err) {
-      console.log("[v0] Unexpected error:", err)
-      setIsUpdatingWeight(false)
-    }
-  }
+  // </CHANGE> Removed the standalone updateWeight function - using modal's save function instead
 
   // Modify the determineAdaptationPhase function to also determine elimination phase percentage
   const determinePhases = () => {
@@ -2134,83 +2057,6 @@ export default function DashboardPage() {
               )}
             </div>
           )}
-        </div>
-
-        {/* Weight Tracking Module */}
-        <div className="glass-card p-6 mb-6">
-          <div className="flex items-center mb-4">
-            <Scale className="h-5 w-5 mr-2 text-pink-500" />
-            <h3 className="font-medium text-xl text-primary-color">Weight Tracking</h3>
-          </div>
-
-          <div className="flex flex-col">
-            {userProfile && (
-              <div className="mb-4">
-                <p className="text-sm text-secondary-color mb-1">Current Weight</p>
-                <p className="font-bold text-primary-color">
-                  {userProfile.weight} {userProfile.weightUnit}
-                </p>
-              </div>
-            )}
-
-            <div className="mb-4">
-              <label htmlFor="weight" className="block text-sm text-secondary-color mb-2">
-                Update Weight
-              </label>
-              <div className="flex gap-2">
-                <input
-                  type="number"
-                  id="weight"
-                  value={currentWeight ?? ""} // Use ?? "" for undefined
-                  onChange={(e) => setCurrentWeight(Number(e.target.value))}
-                  placeholder="Enter weight"
-                  className="flex-1 p-3 h-12 rounded-xl bg-white/80 border border-brand-dark/20 focus:outline-none focus:ring-2 focus:ring-pink-400"
-                  min="1"
-                />
-                <select
-                  value={weightUnit}
-                  onChange={(e) => setWeightUnit(e.target.value)}
-                  className="w-24 h-12 rounded-xl bg-white/80 border border-brand-dark/20 focus:outline-none focus:ring-2 focus:ring-pink-400"
-                >
-                  <option value="kg">kg</option>
-                  <option value="lb">lb</option>
-                </select>
-              </div>
-              <button
-                onClick={updateWeight}
-                disabled={isUpdatingWeight || currentWeight === undefined || currentWeight <= 0} // Add check for currentWeight
-                className="mt-3 py-3 px-6 w-full sm:w-auto rounded-xl gradient-button flex items-center justify-center"
-              >
-                {isUpdatingWeight ? "Saving..." : weightUpdateSuccess ? <Check className="h-5 w-5" /> : "Update"}
-              </button>
-            </div>
-
-            {userProfile?.weightHistory && userProfile.weightHistory.length > 0 && (
-              <div>
-                <p className="text-sm text-secondary-color mb-2">Weight History</p>
-                <div className="max-h-32 overflow-y-auto">
-                  {userProfile.weightHistory
-                    .slice()
-                    .reverse()
-                    .slice(0, 5)
-                    .map((entry, index) => (
-                      <div key={index} className="flex justify-between items-center py-2 border-b border-brand-dark/10">
-                        <span className="text-sm text-primary-color">
-                          {new Date(entry.date).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                          })}
-                        </span>
-                        <span className="font-medium text-primary-color">
-                          {entry.weight} {userProfile.weightUnit}
-                        </span>
-                      </div>
-                    ))}
-                </div>
-              </div>
-            )}
-          </div>
         </div>
 
         {/* Daily Observations Module */}
