@@ -74,6 +74,7 @@ const digestiveSymptoms = [
 export default function LogDayPage() {
   const router = useRouter()
   const [selectedDate, setSelectedDate] = useState(new Date())
+  const [isLoadingExistingData, setIsLoadingExistingData] = useState(false) // Adding loading state for when fetching existing data
   const [symptomSeverity, setSymptomSeverity] = useState<Record<number, number>>({})
   const [mood, setMood] = useState<number | null>(null)
   const [sleep, setSleep] = useState<number | null>(null)
@@ -594,6 +595,91 @@ export default function LogDayPage() {
     return symptom ? symptom.name : symptomId
   }
 
+  useEffect(() => {
+    const loadExistingDataForDate = async () => {
+      setIsLoadingExistingData(true)
+      const supabase = createClient()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+
+      if (!user) {
+        setIsLoadingExistingData(false)
+        return
+      }
+
+      const dateStr = selectedDate.toISOString().split("T")[0]
+
+      // Load existing daily log for this date
+      const { data: existingLog } = await supabase
+        .from("daily_logs")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("log_date", dateStr)
+        .single()
+
+      if (existingLog) {
+        // Populate form with existing data
+        setMood(existingLog.mood)
+        setSleep(existingLog.sleep)
+        setStress(existingLog.stress)
+        setAipCompliant(existingLog.aip_compliant)
+        setOnPeriod(existingLog.on_period || false)
+        setNotes(existingLog.notes || "")
+      } else {
+        // Clear form for new entry
+        setMood(null)
+        setSleep(null)
+        setStress(null)
+        setAipCompliant(null)
+        setOnPeriod(false)
+        setNotes("")
+        setSymptomSeverity({})
+      }
+
+      // Load existing symptom logs for this date
+      const { data: existingSymptoms } = await supabase
+        .from("symptom_logs")
+        .select("symptom, severity, daily_log_id")
+        .eq("daily_log_id", existingLog?.id)
+
+      if (existingSymptoms && existingSymptoms.length > 0) {
+        const severityMap: Record<number, number> = {}
+        existingSymptoms.forEach((log) => {
+          // Match symptom name to ID from userSymptoms
+          const symptom = userSymptoms.find((s) => s.name === log.symptom)
+          if (symptom) {
+            severityMap[symptom.id] = log.severity
+          }
+        })
+        setSymptomSeverity(severityMap)
+      } else {
+        setSymptomSeverity({})
+      }
+
+      setIsLoadingExistingData(false)
+    }
+
+    if (userSymptoms.length > 0) {
+      loadExistingDataForDate()
+    }
+  }, [selectedDate, userSymptoms])
+
+  const getMinDate = () => {
+    const startDateStr = localStorage.getItem("dietStartDate")
+    if (startDateStr) {
+      return startDateStr
+    }
+    // Default to 90 days ago if no start date
+    const ninetyDaysAgo = new Date()
+    ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90)
+    return ninetyDaysAgo.toISOString().split("T")[0]
+  }
+
+  const getMaxDate = () => {
+    return new Date().toISOString().split("T")[0]
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-brand-lightest to-white text-brand-dark">
       {/* Header */}
@@ -685,16 +771,34 @@ export default function LogDayPage() {
 
             {/* Date Selection */}
             <div className="glass-card rounded-2xl p-4 mb-6">
-              <div className="flex items-center mb-2">
-                <Calendar className="h-5 w-5 mr-2 text-brand-dark/70" />
-                <h3 className="font-medium">Date</h3>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center">
+                  <Calendar className="h-5 w-5 mr-2 text-brand-dark/70" />
+                  <h3 className="font-medium">Log Date</h3>
+                </div>
+                <span className="text-xs text-brand-dark/50">Select any past date</span>
               </div>
               <input
                 type="date"
                 value={formatDateForInput(selectedDate)}
                 onChange={handleDateChange}
+                min={getMinDate()}
+                max={getMaxDate()}
                 className="w-full p-3 rounded-xl bg-white/80 border border-brand-dark/20 focus:outline-none focus:ring-2 focus:ring-pink-400"
               />
+              {isLoadingExistingData && <p className="text-xs text-brand-dark/50 mt-2">Loading existing data...</p>}
+              {!isLoadingExistingData && mood !== null && (
+                <p className="text-xs text-green-600 mt-2 flex items-center">
+                  <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  Editing existing entry
+                </p>
+              )}
             </div>
 
             {/* Period Tracking (shown only for female users) */}
