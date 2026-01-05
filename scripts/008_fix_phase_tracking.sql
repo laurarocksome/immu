@@ -16,23 +16,26 @@ CREATE TABLE IF NOT EXISTS phase_history (
 -- Enable RLS
 ALTER TABLE phase_history ENABLE ROW LEVEL SECURITY;
 
+-- Use DROP POLICY IF EXISTS to avoid duplicate policy errors
 -- Users can view their own phase history
+DROP POLICY IF EXISTS "Users can view own phase history" ON phase_history;
 CREATE POLICY "Users can view own phase history"
   ON phase_history FOR SELECT
   USING (user_id = auth.uid());
 
 -- Users can insert their own phase history
+DROP POLICY IF EXISTS "Users can insert own phase history" ON phase_history;
 CREATE POLICY "Users can insert own phase history"
   ON phase_history FOR INSERT
   WITH CHECK (user_id = auth.uid());
 
 -- Users can update their own phase history
+DROP POLICY IF EXISTS "Users can update own phase history" ON phase_history;
 CREATE POLICY "Users can update own phase history"
   ON phase_history FOR UPDATE
   USING (user_id = auth.uid());
 
--- Add aip_compliant field to daily_logs (only tracked during Elimination phase)
-ALTER TABLE daily_logs ADD COLUMN IF NOT EXISTS aip_compliant BOOLEAN;
+-- Add phase tracking field to daily_logs
 ALTER TABLE daily_logs ADD COLUMN IF NOT EXISTS phase TEXT CHECK (phase IN ('Adaptation', 'Elimination', 'Reintroduction'));
 
 -- Create function to automatically track phase transitions

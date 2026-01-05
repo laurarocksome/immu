@@ -19,6 +19,7 @@ import {
   X,
 } from "lucide-react"
 import Logo from "@/app/components/logo"
+import { createClient } from "@/lib/supabase/client" // Fixed import to use correct supabase client path
 
 import DietViolationOptions from "@/app/components/diet-violation-options"
 import RestartConfirmation from "@/app/components/restart-confirmation"
@@ -103,6 +104,9 @@ export default function LogDayPage() {
   const [userGender, setUserGender] = useState<string | null>(null)
 
   const [currentPhase, setCurrentPhase] = useState<string>("Adaptation")
+
+  const [aipCompliant, setAipCompliant] = useState<boolean | null>(null)
+  const [showAipCompliance, setShowAipCompliance] = useState(false)
 
   useEffect(() => {
     // Load user symptoms from localStorage
@@ -421,48 +425,154 @@ export default function LogDayPage() {
     }
   }
 
-  const handleSaveLog = () => {
-    // Save the logged symptoms to localStorage
-    const loggedSymptoms = Object.entries(symptomSeverity)
-      .map(([symptomId, severity]) => {
-        const symptom = userSymptoms.find((s) => s.id === Number(symptomId))
-        return {
-          name: symptom?.name || "",
-          severity: severity,
-          date: selectedDate.toISOString().split("T")[0],
+  const handleSaveLog = async () => {
+    try {
+      const supabase = createClient()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+
+      if (!user) {
+        alert("Please log in to save your data")
+        return
+      }
+
+      // First, save the daily log entry
+      const { data: dailyLog, error: logError } = await supabase
+        .from("daily_logs")
+        .upsert(
+          {
+            user_id: user.id,
+            log_date: selectedDate.toISOString().split("T")[0],
+            mood,
+            sleep,
+            stress,
+            notes,
+            aip_compliant: aipCompliant,
+            on_period: onPeriod || false,
+          },
+          {
+            onConflict: "user_id,log_date",
+          },
+        )
+        .select()
+        .single()
+
+      if (logError) {
+        console.error("[v0] Error saving daily log:", logError)
+        alert("Failed to save your log. Please try again.")
+        return
+      }
+
+      // Save symptom logs
+      if (dailyLog) {
+        // Delete existing symptoms for this log
+        await supabase.from("symptom_logs").delete().eq("daily_log_id", dailyLog.id)
+
+        // Prepare all symptoms with their severities
+        const symptomsToSave = []
+
+        // Add user's tracked symptoms with severity ratings
+        Object.entries(symptomSeverity).forEach(([symptomId, severity]) => {
+          const symptom = userSymptoms.find((s) => s.id === Number(symptomId))
+          if (symptom && severity > 0) {
+            symptomsToSave.push({
+              daily_log_id: dailyLog.id,
+              symptom: symptom.name,
+              severity: severity,
+            })
+          }
+        })
+
+        // Add period symptoms if on period
+        if (onPeriod && selectedPeriodSymptoms.length > 0) {
+          selectedPeriodSymptoms.forEach((symptomId) => {
+            const symptomName = getPeriodSymptomName(symptomId)
+            symptomsToSave.push({
+              daily_log_id: dailyLog.id,
+              symptom: `Period: ${symptomName}`,
+              severity: 3, // Default moderate severity for period symptoms
+            })
+          })
         }
-      })
-      .filter((s) => s.name !== "")
 
-    // Save symptoms to localStorage
-    localStorage.setItem("loggedSymptoms", JSON.stringify(loggedSymptoms))
+        // Add digestive symptoms
+        selectedDigestiveSymptoms.forEach((symptomId) => {
+          const symptomName = getDigestiveSymptomName(symptomId)
+          symptomsToSave.push({
+            daily_log_id: dailyLog.id,
+            symptom: `Digestive: ${symptomName}`,
+            severity: 3, // Default moderate severity
+          })
+        })
 
-    // Save the user's symptoms for future use
-    localStorage.setItem("userSymptoms", JSON.stringify(userSymptoms.map((s) => s.name)))
+        if (symptomsToSave.length > 0) {
+          const { error: symptomsError } = await supabase.from("symptom_logs").insert(symptomsToSave)
 
-    // Make sure to include digestive symptoms in the logged day
-    const loggedDay = {
-      mood,
-      sleep,
-      stress,
-      notes,
-      date: selectedDate.toISOString().split("T")[0],
-      onPeriod: onPeriod || false,
-      periodSymptoms: onPeriod ? selectedPeriodSymptoms : [],
-      digestiveSymptoms: selectedDigestiveSymptoms, // Ensure this is included
+          if (symptomsError) {
+            console.error("[v0] Error saving symptoms:", symptomsError)
+          }
+        }
+      }
+
+      // Also save to localStorage for backward compatibility
+      localStorage.setItem(
+        "loggedDay",
+        JSON.stringify({
+          mood,
+          sleep,
+          stress,
+          notes,
+          date: selectedDate.toISOString().split("T")[0],
+          onPeriod: onPeriod || false,
+          periodSymptoms: onPeriod ? selectedPeriodSymptoms : [],
+          digestiveSymptoms: selectedDigestiveSymptoms,
+          aipCompliant,
+        }),
+      )
+
+      router.push("/dashboard")
+    } catch (error) {
+      console.error("[v0] Error in handleSaveLog:", error)
+      alert("An unexpected error occurred. Please try again.")
+    }
+  }
+
+  useEffect(() => {
+    const checkPhase = async () => {
+      const supabase = createClient()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+
+      if (user) {
+        const { data: dietInfo } = await supabase
+          .from("diet_info")
+          .select("current_phase")
+          .eq("user_id", user.id)
+          .single()
+
+        // Show AIP compliance question only during Elimination phase
+        setShowAipCompliance(dietInfo?.current_phase === "Elimination")
+      }
     }
 
-    // Save wellness data to localStorage
-    localStorage.setItem("loggedDay", JSON.stringify(loggedDay))
-
-    // In a real app, you would save the data to your database or state
-    // For now, we'll just navigate back to the dashboard
-    router.push("/dashboard")
-  }
+    checkPhase()
+  }, [])
 
   // Format date for input
   const formatDateForInput = (date: Date) => {
     return date.toISOString().split("T")[0]
+  }
+
+  // Get digestive symptom name (handles custom symptoms)
+  const getDigestiveSymptomName = (symptomId: string) => {
+    if (symptomId.startsWith("custom_digestive_")) {
+      return symptomId.replace("custom_digestive_", "")
+    }
+
+    const symptom = digestiveSymptoms.find((s) => s.id === symptomId)
+    return symptom ? symptom.name : symptomId
   }
 
   return (
@@ -513,6 +623,38 @@ export default function LogDayPage() {
 
         {/* Adaptation Period Question */}
         {showAdaptationQuestion && <AdaptationPeriodQuestion onSelect={handleAdaptationChoice} />}
+
+        {/* AIP Compliance section for Elimination phase */}
+        {showAipCompliance && (
+          <div className="glass-card rounded-2xl p-4 mb-6">
+            <h3 className="font-medium mb-4">AIP Compliance</h3>
+            <p className="text-sm text-brand-dark/70 mb-3">
+              Did you follow the AIP diet today? (Only AIP-approved foods)
+            </p>
+            <div className="flex gap-4">
+              <button
+                onClick={() => setAipCompliant(true)}
+                className={`flex-1 py-3 px-6 rounded-full ${
+                  aipCompliant === true
+                    ? "bg-brand-calm-green text-white"
+                    : "bg-white/80 border border-brand-dark/20 hover:bg-white"
+                }`}
+              >
+                Yes, 100% AIP
+              </button>
+              <button
+                onClick={() => setAipCompliant(false)}
+                className={`flex-1 py-3 px-6 rounded-full ${
+                  aipCompliant === false
+                    ? "bg-red-400 text-white"
+                    : "bg-white/80 border border-brand-dark/20 hover:bg-white"
+                }`}
+              >
+                No, had non-AIP foods
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Only show the regular logging form if we're not showing any of the diet question screens */}
         {!showDietQuestion && !showViolationOptions && !showRestartConfirmation && !showAdaptationQuestion && (
@@ -823,7 +965,7 @@ export default function LogDayPage() {
                     value={customDigestiveSymptom}
                     onChange={(e) => setCustomDigestiveSymptom(e.target.value)}
                     placeholder="Enter symptom name"
-                    className="flex-1 p-2 rounded-lg border border-brand-dark/20 focus:outline-none focus:ring-2 focus:ring-pink-400"
+                    className="flex-1 p-2 rounded-lg border border-brand-dark/20 focus:outline-none focus:ring-2 focus:ring-pink-400 min-h-[100px]"
                   />
                   <button
                     onClick={handleAddCustomDigestiveSymptom}
