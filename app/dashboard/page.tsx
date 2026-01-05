@@ -23,14 +23,13 @@ import Logo from "@/app/components/logo"
 import ConfettiCelebration from "@/app/components/confetti-celebration"
 import { getSession } from "@/lib/auth"
 import { saveUserProfile, saveUserConditions, saveUserSymptoms, saveDietInfo, saveUserName } from "@/lib/user-data"
-import { createBrowserClient } from "@supabase/supabase-js"
 import { Button } from "@/components/ui/button" // Assuming Button component is available
 import { WeightLogModal } from "@/components/weight-log-modal" // Imported WeightLogModal component
 import { createClient } from "@/lib/supabase/client" // Import createClient from supabase client
 import { getUserStreak, getSymptomHistory, getWellnessHistory } from "@/lib/user-data"
 import { getWeightLogs as fetchWeightLogs } from "@/lib/weight-data" // Renamed to avoid redeclaration
 
-// import { getUserProfile, loadDietInfo, loadTrackedDates, calculateDietProgress } from "@/lib/dashboard-data" // Imported new functions
+// import { getUserProfile, loadDietInfo, loadTrackedDates, calculateDietInfo } from "@/lib/dashboard-data" // Imported new functions
 
 async function getUserProfile(userId: string) {
   const supabase = createClient()
@@ -200,12 +199,6 @@ export default function DashboardPage() {
 
   // Add a state for wellness data
   const [wellnessData, setWellnessData] = useState<any>({ mood: [], sleep: [], stress: [] }) // Changed to object for structured data
-
-  // Supabase client initialization (assuming it's needed for weight logs)
-  const supabase =
-    typeof window !== "undefined"
-      ? createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
-      : null
 
   const syncPendingDataToSupabase = async () => {
     if (typeof window === "undefined") return
@@ -2041,7 +2034,7 @@ export default function DashboardPage() {
 
                               return (
                                 <circle
-                                  key={i}
+                                  key={`${i}-${symptom.name}`}
                                   cx={x}
                                   cy={y}
                                   r="0.8"
@@ -2191,41 +2184,17 @@ export default function DashboardPage() {
                         const yStress = 100 - wellnessData.stress[i]
 
                         return (
-                          <>
+                          <g key={`wellness-dots-${i}`}>
                             {value > 0 && (
-                              <circle
-                                key={`${i}-mood`}
-                                cx={x}
-                                cy={yMood}
-                                r="0.8"
-                                fill="white"
-                                stroke="#f4a6b8"
-                                strokeWidth="0.8"
-                              />
+                              <circle cx={x} cy={yMood} r="0.8" fill="white" stroke="#f4a6b8" strokeWidth="0.8" />
                             )}
                             {wellnessData.sleep[i] > 0 && (
-                              <circle
-                                key={`${i}-sleep`}
-                                cx={x}
-                                cy={ySleep}
-                                r="0.8"
-                                fill="white"
-                                stroke="#f6c1b0"
-                                strokeWidth="0.8"
-                              />
+                              <circle cx={x} cy={ySleep} r="0.8" fill="white" stroke="#f6c1b0" strokeWidth="0.8" />
                             )}
                             {wellnessData.stress[i] > 0 && (
-                              <circle
-                                key={`${i}-stress`}
-                                cx={x}
-                                cy={yStress}
-                                r="0.8"
-                                fill="white"
-                                stroke="#f09f88"
-                                strokeWidth="0.8"
-                              />
+                              <circle cx={x} cy={yStress} r="0.8" fill="white" stroke="#f09f88" strokeWidth="0.8" />
                             )}
-                          </>
+                          </g>
                         )
                       })}
                     </svg>
@@ -2368,7 +2337,17 @@ export default function DashboardPage() {
                         const x = (i / (weightData.length - 1)) * 100
                         const y = 100 - ((item.weight - minWeight) / range) * 100
 
-                        return <circle key={i} cx={x} cy={y} r="0.8" fill="white" stroke="#22c55e" strokeWidth="0.8" />
+                        return (
+                          <circle
+                            key={`${i}-${item.date}`}
+                            cx={x}
+                            cy={y}
+                            r="0.8"
+                            fill="white"
+                            stroke="#22c55e"
+                            strokeWidth="0.8"
+                          />
+                        )
                       })}
                     </svg>
                   </div>
