@@ -427,6 +427,7 @@ export default function LogDayPage() {
 
   const handleSaveLog = async () => {
     try {
+      console.log("[v0] Starting handleSaveLog")
       const supabase = createClient()
       const {
         data: { user },
@@ -436,6 +437,10 @@ export default function LogDayPage() {
         alert("Please log in to save your data")
         return
       }
+
+      console.log("[v0] User authenticated:", user.id)
+      console.log("[v0] Saving daily log for date:", selectedDate.toISOString().split("T")[0])
+      console.log("[v0] Data:", { mood, sleep, stress, aipCompliant, onPeriod })
 
       // First, save the daily log entry
       const { data: dailyLog, error: logError } = await supabase
@@ -460,14 +465,21 @@ export default function LogDayPage() {
 
       if (logError) {
         console.error("[v0] Error saving daily log:", logError)
-        alert("Failed to save your log. Please try again.")
+        alert(`Failed to save your log: ${logError.message}`)
         return
       }
 
+      console.log("[v0] Daily log saved successfully:", dailyLog)
+
       // Save symptom logs
       if (dailyLog) {
+        console.log("[v0] Deleting old symptom logs for daily_log_id:", dailyLog.id)
         // Delete existing symptoms for this log
-        await supabase.from("symptom_logs").delete().eq("daily_log_id", dailyLog.id)
+        const { error: deleteError } = await supabase.from("symptom_logs").delete().eq("daily_log_id", dailyLog.id)
+
+        if (deleteError) {
+          console.error("[v0] Error deleting old symptoms:", deleteError)
+        }
 
         // Prepare all symptoms with their severities
         const symptomsToSave = []
@@ -506,11 +518,16 @@ export default function LogDayPage() {
           })
         })
 
+        console.log("[v0] Saving", symptomsToSave.length, "symptoms:", symptomsToSave)
+
         if (symptomsToSave.length > 0) {
           const { error: symptomsError } = await supabase.from("symptom_logs").insert(symptomsToSave)
 
           if (symptomsError) {
             console.error("[v0] Error saving symptoms:", symptomsError)
+            alert(`Warning: Symptoms may not have saved properly: ${symptomsError.message}`)
+          } else {
+            console.log("[v0] Symptoms saved successfully")
           }
         }
       }
@@ -531,10 +548,12 @@ export default function LogDayPage() {
         }),
       )
 
+      console.log("[v0] Save complete, redirecting to dashboard")
+      alert("Your log has been saved successfully!")
       router.push("/dashboard")
     } catch (error) {
       console.error("[v0] Error in handleSaveLog:", error)
-      alert("An unexpected error occurred. Please try again.")
+      alert(`An unexpected error occurred: ${error instanceof Error ? error.message : "Unknown error"}`)
     }
   }
 
