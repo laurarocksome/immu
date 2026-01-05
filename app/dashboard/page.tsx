@@ -23,12 +23,12 @@ import Logo from "@/app/components/logo"
 import ConfettiCelebration from "@/app/components/confetti-celebration"
 import { getSession } from "@/lib/auth"
 import { saveUserProfile, saveUserConditions, saveUserSymptoms, saveDietInfo, saveUserName } from "@/lib/user-data"
-import { createBrowserClient } from "@supabase/ssr"
+import { createBrowserClient } from "@supabase/supabase-js"
 import { Button } from "@/components/ui/button" // Assuming Button component is available
-// import { getWeightLogs, type WeightLog } from "@/lib/weight-data" // Imported weight data functions - Moved import and function inline
 import { WeightLogModal } from "@/components/weight-log-modal" // Imported WeightLogModal component
 import { createClient } from "@/lib/supabase/client" // Import createClient from supabase client
-import { subDays } from "date-fns" // Added date-fns imports
+import { getUserStreak, getSymptomHistory, getWellnessHistory } from "@/lib/user-data"
+import { getWeightLogs as fetchWeightLogs } from "@/lib/weight-data" // Renamed to avoid redeclaration
 
 // import { getUserProfile, loadDietInfo, loadTrackedDates, calculateDietProgress } from "@/lib/dashboard-data" // Imported new functions
 
@@ -69,23 +69,23 @@ async function loadTrackedDates(userId: string) {
   return data?.map((log) => log.log_date) || []
 }
 
-// Imported weight data functions inline
-async function getWeightLogs(userId: string, days: number) {
-  const supabase = createClient()
-  const thirtyDaysAgo = subDays(new Date(), days)
-  const { data, error } = await supabase
-    .from("weight_logs")
-    .select("*")
-    .eq("user_id", userId)
-    .gte("log_date", thirtyDaysAgo.toISOString())
-    .order("log_date", { ascending: true })
+// Removed the inline getWeightLogs function as it was redeclared and imported from lib/weight-data
+// async function getWeightLogs(userId: string, days: number) {
+//   const supabase = createClient()
+//   const thirtyDaysAgo = subDays(new Date(), days)
+//   const { data, error } = await supabase
+//     .from("weight_logs")
+//     .select("*")
+//     .eq("user_id", userId)
+//     .gte("log_date", thirtyDaysAgo.toISOString())
+//     .order("log_date", { ascending: true })
 
-  if (error) {
-    console.error("Error fetching weight logs:", error)
-    return []
-  }
-  return data || []
-}
+//   if (error) {
+//     console.error("Error fetching weight logs:", error)
+//     return []
+//   }
+//   return data || []
+// }
 
 // Update the chart dates to show daily data
 const chartDates = ["Day 1", "Day 2", "Day 3", "Day 4", "Day 5", "Day 6", "Day 7"]
@@ -199,7 +199,7 @@ export default function DashboardPage() {
   const [currentPhase, setCurrentPhase] = useState<"adaptation" | "elimination" | "reintroduction">("elimination")
 
   // Add a state for wellness data
-  const [wellnessData, setWellnessData] = useState<number[]>([0, 0, 0, 0, 0, 0, 0])
+  const [wellnessData, setWellnessData] = useState<any>({ mood: [], sleep: [], stress: [] }) // Changed to object for structured data
 
   // Supabase client initialization (assuming it's needed for weight logs)
   const supabase =
@@ -485,7 +485,8 @@ export default function DashboardPage() {
 
       // Calculate elimination phase percentage
       const eliminationDaysElapsed = daysElapsed - (hasAdaptation ? adaptationDays : 0)
-      const percentage = Math.floor((eliminationDaysElapsed / eliminationDays) * 100)
+      // FIX: Declare 'percentage' or use eliminationDaysElapsed directly
+      const percentage = eliminationDays > 0 ? Math.floor((eliminationDaysElapsed / eliminationDays) * 100) : 0
       setEliminationPhasePercentage(percentage)
       setReintroductionDay(0) // Not in reintroduction phase yet
     } else {
@@ -1071,33 +1072,56 @@ export default function DashboardPage() {
       if (user?.id) {
         setUserId(user.id)
 
-        // Load user-specific data
-        const [dietInfoData, trackedDates, profile] = await Promise.all([
+        const [dietInfoData, trackedDates, profile, userStreak] = await Promise.all([
           loadDietInfo(user.id),
           loadTrackedDates(user.id),
           getUserProfile(user.id),
+          getUserStreak(user.id),
         ])
+
+        if (userStreak) {
+          console.log("[v0] User streak from database:", userStreak)
+          setStreakDays(userStreak)
+        }
 
         if (dietInfoData) {
           setDietInfo(dietInfoData)
-          // calculateDietProgress(dietInfoData) // Removed as it's not defined in the provided snippet
+          // Assuming calculateDietProgress is a function that returns phase details
+          const phaseProgress = calculateDietProgress(dietInfoData)
+          if (phaseProgress) {
+            setCurrentPhase(phaseProgress.currentPhase)
+            setIsAdaptationPhase(phaseProgress.isAdaptationPhase)
+            setAdaptationDay(phaseProgress.adaptationDay)
+            setEliminationPhasePercentage(phaseProgress.eliminationPhasePercentage)
+            setReintroductionDay(phaseProgress.reintroductionDay)
+
+            // Calculate progress for progress bar
+            const totalDays = dietInfoData.timeline_days
+            const progressPercentage =
+              totalDays > 0 ? Math.min(Math.round((phaseProgress.daysElapsed / totalDays) * 100), 100) : 1
+            setProgress(progressPercentage)
+          }
         }
 
         if (profile) {
           setUserProfile(profile)
+          setWeightUnit(profile.weight_unit)
+          if (profile.weight) {
+            setCurrentWeight(profile.weight)
+          }
         }
 
-        // Load symptoms
-        await loadSymptomData()
+        await loadSymptomDataFromDatabase(user.id)
+        await loadWellnessDataFromDatabase(user.id)
       }
 
-      // Load user profile data
+      // Load user profile data (this might be redundant if profile is already loaded from DB)
       loadUserProfile()
 
-      // Determine phases
+      // Determine phases based on localStorage (this should be updated to use dietInfoData if available)
       determinePhases()
 
-      // Get diet timeline data
+      // Get diet timeline data (this should also ideally come from dietInfoData)
       const dietTimeline = localStorage.getItem("userDietTimeline")
       const startDate = localStorage.getItem("dietStartDate")
 
@@ -1125,7 +1149,8 @@ export default function DashboardPage() {
       // Set progress to calculated value or 1% for new users
       setProgress(progressPercentage > 0 ? progressPercentage : 1)
 
-      if (isFirstLoad) {
+      const isFirstEverLoad = sessionStorage.getItem("dashboardFirstLoad") === null
+      if (isFirstEverLoad) {
         setShowWelcome(true)
         sessionStorage.setItem("dashboardFirstLoad", "false")
 
@@ -1149,10 +1174,10 @@ export default function DashboardPage() {
         setUserSymptoms(parsedSymptoms)
       }
 
-      // Load symptom data
+      // Load symptom data (this should ideally use the data loaded from DB)
       loadSymptomData()
 
-      // Process wellness data
+      // Process wellness data (this should ideally use the data loaded from DB)
       const loggedDayStr = localStorage.getItem("loggedDay")
       const loggedSymptomsStr = localStorage.getItem("loggedSymptoms")
 
@@ -1194,12 +1219,185 @@ export default function DashboardPage() {
     }
   }
 
+  const loadSymptomDataFromDatabase = async (userId: string) => {
+    const symptomHistory = await getSymptomHistory(userId, 7)
+
+    console.log("[v0] Loaded symptom history from database:", symptomHistory)
+
+    if (symptomHistory.length === 0) {
+      setHasLoggedSymptoms(false)
+      return
+    }
+
+    setHasLoggedSymptoms(true)
+
+    // Extract all unique symptoms
+    const allSymptoms = new Set<string>()
+    symptomHistory.forEach((dayLog) => {
+      if (dayLog.symptom_logs) {
+        dayLog.symptom_logs.forEach((log: any) => allSymptoms.add(log.symptom))
+      }
+    })
+
+    const symptomNames = Array.from(allSymptoms)
+    setUserSymptoms(symptomNames)
+
+    const today = new Date()
+    const dateMap = new Map<string, number>()
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(today)
+      date.setDate(date.getDate() - (6 - i)) // Go back 6 days from today for day 0
+      const dateStr = date.toISOString().split("T")[0]
+      dateMap.set(dateStr, i)
+    }
+
+    // Create chart data
+    const colors = ["#f4a6b8", "#f6c1b0", "#f9cdd9", "#e87a97", "#f09f88"]
+    const chartData = symptomNames.map((symptomName, index) => {
+      // Create values array for 7 days, initialized with 0
+      const values = [0, 0, 0, 0, 0, 0, 0]
+
+      // Fill in actual data from database
+      symptomHistory.forEach((dayLog) => {
+        const logDate = dayLog.log_date
+        const dayIndex = dateMap.get(logDate)
+
+        if (dayIndex !== undefined && dayLog.symptom_logs) {
+          const symptomLog = dayLog.symptom_logs.find((log: any) => log.symptom === symptomName)
+          if (symptomLog) {
+            values[dayIndex] = symptomLog.severity
+          }
+        }
+      })
+
+      const colorIndex = index % colors.length
+      return {
+        name: symptomName,
+        values: values,
+        color: colors[colorIndex],
+        gradient: [colors[colorIndex], colors[colorIndex] + "33"],
+      }
+    })
+
+    setSymptomData(chartData)
+  }
+
+  const loadWellnessDataFromDatabase = async (userId: string) => {
+    const wellnessHistory = await getWellnessHistory(userId, 7)
+
+    console.log("[v0] Loaded wellness history from database:", wellnessHistory)
+
+    if (wellnessHistory.length === 0) {
+      setHasLoggedWellness(false)
+      return
+    }
+
+    setHasLoggedWellness(true)
+
+    const today = new Date()
+    const dateMap = new Map<string, number>()
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(today)
+      date.setDate(date.getDate() - (6 - i)) // Go back 6 days from today for day 0
+      const dateStr = date.toISOString().split("T")[0]
+      dateMap.set(dateStr, i)
+    }
+
+    // Create chart data for all 7 days, initialized with 0
+    const moodData: number[] = [0, 0, 0, 0, 0, 0, 0]
+    const sleepData: number[] = [0, 0, 0, 0, 0, 0, 0]
+    const stressData: number[] = [0, 0, 0, 0, 0, 0, 0]
+
+    // Fill in actual data from database
+    wellnessHistory.forEach((log) => {
+      const logDate = log.log_date
+      const dayIndex = dateMap.get(logDate)
+
+      if (dayIndex !== undefined) {
+        // Convert 1-5 scale to 0-100 percentage for display
+        moodData[dayIndex] = log.mood ? ((log.mood - 1) / 4) * 100 : 0
+        sleepData[dayIndex] = log.sleep ? ((log.sleep - 1) / 4) * 100 : 0
+        // Invert stress: 1 (no stress) = 100, 5 (high stress) = 0
+        stressData[dayIndex] = log.stress ? ((5 - log.stress) / 4) * 100 : 0
+      }
+    })
+
+    // Update the wellnessData state with structured data
+    setWellnessData({
+      mood: moodData,
+      sleep: sleepData,
+      stress: stressData,
+    })
+
+    // Calculate and set current wellness score from most recent day with data
+    // Find the most recent day index that has data
+    let latestDayIndex = -1
+    for (let i = 6; i >= 0; i--) {
+      if (moodData[i] > 0 || sleepData[i] > 0 || stressData[i] > 0) {
+        latestDayIndex = i
+        break
+      }
+    }
+
+    if (latestDayIndex >= 0) {
+      const avgScore = Math.round(
+        (moodData[latestDayIndex] + sleepData[latestDayIndex] + stressData[latestDayIndex]) / 3,
+      )
+      setWellnessScore(avgScore)
+    }
+  }
+
+  // Mock function for calculateDietProgress, replace with actual implementation if available
+  const calculateDietProgress = (dietInfoData: any) => {
+    if (!dietInfoData || !dietInfoData.start_date) {
+      return null
+    }
+
+    const startDate = new Date(dietInfoData.start_date)
+    const today = new Date()
+    const daysElapsed = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
+
+    const adaptationDays = dietInfoData.adaptation_choice === "Yes" ? 28 : 0
+    const eliminationDays = dietInfoData.timeline_days - adaptationDays
+
+    let currentPhase = "adaptation"
+    let isAdaptationPhase = false
+    let adaptationDay = 0
+    let eliminationPhasePercentage = 0
+    let reintroductionDay = 0
+
+    if (dietInfoData.adaptation_choice === "Yes" && daysElapsed < adaptationDays) {
+      currentPhase = "adaptation"
+      isAdaptationPhase = true
+      adaptationDay = daysElapsed + 1
+    } else if (daysElapsed < adaptationDays + eliminationDays) {
+      currentPhase = "elimination"
+      isAdaptationPhase = false
+      const eliminationDaysElapsed = daysElapsed - adaptationDays
+      eliminationPhasePercentage = Math.floor((eliminationDaysElapsed / eliminationDays) * 100)
+    } else {
+      currentPhase = "reintroduction"
+      isAdaptationPhase = false
+      const reintroductionDaysElapsed = daysElapsed - adaptationDays - eliminationDays
+      reintroductionDay = reintroductionDaysElapsed + 1
+    }
+
+    return {
+      currentPhase,
+      isAdaptationPhase,
+      adaptationDay,
+      eliminationPhasePercentage,
+      reintroductionDay,
+      daysElapsed,
+    }
+  }
+
   useEffect(() => {
     const loadWeightData = async () => {
       if (!userId) return
 
       console.log("[v0] Loading weight logs for user:", userId)
-      const weights = await getWeightLogs(userId, 30)
+      const weights = await fetchWeightLogs(userId, 30) // Use renamed function
       console.log("[v0] Weight logs loaded:", weights)
 
       if (weights.length > 0) {
@@ -1236,9 +1434,13 @@ export default function DashboardPage() {
   useEffect(() => {
     // Function to handle when the window gets focus
     const handleFocus = () => {
-      loadSymptomData()
-      loadUserProfile()
-      loadCompletedTodos()
+      // Reload data from the database on focus
+      if (userId) {
+        loadSymptomDataFromDatabase(userId)
+        loadWellnessDataFromDatabase(userId)
+      }
+      loadUserProfile() // Reload profile in case it changed
+      loadCompletedTodos() // Reload completed todos
     }
 
     // Add event listener for focus
@@ -1248,7 +1450,7 @@ export default function DashboardPage() {
     return () => {
       window.removeEventListener("focus", handleFocus)
     }
-  }, [userSymptoms]) // Re-run when userSymptoms changes
+  }, [userId]) // Re-run when userId changes
 
   const handleCloseWelcome = () => {
     setShowWelcome(false)
@@ -1616,21 +1818,20 @@ export default function DashboardPage() {
           </div>
 
           <div className="flex items-center justify-between">
-            {typeof window !== "undefined" && (
+            {typeof window !== "undefined" && dietInfo && (
               <>
                 <div className="text-center">
                   {(() => {
-                    // Get diet data from localStorage
-                    const adaptationChoice = localStorage.getItem("userAdaptationChoice")
+                    // Use dietInfoData directly
+                    const adaptationChoice = dietInfo.adaptation_choice
                     const hasAdaptation = adaptationChoice === "Yes"
-                    const startDate = localStorage.getItem("dietStartDate")
+                    const startDate = dietInfo.start_date
                     const dietStartDate = startDate ? new Date(startDate) : new Date()
-                    const dietTimeline = localStorage.getItem("userDietTimeline")
-                    const totalSelectedDays = dietTimeline ? Number.parseInt(dietTimeline) : 30
+                    const totalSelectedDays = dietInfo.timeline_days
 
                     // Calculate days for each phase
                     const adaptationDays = hasAdaptation ? 28 : 0
-                    const eliminationDays = hasAdaptation ? totalSelectedDays - adaptationDays : totalSelectedDays
+                    const eliminationDays = totalSelectedDays - adaptationDays
 
                     // Calculate days elapsed since diet start
                     const today = new Date()
@@ -1641,20 +1842,16 @@ export default function DashboardPage() {
                     let daysRemaining = 0
 
                     if (hasAdaptation && daysElapsed < adaptationDays) {
-                      // In adaptation phase
                       currentPhase = "adaptation"
                       daysRemaining = adaptationDays - daysElapsed
-                    } else if (daysElapsed < (hasAdaptation ? adaptationDays + eliminationDays : eliminationDays)) {
-                      // In elimination phase
+                    } else if (daysElapsed < adaptationDays + eliminationDays) {
                       currentPhase = "elimination"
-                      const eliminationDaysElapsed = daysElapsed - (hasAdaptation ? adaptationDays : 0)
+                      const eliminationDaysElapsed = daysElapsed - adaptationDays
                       daysRemaining = eliminationDays - eliminationDaysElapsed
                     } else {
-                      // In reintroduction phase
                       currentPhase = "reintroduction"
-                      const reintroductionDays = 150 // 5 months
-                      const reintroductionDaysElapsed =
-                        daysElapsed - (hasAdaptation ? adaptationDays + eliminationDays : eliminationDays)
+                      const reintroductionDays = 150 // Assuming 5 months for reintroduction
+                      const reintroductionDaysElapsed = daysElapsed - adaptationDays - eliminationDays
                       daysRemaining = Math.max(reintroductionDays - reintroductionDaysElapsed, 0)
                     }
 
@@ -1683,43 +1880,30 @@ export default function DashboardPage() {
                 <div className="text-center">
                   <p className="text-sm text-secondary-color">
                     {(() => {
-                      // Get diet data from localStorage
-                      const adaptationChoice = localStorage.getItem("userAdaptationChoice")
+                      const adaptationChoice = dietInfo.adaptation_choice
                       const hasAdaptation = adaptationChoice === "Yes"
-                      const startDate = localStorage.getItem("dietStartDate")
+                      const startDate = dietInfo.start_date
                       const dietStartDate = startDate ? new Date(startDate) : new Date()
-                      const dietTimeline = localStorage.getItem("userDietTimeline")
-                      const totalSelectedDays = dietTimeline ? Number.parseInt(dietTimeline) : 30
+                      const totalSelectedDays = dietInfo.timeline_days
 
-                      // Calculate days for each phase
                       const adaptationDays = hasAdaptation ? 28 : 0
                       const eliminationDays = totalSelectedDays - adaptationDays
 
-                      // Calculate days elapsed since diet start
                       const today = new Date()
                       const daysElapsed = Math.floor(
                         (today.getTime() - dietStartDate.getTime()) / (1000 * 60 * 60 * 24),
                       )
 
-                      // Determine current phase
-                      const currentPhase = "adaptation"
+                      const nextPhaseDate = new Date(dietStartDate)
 
                       if (hasAdaptation && daysElapsed < adaptationDays) {
-                        // In adaptation phase, next is elimination
                         nextPhaseDate.setDate(dietStartDate.getDate() + adaptationDays)
-                      } else if (daysElapsed < (hasAdaptation ? adaptationDays + eliminationDays : eliminationDays)) {
-                        // In elimination phase, next is reintroduction
-                        nextPhaseDate.setDate(
-                          dietStartDate.getDate() +
-                            (hasAdaptation ? adaptationDays + eliminationDays : eliminationDays),
-                        )
+                      } else if (daysElapsed < adaptationDays + eliminationDays) {
+                        nextPhaseDate.setDate(dietStartDate.getDate() + adaptationDays + eliminationDays)
                       } else {
-                        // In reintroduction phase, next is completion
-                        const reintroductionDays = 150 // 5 months
+                        const reintroductionDays = 150 // Assuming 5 months for reintroduction
                         nextPhaseDate.setDate(
-                          dietStartDate.getDate() +
-                            (hasAdaptation ? adaptationDays + eliminationDays : eliminationDays) +
-                            reintroductionDays,
+                          dietStartDate.getDate() + adaptationDays + eliminationDays + reintroductionDays,
                         )
                       }
 
@@ -1904,7 +2088,9 @@ export default function DashboardPage() {
           {/* Wellness Chart */}
           {activeTab === "wellness" && (
             <div className="relative">
-              {wellnessData.every((score) => score === 0) ? (
+              {wellnessData.mood.every((score: number) => score === 0) &&
+              wellnessData.sleep.every((score: number) => score === 0) &&
+              wellnessData.stress.every((score: number) => score === 0) ? (
                 // Show empty state without chart when no data
                 <div className="text-center text-sm text-secondary-color p-6 bg-peach-50 rounded-lg min-h-[200px] flex items-center justify-center">
                   <p className="max-w-md">
@@ -1958,36 +2144,88 @@ export default function DashboardPage() {
                         </linearGradient>
                       </defs>
 
-                      {/* Area fill */}
-                      <path d={createWellnessAreaPath(wellnessData)} fill="url(#wellness-gradient)" opacity="0.8" />
-
-                      {/* Line on top */}
+                      {/* Area fill for Stress (inverted) */}
                       <path
-                        d={createWellnessCurvePath(wellnessData)}
+                        d={createWellnessAreaPath(wellnessData.stress)}
+                        fill="url(#wellness-gradient)"
+                        opacity="0.6"
+                      />
+
+                      {/* Line for Mood */}
+                      <path
+                        d={createWellnessCurvePath(wellnessData.mood)}
                         fill="none"
-                        stroke={wellnessHistoryData.color}
+                        stroke="#f4a6b8" // Mood color
+                        strokeWidth="0.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+
+                      {/* Line for Sleep */}
+                      <path
+                        d={createWellnessCurvePath(wellnessData.sleep)}
+                        fill="none"
+                        stroke="#f6c1b0" // Sleep color
+                        strokeWidth="0.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+
+                      {/* Line for Stress (inverted) */}
+                      <path
+                        d={createWellnessCurvePath(wellnessData.stress)}
+                        fill="none"
+                        stroke="#f09f88" // Stress color
                         strokeWidth="0.5"
                         strokeLinecap="round"
                         strokeLinejoin="round"
                       />
 
                       {/* Add dots for data points */}
-                      {wellnessData.map((value, i) => {
-                        if (value === 0) return null // Don't show dots for zero values
+                      {wellnessData.mood.map((value: number, i: number) => {
+                        if (value === 0 && wellnessData.sleep[i] === 0 && wellnessData.stress[i] === 0) return null
 
-                        const x = (i / (wellnessData.length - 1)) * 100
-                        const y = 100 - value
+                        const x = (i / (wellnessData.mood.length - 1)) * 100
+                        const yMood = 100 - value
+                        const ySleep = 100 - wellnessData.sleep[i]
+                        const yStress = 100 - wellnessData.stress[i]
 
                         return (
-                          <circle
-                            key={i}
-                            cx={x}
-                            cy={y}
-                            r="0.8"
-                            fill="white"
-                            stroke={wellnessHistoryData.color}
-                            strokeWidth="0.8"
-                          />
+                          <>
+                            {value > 0 && (
+                              <circle
+                                key={`${i}-mood`}
+                                cx={x}
+                                cy={yMood}
+                                r="0.8"
+                                fill="white"
+                                stroke="#f4a6b8"
+                                strokeWidth="0.8"
+                              />
+                            )}
+                            {wellnessData.sleep[i] > 0 && (
+                              <circle
+                                key={`${i}-sleep`}
+                                cx={x}
+                                cy={ySleep}
+                                r="0.8"
+                                fill="white"
+                                stroke="#f6c1b0"
+                                strokeWidth="0.8"
+                              />
+                            )}
+                            {wellnessData.stress[i] > 0 && (
+                              <circle
+                                key={`${i}-stress`}
+                                cx={x}
+                                cy={yStress}
+                                r="0.8"
+                                fill="white"
+                                stroke="#f09f88"
+                                strokeWidth="0.8"
+                              />
+                            )}
+                          </>
                         )
                       })}
                     </svg>
@@ -2018,22 +2256,22 @@ export default function DashboardPage() {
                   {/* Wellness Factors */}
                   <div className="flex flex-wrap gap-4 mt-4 justify-center">
                     <div className="flex items-center">
-                      <div className="w-3 h-3 rounded-full mr-2 bg-pink-400"></div>
+                      <div className="w-3 h-3 rounded-full mr-2 bg-[#f4a6b8]"></div>
                       <span className="text-sm text-primary-color">Mood</span>
                     </div>
                     <div className="flex items-center">
-                      <div className="w-3 h-3 rounded-full mr-2 bg-peach-400"></div>
+                      <div className="w-3 h-3 rounded-full mr-2 bg-[#f6c1b0]"></div>
                       <span className="text-sm text-primary-color">Sleep</span>
                     </div>
                     <div className="flex items-center">
-                      <div className="w-3 h-3 rounded-full mr-2 bg-yellow-400"></div>
+                      <div className="w-3 h-3 rounded-full mr-2 bg-[#f09f88]"></div>
                       <span className="text-sm text-primary-color">Stress</span>
                     </div>
                   </div>
 
                   {/* Message for users who haven't logged wellness yet */}
                   {!hasLoggedWellness && (
-                    <div className="mt-4 text-center text-sm text-secondary-color p-2 bg-pink-50 rounded-lg">
+                    <div className="mt-4 text-center text-sm text-secondary-color p-2 bg-peach-50 rounded-lg">
                       Log your first day to start tracking your wellness score over time. Your score is calculated from
                       your mood, sleep quality, and stress levels.
                     </div>

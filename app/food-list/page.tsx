@@ -284,6 +284,16 @@ export default function FoodListPage() {
       return userModifiedStatuses[product.name]
     }
 
+    // If in elimination phase
+    if (currentPhase === "elimination") {
+      // Non-AIP items are "Can't eat"
+      if (!product.isAIP) {
+        return "Can't eat"
+      }
+      // AIP items are "Can eat"
+      return "Can eat"
+    }
+
     // If in adaptation phase, apply the progressive restrictions
     if (currentPhase === "adaptation") {
       // Days 1-7: Only caffeine is restricted
@@ -314,18 +324,17 @@ export default function FoodListPage() {
       }
     }
 
-    // If in elimination phase, non-AIP items are "Can't eat"
-    if (currentPhase === "elimination" && !product.isAIP) {
-      return "Can't eat"
+    // If in reintroduction phase, non-AIP items are "Under evaluation" by default
+    if (currentPhase === "reintroduction") {
+      if (!product.isAIP) {
+        return "Under evaluation"
+      }
+      // AIP items remain "Can eat"
+      return "Can eat"
     }
 
-    // If in reintroduction phase, non-AIP items are "Under evaluation"
-    if (currentPhase === "reintroduction" && !product.isAIP) {
-      return "Under evaluation"
-    }
-
-    // Default to the product's original status
-    return product.status
+    // Default fallback - should not reach here in normal flow
+    return product.isAIP ? "Can eat" : "Can't eat"
   }
 
   // Filter and sort products based on user selections

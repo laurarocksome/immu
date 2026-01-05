@@ -1,4 +1,5 @@
 import { supabase } from "./supabase/client"
+import { createClient } from "@supabase/supabase-js" // Ensure this import is present for the new functions
 
 // Store user profile information
 export async function saveUserProfile(profileData: {
@@ -266,4 +267,95 @@ export async function saveUserName(name: string) {
   })
 
   if (error) throw error
+}
+
+export async function getUserStreak(userId: string): Promise<number> {
+  const supabaseClient = createClient()
+
+  const { data: logs, error } = await supabaseClient
+    .from("daily_logs")
+    .select("log_date")
+    .eq("user_id", userId)
+    .order("log_date", { ascending: false })
+
+  if (error || !logs || logs.length === 0) {
+    return 0
+  }
+
+  // Calculate streak from most recent date
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  let streak = 0
+  const currentDate = new Date(today)
+
+  for (const log of logs) {
+    const logDate = new Date(log.log_date)
+    logDate.setHours(0, 0, 0, 0)
+
+    const diffDays = Math.floor((currentDate.getTime() - logDate.getTime()) / (1000 * 60 * 60 * 24))
+
+    if (diffDays === 0) {
+      // Today's log or current checking date
+      streak++
+      currentDate.setDate(currentDate.getDate() - 1)
+    } else if (diffDays === 1) {
+      // Yesterday's log
+      streak++
+      currentDate.setDate(currentDate.getDate() - 1)
+    } else {
+      // Gap in logging, break streak
+      break
+    }
+  }
+
+  return streak
+}
+
+export async function getSymptomHistory(userId: string, days = 7) {
+  const supabaseClient = createClient()
+
+  const startDate = new Date()
+  startDate.setDate(startDate.getDate() - days + 1)
+
+  const { data, error } = await supabaseClient
+    .from("daily_logs")
+    .select(`
+      log_date,
+      symptom_logs (
+        symptom,
+        severity
+      )
+    `)
+    .eq("user_id", userId)
+    .gte("log_date", startDate.toISOString().split("T")[0])
+    .order("log_date", { ascending: true })
+
+  if (error) {
+    console.error("[v0] Error fetching symptom history:", error)
+    return []
+  }
+
+  return data || []
+}
+
+export async function getWellnessHistory(userId: string, days = 7) {
+  const supabaseClient = createClient()
+
+  const startDate = new Date()
+  startDate.setDate(startDate.getDate() - days + 1)
+
+  const { data, error } = await supabaseClient
+    .from("daily_logs")
+    .select("log_date, mood, sleep, stress")
+    .eq("user_id", userId)
+    .gte("log_date", startDate.toISOString().split("T")[0])
+    .order("log_date", { ascending: true })
+
+  if (error) {
+    console.error("[v0] Error fetching wellness history:", error)
+    return []
+  }
+
+  return data || []
 }

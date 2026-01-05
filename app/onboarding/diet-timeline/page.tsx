@@ -29,12 +29,31 @@ export default function DietTimelinePage() {
     const needsAdapt = adaptationChoice === "Yes"
     setNeedsAdaptation(needsAdapt)
 
-    // Set initial selected days based on adaptation period
-    // If adaptation is needed, the minimum is 58 days (28 adaptation + 30 elimination)
-    // Otherwise, minimum is 30 days (elimination only)
-    setSelectedDays(needsAdapt ? 58 : 30)
+    const existingTimeline = localStorage.getItem("userDietTimeline")
+    if (existingTimeline && existingTimeline !== "not-set") {
+      setSelectedDays(Number.parseInt(existingTimeline))
+    } else {
+      // Set initial selected days based on adaptation period
+      setSelectedDays(needsAdapt ? 58 : 30)
+    }
     setIsLoading(false)
   }, [])
+
+  const handleAdaptationToggle = (value: boolean) => {
+    setNeedsAdaptation(value)
+    // Adjust selected days when toggling adaptation
+    if (value) {
+      // Switching to adaptation - increase minimum if needed
+      if (selectedDays < 58) {
+        setSelectedDays(58)
+      }
+    } else {
+      // Switching to no adaptation - decrease if beyond new max
+      if (selectedDays > 90) {
+        setSelectedDays(90)
+      }
+    }
+  }
 
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedDays(Number.parseInt(e.target.value))
@@ -145,13 +164,22 @@ export default function DietTimelinePage() {
       <main className="flex-1 px-4 pb-8 overflow-auto">
         <div className="max-w-md mx-auto">
           <div className="mb-6">
-            <h2 className="text-2xl font-bold mb-2 text-center">Set Your Goals</h2>
+            <h2 className="text-2xl font-bold mb-2 text-center">
+              {isEditMode ? "Edit Your Diet Settings" : "Set Your Goals"}
+            </h2>
             <p className="text-center">
-              Select a period to monitor your AIP progress. Refer to{" "}
-              <Link href="#" className="text-pink-400 underline">
-                FAQ
-              </Link>{" "}
-              for diet duration info.
+              {isEditMode
+                ? "Update your diet timeline and adaptation period preferences"
+                : "Select a period to monitor your AIP progress"}
+              {!isEditMode && (
+                <>
+                  . Refer to{" "}
+                  <Link href="/faq" className="text-pink-400 underline">
+                    FAQ
+                  </Link>{" "}
+                  for diet duration info.
+                </>
+              )}
             </p>
           </div>
 
@@ -162,8 +190,53 @@ export default function DietTimelinePage() {
             </div>
           )}
 
+          {isEditMode && (
+            <div className="glass-card rounded-2xl p-6 mb-6">
+              <h3 className="font-semibold mb-4 text-lg">Adaptation Period</h3>
+              <p className="text-sm text-brand-dark/70 mb-4">
+                An adaptation period helps you gradually transition into the AIP diet over 28 days before starting the
+                full elimination phase.
+              </p>
+
+              <div className="flex flex-col gap-3">
+                <div
+                  className={`flex items-center p-4 rounded-xl cursor-pointer transition-colors ${
+                    needsAdaptation ? "bg-pink-400 text-white" : "bg-white hover:bg-pink-50"
+                  }`}
+                  onClick={() => handleAdaptationToggle(true)}
+                >
+                  <div
+                    className={`w-5 h-5 rounded-full border-2 mr-3 flex items-center justify-center ${
+                      needsAdaptation ? "border-white" : "border-brand-dark/50"
+                    }`}
+                  >
+                    {needsAdaptation && <div className="w-3 h-3 rounded-full bg-white"></div>}
+                  </div>
+                  <span>Yes, include adaptation period</span>
+                </div>
+
+                <div
+                  className={`flex items-center p-4 rounded-xl cursor-pointer transition-colors ${
+                    !needsAdaptation ? "bg-pink-400 text-white" : "bg-white hover:bg-pink-50"
+                  }`}
+                  onClick={() => handleAdaptationToggle(false)}
+                >
+                  <div
+                    className={`w-5 h-5 rounded-full border-2 mr-3 flex items-center justify-center ${
+                      !needsAdaptation ? "border-white" : "border-brand-dark/50"
+                    }`}
+                  >
+                    {!needsAdaptation && <div className="w-3 h-3 rounded-full bg-white"></div>}
+                  </div>
+                  <span>No, start directly with elimination</span>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Slider */}
           <div className="glass-card rounded-2xl p-6 mb-8">
+            <h3 className="font-semibold mb-4 text-lg">Diet Timeline</h3>
             <div className="flex justify-between mb-2">
               <span className="font-bold">{minDays} Days</span>
               <span className="font-bold">{maxDays} Days</span>
@@ -198,7 +271,7 @@ export default function DietTimelinePage() {
 
             <style jsx>{`
               /* Custom thumb styling for webkit browsers */
-              input[type=range]::-webkit-slider-thumb {
+              input[type="range"]::-webkit-slider-thumb {
                 -webkit-appearance: none;
                 appearance: none;
                 width: 20px;
@@ -209,9 +282,9 @@ export default function DietTimelinePage() {
                 border: 2px solid white;
                 box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
               }
-              
+
               /* Custom thumb styling for Firefox */
-              input[type=range]::-moz-range-thumb {
+              input[type="range"]::-moz-range-thumb {
                 width: 20px;
                 height: 20px;
                 border-radius: 50%;
@@ -226,14 +299,16 @@ export default function DietTimelinePage() {
               <p className="font-medium">Selected timeframe: {selectedDays} days</p>
 
               {needsAdaptation && (
-                <p className="text-sm text-brand-dark/70 mt-2">At least 28 days will be transition into your diet.</p>
+                <p className="text-sm text-brand-dark/70 mt-2">
+                  Includes 28 days of adaptation + {selectedDays - 28} days of elimination phase
+                </p>
               )}
             </div>
           </div>
 
           {/* Next button */}
           <button onClick={handleContinue} className="w-full gradient-button py-4 rounded-full">
-            {isEditMode ? "Save" : "Next"}
+            {isEditMode ? "Save Changes" : "Next"}
           </button>
         </div>
       </main>
