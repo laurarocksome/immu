@@ -1,0 +1,303 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 31, 31, 31;
+  --background-start-rgb: 255, 255, 255;
+  --background-end-rgb: 255, 255, 255;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  min-height: 100vh;
+}
+
+@layer base {
+  :root {
+    /* Updated to soft pink primary color system per brand book */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 12%;
+
+    /* Primary pink: #F4A6B8 */
+    --primary: 343 81% 81%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Muted peach: #F6C1B0 */
+    --secondary: 16 77% 83%;
+    --secondary-foreground: 0 0% 12%;
+
+    /* Soft blush background: #FCE6EC */
+    --muted: 343 70% 95%;
+    --muted-foreground: 0 0% 48%;
+
+    /* Warm yellow accent: #F6D84C */
+    --accent: 48 90% 63%;
+    --accent-foreground: 0 0% 12%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 343 30% 92%;
+    --input: 343 30% 92%;
+    --ring: 343 81% 81%;
+
+    --radius: 1.25rem;
+  }
+
+  .dark {
+    --background: 0 0% 12%;
+    --foreground: 0 0% 98%;
+
+    --card: 0 0% 15%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 0 0% 15%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 343 81% 81%;
+    --primary-foreground: 0 0% 12%;
+
+    --secondary: 16 77% 83%;
+    --secondary-foreground: 0 0% 12%;
+
+    --muted: 0 0% 20%;
+    --muted-foreground: 0 0% 65%;
+
+    --accent: 48 90% 63%;
+    --accent-foreground: 0 0% 12%;
+
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 343 81% 81%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* ── Responsive app shell ───────────────────────────────────────────────── */
+/* On desktop the app renders as a centred phone-sized panel               */
+@layer base {
+  .app-shell {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    width: 100%;
+    background: linear-gradient(to bottom, #ffffff, #fce6ec 50%, #fff5f8);
+  }
+
+  /* Desktop: show a soft background and centre the app panel */
+  @media (min-width: 640px) {
+    body {
+      background: linear-gradient(135deg, #fce6ec 0%, #fff5f8 50%, #f6c1b0 100%);
+    }
+
+    .app-shell {
+      max-width: 480px;
+      margin: 0 auto;
+      min-height: 100vh;
+      box-shadow: 0 0 60px rgba(244, 166, 184, 0.25), 0 0 0 1px rgba(244, 166, 184, 0.1);
+      background: linear-gradient(to bottom, #ffffff, #fce6ec 50%, #fff5f8);
+    }
+  }
+}
+
+/* ── Chart tab overflow fix ──────────────────────────────────────────────── */
+@layer utilities {
+  .chart-tabs {
+    display: flex;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .chart-tabs::-webkit-scrollbar {
+    display: none;
+  }
+  .chart-tab {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+}
+
+/* Updated component styles to match soft, calm pink aesthetic */
+@layer utilities {
+  /* Soft card with subtle shadow */
+  .glass-card {
+    background-color: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(252, 230, 236, 0.4);
+    box-shadow: 0 2px 8px rgba(244, 166, 184, 0.08);
+    border-radius: 1.25rem;
+  }
+
+  /* Soft pink background gradient */
+  .gradient-bg {
+    background: linear-gradient(to bottom right, #ffffff, #fce6ec, #fff5f8);
+  }
+
+  /* Soft pink card with gentle gradient */
+  .gradient-card {
+    background: linear-gradient(to bottom right, rgba(252, 230, 236, 0.3), rgba(255, 255, 255, 0.95));
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(244, 166, 184, 0.2);
+    box-shadow: 0 2px 8px rgba(244, 166, 184, 0.06);
+    border-radius: 1.25rem;
+  }
+
+  /* Primary pink pill button */
+  .gradient-button {
+    background: linear-gradient(to right, #f4a6b8, #f095ab);
+    color: white;
+    font-weight: 500;
+    border-radius: 9999px;
+    padding: 0.75rem 1.5rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(244, 166, 184, 0.2);
+  }
+
+  .gradient-button:hover {
+    box-shadow: 0 4px 12px rgba(244, 166, 184, 0.3);
+    transform: translateY(-1px);
+  }
+
+  /* Secondary white button */
+  .secondary-button {
+    background-color: white;
+    color: #1f1f1f;
+    border: 1.5px solid rgba(244, 166, 184, 0.3);
+    font-weight: 500;
+    border-radius: 9999px;
+    padding: 0.75rem 1.5rem;
+    transition: all 0.3s ease;
+  }
+
+  .secondary-button:hover {
+    border-color: #f4a6b8;
+    box-shadow: 0 2px 8px rgba(244, 166, 184, 0.15);
+  }
+
+  /* Yellow accent button (micro-highlights only) */
+  .accent-button {
+    background: #f6d84c;
+    color: #1f1f1f;
+    font-weight: 600;
+    border-radius: 9999px;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    transition: all 0.3s ease;
+  }
+
+  .accent-button:hover {
+    background: #f5d23a;
+    box-shadow: 0 2px 6px rgba(246, 216, 76, 0.3);
+  }
+
+  /* App background - soft and calm (kept for compatibility) */
+  .app-gradient {
+    background: linear-gradient(to bottom, #ffffff, #fce6ec 50%, #fff5f8);
+    width: 100%;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Header with soft pink gradient */
+  .header-gradient {
+    background: linear-gradient(to right, #f4a6b8, #f6c1b0);
+  }
+
+  /* Text utilities */
+  .text-primary-color {
+    color: #1f1f1f;
+  }
+
+  .text-secondary-color {
+    color: #7a7a7a;
+  }
+
+  .text-accent-color {
+    color: #f4a6b8;
+  }
+
+  /* Soft shadows */
+  .shadow-soft {
+    box-shadow: 0 2px 12px rgba(244, 166, 184, 0.08);
+  }
+
+  .shadow-soft-lg {
+    box-shadow: 0 4px 20px rgba(244, 166, 184, 0.12);
+  }
+
+  /* Rounded cards (per brand) */
+  .rounded-card {
+    border-radius: 1.5rem;
+  }
+
+  .rounded-card-lg {
+    border-radius: 2rem;
+  }
+
+  /* Pink background utilities */
+  .bg-primary-pink {
+    background-color: #f4a6b8;
+  }
+
+  .bg-soft-blush {
+    background-color: #fce6ec;
+  }
+
+  .bg-muted-peach {
+    background-color: #f6c1b0;
+  }
+
+  .bg-calm-green {
+    background-color: #9bb8a0;
+  }
+
+  .bg-warm-yellow {
+    background-color: #f6d84c;
+  }
+
+  /* Utility for white space emphasis */
+  .spacious {
+    padding: 2rem;
+  }
+
+  .spacious-lg {
+    padding: 3rem;
+  }
+}
+
+@layer utilities {
+  .bg-card {
+    background-color: hsl(var(--card));
+  }
+
+  .text-card-foreground {
+    color: hsl(var(--card-foreground));
+  }
+
+  .shadow-card {
+    box-shadow: 0 2px 12px rgba(244, 166, 184, 0.08);
+  }
+
+  .shadow-button {
+    box-shadow: 0 2px 8px rgba(244, 166, 184, 0.2);
+  }
+}
