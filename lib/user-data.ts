@@ -1,5 +1,7 @@
-import { supabase } from "./supabase/client"
-import { createClient } from "@supabase/supabase-js" // Ensure this import is present for the new functions
+import { createClient } from "./supabase/client"
+
+// Lazy getter — client is only created when a function is called, never at module load
+const getSupabase = () => createClient()
 
 // Store user profile information
 export async function saveUserProfile(profileData: {
@@ -10,11 +12,10 @@ export async function saveUserProfile(profileData: {
   height?: number
   heightUnit?: string
 }) {
+  const supabase = getSupabase()
   console.log("[v0] Saving user profile:", profileData)
   const user = await supabase.auth.getUser()
   if (!user.data.user) throw new Error("Not authenticated")
-
-  console.log("[v0] User ID for profile save:", user.data.user.id)
 
   const { data: existing } = await supabase.from("user_profiles").select("id").eq("user_id", user.data.user.id).single()
 
@@ -31,21 +32,18 @@ export async function saveUserProfile(profileData: {
   }
 
   const { data, error } = await supabase.from("user_profiles").upsert(profileRecord).select()
-
-  console.log("[v0] Profile save result:", { data, error })
   if (error) throw error
   return data
 }
 
 // Store user conditions
 export async function saveUserConditions(conditions: string[]) {
+  const supabase = getSupabase()
   const user = await supabase.auth.getUser()
   if (!user.data.user) throw new Error("Not authenticated")
 
-  // Delete existing conditions
   await supabase.from("user_conditions").delete().eq("user_id", user.data.user.id)
 
-  // Insert new conditions
   if (conditions.length > 0) {
     const { error } = await supabase.from("user_conditions").insert(
       conditions.map((condition) => ({
@@ -53,20 +51,18 @@ export async function saveUserConditions(conditions: string[]) {
         condition,
       })),
     )
-
     if (error) throw error
   }
 }
 
 // Store user symptoms
 export async function saveUserSymptoms(symptoms: string[]) {
+  const supabase = getSupabase()
   const user = await supabase.auth.getUser()
   if (!user.data.user) throw new Error("Not authenticated")
 
-  // Delete existing symptoms
   await supabase.from("user_symptoms").delete().eq("user_id", user.data.user.id)
 
-  // Insert new symptoms
   if (symptoms.length > 0) {
     const { error } = await supabase.from("user_symptoms").insert(
       symptoms.map((symptom) => ({
@@ -74,7 +70,6 @@ export async function saveUserSymptoms(symptoms: string[]) {
         symptom,
       })),
     )
-
     if (error) throw error
   }
 }
@@ -86,11 +81,10 @@ export async function saveDietInfo(dietData: {
   adaptationChoice: string
   currentPhase?: string
 }) {
+  const supabase = getSupabase()
   console.log("[v0] Saving diet info:", dietData)
   const user = await supabase.auth.getUser()
   if (!user.data.user) throw new Error("Not authenticated")
-
-  console.log("[v0] User ID for diet save:", user.data.user.id)
 
   const { data: existing } = await supabase.from("diet_info").select("id").eq("user_id", user.data.user.id).single()
 
@@ -105,8 +99,6 @@ export async function saveDietInfo(dietData: {
   }
 
   const { data, error } = await supabase.from("diet_info").upsert(dietRecord).select()
-
-  console.log("[v0] Diet info save result:", { data, error })
   if (error) throw error
   return data
 }
@@ -120,10 +112,10 @@ export async function saveDailyLog(logData: {
   symptoms?: Array<{ symptom: string; severity: number }>
   notes?: string
 }) {
+  const supabase = getSupabase()
   const user = await supabase.auth.getUser()
   if (!user.data.user) throw new Error("Not authenticated")
 
-  // First, upsert the daily log
   const { data: logData_result, error: logError } = await supabase
     .from("daily_logs")
     .upsert({
@@ -139,12 +131,9 @@ export async function saveDailyLog(logData: {
 
   if (logError) throw logError
 
-  // If there are symptoms, save them
   if (logData.symptoms && logData.symptoms.length > 0 && logData_result[0]) {
-    // Delete existing symptom logs for this day
     await supabase.from("symptom_logs").delete().eq("daily_log_id", logData_result[0].id)
 
-    // Insert new symptom logs
     const { error: symptomError } = await supabase.from("symptom_logs").insert(
       logData.symptoms.map((symptom) => ({
         daily_log_id: logData_result[0].id,
@@ -152,7 +141,6 @@ export async function saveDailyLog(logData: {
         severity: symptom.severity,
       })),
     )
-
     if (symptomError) throw symptomError
   }
 
@@ -161,65 +149,57 @@ export async function saveDailyLog(logData: {
 
 // Fetch user profile
 export async function getUserProfile() {
+  const supabase = getSupabase()
   const user = await supabase.auth.getUser()
   if (!user.data.user) throw new Error("Not authenticated")
 
   const { data, error } = await supabase.from("user_profiles").select("*").eq("user_id", user.data.user.id).single()
-
-  if (error && error.code !== "PGRST116") throw error // PGRST116 is "not found"
+  if (error && error.code !== "PGRST116") throw error
   return data
 }
 
 // Fetch user conditions
 export async function getUserConditions() {
+  const supabase = getSupabase()
   const user = await supabase.auth.getUser()
   if (!user.data.user) throw new Error("Not authenticated")
 
   const { data, error } = await supabase.from("user_conditions").select("condition").eq("user_id", user.data.user.id)
-
   if (error) throw error
   return data?.map((c) => c.condition) || []
 }
 
 // Fetch user symptoms
 export async function getUserSymptoms() {
+  const supabase = getSupabase()
   const user = await supabase.auth.getUser()
   if (!user.data.user) throw new Error("Not authenticated")
 
   const { data, error } = await supabase.from("user_symptoms").select("symptom").eq("user_id", user.data.user.id)
-
   if (error) throw error
   return data?.map((s) => s.symptom) || []
 }
 
 // Fetch diet info
 export async function getDietInfo() {
+  const supabase = getSupabase()
   const user = await supabase.auth.getUser()
   if (!user.data.user) throw new Error("Not authenticated")
 
   const { data, error } = await supabase.from("diet_info").select("*").eq("user_id", user.data.user.id).single()
-
   if (error && error.code !== "PGRST116") throw error
   return data
 }
 
 // Fetch daily log
 export async function getDailyLog(logDate: string) {
+  const supabase = getSupabase()
   const user = await supabase.auth.getUser()
   if (!user.data.user) throw new Error("Not authenticated")
 
   const { data, error } = await supabase
     .from("daily_logs")
-    .select(
-      `
-    *,
-    symptom_logs (
-      id,
-      symptom,
-      severity
-    )
-  `,
-    )
+    .select(`*, symptom_logs (id, symptom, severity)`)
     .eq("user_id", user.data.user.id)
     .eq("log_date", logDate)
     .single()
@@ -228,23 +208,15 @@ export async function getDailyLog(logDate: string) {
   return data
 }
 
-// Fetch all daily logs for a date range
+// Fetch daily logs for a date range
 export async function getDailyLogs(startDate: string, endDate: string) {
+  const supabase = getSupabase()
   const user = await supabase.auth.getUser()
   if (!user.data.user) throw new Error("Not authenticated")
 
   const { data, error } = await supabase
     .from("daily_logs")
-    .select(
-      `
-    *,
-    symptom_logs (
-      id,
-      symptom,
-      severity
-    )
-  `,
-    )
+    .select(`*, symptom_logs (id, symptom, severity)`)
     .eq("user_id", user.data.user.id)
     .gte("log_date", startDate)
     .lte("log_date", endDate)
@@ -254,8 +226,9 @@ export async function getDailyLogs(startDate: string, endDate: string) {
   return data || []
 }
 
-// Update user name in 'users' table
+// Update user name
 export async function saveUserName(name: string) {
+  const supabase = getSupabase()
   const user = await supabase.auth.getUser()
   if (!user.data.user) throw new Error("Not authenticated")
 
@@ -265,24 +238,20 @@ export async function saveUserName(name: string) {
     name: name,
     updated_at: new Date().toISOString(),
   })
-
   if (error) throw error
 }
 
 export async function getUserStreak(userId: string): Promise<number> {
-  const supabaseClient = createClient()
+  const supabase = getSupabase()
 
-  const { data: logs, error } = await supabaseClient
+  const { data: logs, error } = await supabase
     .from("daily_logs")
     .select("log_date")
     .eq("user_id", userId)
     .order("log_date", { ascending: false })
 
-  if (error || !logs || logs.length === 0) {
-    return 0
-  }
+  if (error || !logs || logs.length === 0) return 0
 
-  // Calculate streak from most recent date
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
@@ -295,16 +264,10 @@ export async function getUserStreak(userId: string): Promise<number> {
 
     const diffDays = Math.floor((currentDate.getTime() - logDate.getTime()) / (1000 * 60 * 60 * 24))
 
-    if (diffDays === 0) {
-      // Today's log or current checking date
-      streak++
-      currentDate.setDate(currentDate.getDate() - 1)
-    } else if (diffDays === 1) {
-      // Yesterday's log
+    if (diffDays === 0 || diffDays === 1) {
       streak++
       currentDate.setDate(currentDate.getDate() - 1)
     } else {
-      // Gap in logging, break streak
       break
     }
   }
@@ -313,20 +276,14 @@ export async function getUserStreak(userId: string): Promise<number> {
 }
 
 export async function getSymptomHistory(userId: string, days = 7) {
-  const supabaseClient = createClient()
+  const supabase = getSupabase()
 
   const startDate = new Date()
   startDate.setDate(startDate.getDate() - days + 1)
 
-  const { data, error } = await supabaseClient
+  const { data, error } = await supabase
     .from("daily_logs")
-    .select(`
-      log_date,
-      symptom_logs (
-        symptom,
-        severity
-      )
-    `)
+    .select(`log_date, symptom_logs (symptom, severity)`)
     .eq("user_id", userId)
     .gte("log_date", startDate.toISOString().split("T")[0])
     .order("log_date", { ascending: true })
@@ -335,17 +292,16 @@ export async function getSymptomHistory(userId: string, days = 7) {
     console.error("[v0] Error fetching symptom history:", error)
     return []
   }
-
   return data || []
 }
 
 export async function getWellnessHistory(userId: string, days = 7) {
-  const supabaseClient = createClient()
+  const supabase = getSupabase()
 
   const startDate = new Date()
   startDate.setDate(startDate.getDate() - days + 1)
 
-  const { data, error } = await supabaseClient
+  const { data, error } = await supabase
     .from("daily_logs")
     .select("log_date, mood, sleep, stress")
     .eq("user_id", userId)
@@ -356,6 +312,5 @@ export async function getWellnessHistory(userId: string, days = 7) {
     console.error("[v0] Error fetching wellness history:", error)
     return []
   }
-
   return data || []
 }
