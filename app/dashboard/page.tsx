@@ -1,5 +1,7 @@
 "use client"
 
+export const dynamic = "force-dynamic"
+
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import {
@@ -1114,33 +1116,32 @@ export default function DashboardPage() {
       // Determine phases based on localStorage (this should be updated to use dietInfoData if available)
       determinePhases()
 
-      // Get diet timeline data (this should also ideally come from dietInfoData)
+      // Get diet timeline data for progress bar (Supabase dietInfoData takes precedence)
       const dietTimeline = localStorage.getItem("userDietTimeline")
       const startDate = localStorage.getItem("dietStartDate")
-
-      // Get streak days from localStorage or calculate it
-      const savedStreakDays = localStorage.getItem("streakDays")
 
       if (!startDate) {
         const today = new Date().toISOString()
         localStorage.setItem("dietStartDate", today)
-        // Set streak to 1 for new users
-        setStreakDays(1)
+        // Only reset streak to 1 if Supabase didn't return a real streak
+        if (!userStreak) {
+          setStreakDays(1)
+        }
         setProgress(1)
-        // return // Removed return to allow other loading logic to proceed
+      } else {
+        // Calculate days elapsed only for progress bar — NOT for streak (Supabase owns streak)
+        const daysElapsed = Math.floor((new Date().getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24))
+
+        // Only fall back to localStorage streak if Supabase returned nothing
+        if (!userStreak) {
+          setStreakDays(Math.max(daysElapsed + 1, 1))
+        }
+
+        // Calculate progress percentage
+        const totalDays = dietTimeline ? Number.parseInt(dietTimeline) : 30
+        const progressPercentage = totalDays > 0 ? Math.min(Math.round((daysElapsed / totalDays) * 100), 100) : 1
+        setProgress(progressPercentage > 0 ? progressPercentage : 1)
       }
-
-      // Calculate days elapsed since diet start
-      const daysElapsed = Math.floor((new Date().getTime() - new Date(startDate!).getTime()) / (1000 * 60 * 60 * 24))
-
-      setStreakDays(Math.max(daysElapsed + 1, 1))
-
-      // Calculate progress percentage
-      const totalDays = dietTimeline ? Number.parseInt(dietTimeline) : 30
-      const progressPercentage = totalDays > 0 ? Math.min(Math.round((daysElapsed / totalDays) * 100), 100) : 1
-
-      // Set progress to calculated value or 1% for new users
-      setProgress(progressPercentage > 0 ? progressPercentage : 1)
 
       const isFirstEverLoad = sessionStorage.getItem("dashboardFirstLoad") === null
       if (isFirstEverLoad) {
@@ -1167,8 +1168,11 @@ export default function DashboardPage() {
         setUserSymptoms(parsedSymptoms)
       }
 
-      // Load symptom data (this should ideally use the data loaded from DB)
-      loadSymptomData()
+      // Load symptom data from localStorage ONLY as fallback if Supabase returned no history
+      // (loadSymptomDataFromDatabase already ran above and sets hasLoggedSymptoms)
+      if (!hasLoggedSymptoms) {
+        loadSymptomData()
+      }
 
       // Process wellness data (this should ideally use the data loaded from DB)
       const loggedDayStr = localStorage.getItem("loggedDay")
@@ -1912,10 +1916,10 @@ export default function DashboardPage() {
         {/* Chart Tabs */}
         <div className="glass-card p-6 mb-6">
           {/* Tab Navigation */}
-          <div className="flex border-b border-pink-200 mb-4">
+          <div className="chart-tabs border-b border-pink-200 mb-4">
             <button
               onClick={() => setActiveTab("symptoms")}
-              className={`pb-2 px-4 font-medium text-lg transition-colors ${
+              className={`chart-tab pb-2 px-3 font-medium text-sm transition-colors ${
                 activeTab === "symptoms"
                   ? "border-b-2 border-pink-400 text-pink-600"
                   : "text-secondary-color hover:text-primary-color"
@@ -1925,7 +1929,7 @@ export default function DashboardPage() {
             </button>
             <button
               onClick={() => setActiveTab("wellness")}
-              className={`pb-2 px-4 font-medium text-lg transition-colors ${
+              className={`chart-tab pb-2 px-3 font-medium text-sm transition-colors ${
                 activeTab === "wellness"
                   ? "border-b-2 border-peach-400 text-peach-600"
                   : "text-secondary-color hover:text-primary-color"
@@ -1935,7 +1939,7 @@ export default function DashboardPage() {
             </button>
             <button
               onClick={() => setActiveTab("weight")}
-              className={`pb-2 px-4 font-medium text-lg transition-colors ${
+              className={`chart-tab pb-2 px-3 font-medium text-sm transition-colors ${
                 activeTab === "weight"
                   ? "border-b-2 border-green-400 text-green-600"
                   : "text-secondary-color hover:text-primary-color"

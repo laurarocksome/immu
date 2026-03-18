@@ -1,11 +1,14 @@
 "use client"
 
+export const dynamic = "force-dynamic"
+
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { List, Home, Plus, BookOpen, UtensilsCrossed, ArrowLeft, Edit, Trash2 } from "lucide-react"
 import Logo from "@/app/components/logo"
 import { deleteUser } from "@/lib/auth"
-import { supabase } from "@/lib/supabase/client"
+import { createClient } from "@/lib/supabase/client"
+const supabase = createClient()
 
 type UserProfile = {
   gender: string
