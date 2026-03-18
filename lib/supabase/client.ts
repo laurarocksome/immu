@@ -3,19 +3,18 @@ import { createBrowserClient } from "@supabase/ssr"
 // Re-export for other files to use
 export { createBrowserClient }
 
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
+
 let supabaseClient: ReturnType<typeof createBrowserClient> | null = null
 
 export function createClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-
-  if (!supabaseUrl || !supabaseAnonKey) {
-    console.error("[v0] Missing Supabase environment variables")
-    console.error("[v0] NEXT_PUBLIC_SUPABASE_URL:", supabaseUrl)
-    console.error("[v0] NEXT_PUBLIC_SUPABASE_ANON_KEY:", supabaseAnonKey ? "exists" : "missing")
-    throw new Error("Supabase environment variables are not configured")
+  // Only create client in browser environment
+  if (typeof window === "undefined") {
+    // Return a mock client for SSR that will be replaced on client
+    return null as unknown as ReturnType<typeof createBrowserClient>
   }
-
+  
   if (supabaseClient) {
     return supabaseClient
   }
@@ -24,4 +23,5 @@ export function createClient() {
   return supabaseClient
 }
 
-export const supabase = createClient()
+// Lazy initialization - only create when accessed in browser
+export const supabase = typeof window !== "undefined" ? createClient() : (null as unknown as ReturnType<typeof createBrowserClient>)

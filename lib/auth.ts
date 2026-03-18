@@ -4,7 +4,13 @@ import { createClient } from "./supabase/client"
 const getSupabase = () => createClient()
 
 export async function signUp(email: string, password: string, name: string) {
-  const supabase = getSupabase()
+  console.log("[v0] signUp called with email:", email)
+  console.log("[v0] supabase client:", supabase)
+  
+  if (!supabase) {
+    throw new Error("Supabase client not initialized. Please refresh the page.")
+  }
+  
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -15,6 +21,8 @@ export async function signUp(email: string, password: string, name: string) {
         `${typeof window !== "undefined" ? window.location.origin : ""}/dashboard`,
     },
   })
+
+  console.log("[v0] signUp response - data:", data, "error:", error)
 
   if (error) throw error
 
