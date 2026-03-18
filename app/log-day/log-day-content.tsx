@@ -461,46 +461,64 @@ export default function LogDayContent() {
               Track any symptoms you experienced today
             </p>
             
+            {/* Severity Scale Legend */}
+            <div className="mb-4 p-3 bg-[#FDF5F3] rounded-lg">
+              <p className="text-xs font-medium text-foreground mb-2">Severity Scale:</p>
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span><strong>1</strong> = Mild</span>
+                <span><strong>2</strong> = Noticeable</span>
+                <span><strong>3</strong> = Moderate</span>
+                <span><strong>4</strong> = Severe</span>
+                <span><strong>5</strong> = Extreme</span>
+              </div>
+            </div>
+            
             {/* Selected Symptoms */}
             {symptoms.length > 0 && (
               <div className="space-y-3 mb-4">
                 {symptoms.map((symptom) => (
-                  <div key={symptom.id} className="flex items-center justify-between bg-[#FDF5F3] rounded-lg p-3">
-                    <span className="font-medium text-foreground">{symptom.name}</span>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => updateSymptomSeverity(symptom.id, symptom.severity - 1)}
-                        className="p-1 rounded-full hover:bg-[#D4A5A5]/20"
-                      >
-                        <Minus className="h-4 w-4" />
-                      </button>
-                      <div className="flex gap-1">
-                        {[1, 2, 3, 4, 5].map((level) => (
-                          <button
-                            key={level}
-                            onClick={() => updateSymptomSeverity(symptom.id, level)}
-                            className={`w-6 h-6 rounded-full text-xs transition-all ${
-                              symptom.severity === level
-                                ? "bg-[#D4A5A5] text-white"
-                                : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                            }`}
-                          >
-                            {level}
-                          </button>
-                        ))}
-                      </div>
-                      <button
-                        onClick={() => updateSymptomSeverity(symptom.id, symptom.severity + 1)}
-                        className="p-1 rounded-full hover:bg-[#D4A5A5]/20"
-                      >
-                        <Plus className="h-4 w-4" />
-                      </button>
+                  <div key={symptom.id} className="bg-[#FDF5F3] rounded-lg p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-medium text-foreground">{symptom.name}</span>
                       <button
                         onClick={() => removeSymptom(symptom.id)}
-                        className="ml-2 text-red-500 text-sm hover:text-red-700"
+                        className="text-red-500 text-sm hover:text-red-700"
                       >
                         Remove
                       </button>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">Mild</span>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => updateSymptomSeverity(symptom.id, symptom.severity - 1)}
+                          className="p-1 rounded-full hover:bg-[#D4A5A5]/20"
+                        >
+                          <Minus className="h-4 w-4" />
+                        </button>
+                        <div className="flex gap-1">
+                          {[1, 2, 3, 4, 5].map((level) => (
+                            <button
+                              key={level}
+                              onClick={() => updateSymptomSeverity(symptom.id, level)}
+                              className={`w-8 h-8 rounded-full text-xs transition-all ${
+                                symptom.severity === level
+                                  ? "bg-[#D4A5A5] text-white"
+                                  : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                              }`}
+                            >
+                              {level}
+                            </button>
+                          ))}
+                        </div>
+                        <button
+                          onClick={() => updateSymptomSeverity(symptom.id, symptom.severity + 1)}
+                          className="p-1 rounded-full hover:bg-[#D4A5A5]/20"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </button>
+                      </div>
+                      <span className="text-xs text-muted-foreground">Extreme</span>
                     </div>
                   </div>
                 ))}
