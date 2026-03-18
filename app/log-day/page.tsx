@@ -160,6 +160,7 @@ export default function LogDayPage() {
     }
 
     const loadUserGender = () => {
+      if (typeof window === "undefined") return
       const profileData = localStorage.getItem("userProfile")
       if (profileData) {
         try {
@@ -172,6 +173,7 @@ export default function LogDayPage() {
     }
 
     const loadCurrentPhase = () => {
+      if (typeof window === "undefined") return
       const startDateStr = localStorage.getItem("dietStartDate")
       const adaptationChoice = localStorage.getItem("userAdaptationChoice")
 
@@ -216,6 +218,7 @@ export default function LogDayPage() {
   }, [])
 
   const checkIfShouldShowDietQuestion = () => {
+    if (typeof window === "undefined") return
     if (currentPhase !== "Elimination") {
       setShowDietQuestion(false)
       return
