@@ -35,7 +35,7 @@ import { getWeightLogs as fetchWeightLogs } from "@/lib/weight-data" // Renamed 
 
 async function getUserProfile(userId: string) {
   const supabase = createClient()
-  const { data, error } = await supabase.from("user_profiles").select("*").eq("user_id", userId).single()
+  const { data, error } = await supabase.from("user_profiles").select("*").eq("user_id", userId).maybeSingle()
 
   if (error) {
     console.error("[v0] Error loading user profile:", error)
@@ -46,7 +46,7 @@ async function getUserProfile(userId: string) {
 
 async function loadDietInfo(userId: string) {
   const supabase = createClient()
-  const { data, error } = await supabase.from("diet_info").select("*").eq("user_id", userId).single()
+  const { data, error } = await supabase.from("diet_info").select("*").eq("user_id", userId).maybeSingle()
 
   if (error) {
     console.error("[v0] Error loading diet info:", error)
@@ -1064,15 +1064,19 @@ export default function DashboardPage() {
         return
       }
 
+      let userStreak: number | null = null
+      
       if (user?.id) {
         setUserId(user.id)
 
-        const [dietInfoData, trackedDates, profile, userStreak] = await Promise.all([
+        const [dietInfoData, trackedDates, profile, streakData] = await Promise.all([
           loadDietInfo(user.id),
           loadTrackedDates(user.id),
           getUserProfile(user.id),
           getUserStreak(user.id),
         ])
+        
+        userStreak = streakData
 
         if (userStreak) {
           console.log("[v0] User streak from database:", userStreak)
