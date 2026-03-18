@@ -110,75 +110,49 @@ export default function LogDayPage() {
   const [showAipCompliance, setShowAipCompliance] = useState(false)
 
   useEffect(() => {
-    // Load user symptoms from localStorage
-    const loadUserSymptoms = () => {
+    // Load user symptoms — prefer Supabase, fall back to localStorage
+    const loadUserSymptoms = async () => {
+      const defaultSymptoms = [
+        { id: 1, name: "Fatigue", description: "Feeling tired or exhausted" },
+        { id: 2, name: "Joint Pain", description: "Pain, stiffness, or swelling in joints" },
+        { id: 3, name: "Brain Fog", description: "Difficulty concentrating or thinking clearly" },
+        { id: 4, name: "Digestive Issues", description: "Bloating, gas, diarrhea, or constipation" },
+        { id: 5, name: "Headaches", description: "Pain or pressure in head" },
+      ]
       try {
-        // First try to get the symptoms selected during onboarding
-        const selectedSymptoms = localStorage.getItem("selectedSymptoms")
-
-        if (selectedSymptoms) {
-          const parsedSymptoms = JSON.parse(selectedSymptoms)
-
-          if (Array.isArray(parsedSymptoms) && parsedSymptoms.length > 0) {
-            // Convert the string array to our symptom format
-            const formattedSymptoms = parsedSymptoms.map((name, index) => ({
+        const supabase = createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+          const { data: dbSymptoms } = await supabase
+            .from("user_symptoms")
+            .select("symptom")
+            .eq("user_id", user.id)
+          if (dbSymptoms && dbSymptoms.length > 0) {
+            const formatted = dbSymptoms.map((row, index) => ({
               id: index + 1,
-              name,
-              description: `Track your ${name.toLowerCase()} symptoms`,
+              name: row.symptom,
+              description: `Track your ${row.symptom.toLowerCase()} symptoms`,
             }))
-
-            setUserSymptoms(formattedSymptoms)
-            console.log("Loaded symptoms from onboarding:", formattedSymptoms)
+            setUserSymptoms(formatted)
+            localStorage.setItem("userSymptoms", JSON.stringify(dbSymptoms.map((r) => r.symptom)))
             return
           }
         }
-
-        // If no onboarding symptoms found, check for previously saved userSymptoms
-        const savedSymptoms = localStorage.getItem("userSymptoms")
-        if (savedSymptoms) {
-          const parsedSymptoms = JSON.parse(savedSymptoms)
-
-          if (Array.isArray(parsedSymptoms) && parsedSymptoms.length > 0) {
-            // If it's already in the right format, use it directly
-            if (typeof parsedSymptoms[0] === "object" && parsedSymptoms[0].id) {
-              setUserSymptoms(parsedSymptoms)
-              console.log("Loaded symptoms from userSymptoms (object format):", parsedSymptoms)
-            } else {
-              // Convert string array to our symptom format
-              const formattedSymptoms = parsedSymptoms.map((name, index) => ({
-                id: index + 1,
-                name,
-                description: `Track your ${name.toLowerCase()} symptoms`,
-              }))
-
-              setUserSymptoms(formattedSymptoms)
-              console.log("Loaded symptoms from userSymptoms (string format):", formattedSymptoms)
-            }
+        // Fallback: localStorage
+        const stored = localStorage.getItem("selectedSymptoms") || localStorage.getItem("userSymptoms")
+        if (stored) {
+          const parsed = JSON.parse(stored)
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            const formatted = typeof parsed[0] === "object"
+              ? parsed
+              : parsed.map((name: string, index: number) => ({ id: index + 1, name, description: `Track your ${name.toLowerCase()} symptoms` }))
+            setUserSymptoms(formatted)
             return
           }
         }
-
-        // If no symptoms found anywhere, use default fallback symptoms
-        const defaultSymptoms = [
-          { id: 1, name: "Fatigue", description: "Feeling tired or exhausted" },
-          { id: 2, name: "Joint Pain", description: "Pain, stiffness, or swelling in joints" },
-          { id: 3, name: "Brain Fog", description: "Difficulty concentrating or thinking clearly" },
-          { id: 4, name: "Digestive Issues", description: "Bloating, gas, diarrhea, or constipation" },
-          { id: 5, name: "Headaches", description: "Pain or pressure in head" },
-        ]
-
         setUserSymptoms(defaultSymptoms)
-        console.log("Using default symptoms:", defaultSymptoms)
       } catch (error) {
         console.error("Error loading user symptoms:", error)
-        // Fallback to default symptoms in case of error
-        const defaultSymptoms = [
-          { id: 1, name: "Fatigue", description: "Feeling tired or exhausted" },
-          { id: 2, name: "Joint Pain", description: "Pain, stiffness, or swelling in joints" },
-          { id: 3, name: "Brain Fog", description: "Difficulty concentrating or thinking clearly" },
-          { id: 4, name: "Digestive Issues", description: "Bloating, gas, diarrhea, or constipation" },
-          { id: 5, name: "Headaches", description: "Pain or pressure in head" },
-        ]
         setUserSymptoms(defaultSymptoms)
       }
     }
@@ -226,7 +200,7 @@ export default function LogDayPage() {
       }
     }
 
-    // Load user symptoms
+    // Load user symptoms (async — Supabase first, localStorage fallback)
     loadUserSymptoms()
 
     // Load user gender
