@@ -645,17 +645,18 @@ export default function LogDayPage() {
   }, [selectedDate, userSymptoms])
 
   const getMinDate = () => {
+    if (typeof window === "undefined") return ""
     const startDateStr = localStorage.getItem("dietStartDate")
     if (startDateStr) {
       return startDateStr
     }
-    // Default to 90 days ago if no start date
     const ninetyDaysAgo = new Date()
     ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90)
     return ninetyDaysAgo.toISOString().split("T")[0]
   }
 
   const getMaxDate = () => {
+    if (typeof window === "undefined") return ""
     return new Date().toISOString().split("T")[0]
   }
 
