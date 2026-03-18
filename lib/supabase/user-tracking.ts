@@ -6,42 +6,46 @@ import { createClient } from "@/lib/supabase/client"
 export async function getCurrentPhaseAndDay(userId: string) {
   const supabase = createClient()
 
-  const { data: dietInfo, error } = await supabase
+  // Get the current active phase from phase_history
+  const { data: activePhase, error: phaseError } = await supabase
+    .from("phase_history")
+    .select("phase, started_at")
+    .eq("user_id", userId)
+    .is("ended_at", null)
+    .order("started_at", { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  // Get diet info as fallback
+  const { data: dietInfo, error: dietError } = await supabase
     .from("diet_info")
     .select("start_date, current_phase, timeline_days, adaptation_choice")
     .eq("user_id", userId)
-    .single()
+    .maybeSingle()
 
-  if (error || !dietInfo) {
+  if (!activePhase && !dietInfo) {
     return null
   }
 
-  const startDate = new Date(dietInfo.start_date)
+  // Use phase_history as primary source, fallback to diet_info
+  const currentPhase = activePhase?.phase || dietInfo?.current_phase || "Adaptation"
+  const phaseStartDate = activePhase?.started_at || dietInfo?.start_date
+
+  // Calculate days in current phase
+  const startDate = new Date(phaseStartDate)
   const today = new Date()
-  const daysSinceStart = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
+  const daysInPhase = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1
 
-  // Determine adaptation days based on choice
-  const adaptationDays = dietInfo.adaptation_choice === "14-day" ? 14 : 28
-
-  let currentPhase = "Adaptation"
-  let currentDay = daysSinceStart + 1
-
-  if (daysSinceStart >= adaptationDays) {
-    currentPhase = "Elimination"
-    currentDay = daysSinceStart - adaptationDays + 1
-  }
-
-  // Check if they've moved to reintroduction (manual phase change)
-  if (dietInfo.current_phase === "Reintroduction") {
-    currentPhase = "Reintroduction"
-  }
+  // Calculate total days since diet start
+  const dietStartDate = new Date(dietInfo?.start_date || phaseStartDate)
+  const totalDays = Math.floor((today.getTime() - dietStartDate.getTime()) / (1000 * 60 * 60 * 24)) + 1
 
   return {
     phase: currentPhase,
-    day: currentDay,
-    totalDays: daysSinceStart + 1,
-    startDate: dietInfo.start_date,
-    adaptationDays,
+    day: daysInPhase,
+    totalDays,
+    startDate: dietInfo?.start_date || phaseStartDate,
+    adaptationDays: dietInfo?.adaptation_choice === "14-day" ? 14 : 28,
   }
 }
 

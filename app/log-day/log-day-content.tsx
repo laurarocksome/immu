@@ -56,22 +56,9 @@ export default function LogDayContent() {
   // Notes
   const [notes, setNotes] = useState("")
   
-  // General Symptoms
+  // General Symptoms - will be loaded from user_symptoms table (selected during onboarding)
   const [symptoms, setSymptoms] = useState<Symptom[]>([])
-  const [availableSymptoms, setAvailableSymptoms] = useState<string[]>([
-    "Headache",
-    "Fatigue",
-    "Brain Fog",
-    "Bloating",
-    "Joint Pain",
-    "Skin Issues",
-    "Digestive Issues",
-    "Mood Changes",
-    "Insomnia",
-    "Cravings",
-    "Inflammation",
-    "Muscle Aches",
-  ])
+  const [availableSymptoms, setAvailableSymptoms] = useState<string[]>([])
   
   // Selected date
   const [selectedDate] = useState(() => {
@@ -98,26 +85,35 @@ export default function LogDayContent() {
         .eq("user_id", user.id)
         .maybeSingle()
       
+      console.log("[v0] User profile loaded:", profile)
       if (profile?.gender) {
         setUserGender(profile.gender)
       }
       
       // Get current phase info
       const phaseInfo = await getCurrentPhaseAndDay(user.id)
+      console.log("[v0] Phase info loaded:", phaseInfo)
       if (phaseInfo) {
         setCurrentPhase(phaseInfo.phase)
         setCurrentDay(phaseInfo.day)
       }
       
-      // Load user's custom symptoms from user_symptoms table
-      const { data: userSymptoms } = await supabase
+      // Load user's symptoms from user_symptoms table (selected during onboarding)
+      // These are the ONLY symptoms that should be shown for evaluation
+      const { data: userSymptoms, error: symptomsError } = await supabase
         .from("user_symptoms")
         .select("symptom")
         .eq("user_id", user.id)
       
+      console.log("[v0] User symptoms loaded:", userSymptoms, "Error:", symptomsError)
+      
       if (userSymptoms && userSymptoms.length > 0) {
-        const customSymptoms = userSymptoms.map(s => s.symptom)
-        setAvailableSymptoms(prev => [...new Set([...prev, ...customSymptoms])])
+        // Use only the symptoms the user selected during onboarding
+        const onboardingSymptoms = userSymptoms.map(s => s.symptom)
+        setAvailableSymptoms(onboardingSymptoms)
+      } else {
+        // Fallback: no symptoms to track if none were selected during onboarding
+        setAvailableSymptoms([])
       }
       
       // Check if there's an existing log for today
@@ -329,7 +325,8 @@ export default function LogDayContent() {
     </div>
   )
 
-  const isFemale = userGender?.toLowerCase() === "female" || userGender?.toLowerCase() === "f"
+  const isFemale = userGender?.toLowerCase() === "female" || userGender?.toLowerCase() === "f" || userGender?.toLowerCase() === "woman"
+  console.log("[v0] Gender check - userGender:", userGender, "isFemale:", isFemale)
 
   if (isLoading) {
     return (
@@ -540,10 +537,18 @@ export default function LogDayContent() {
                 ))}
             </div>
             
-            {symptoms.length === 0 && (
+            {symptoms.length === 0 && availableSymptoms.length > 0 && (
               <p className="text-center text-muted-foreground text-sm mt-4">
                 No symptoms? Great! Tap above to add any you experienced.
               </p>
+            )}
+            
+            {availableSymptoms.length === 0 && (
+              <div className="text-center py-4 px-3 bg-gray-50 rounded-lg">
+                <p className="text-muted-foreground text-sm">
+                  No symptoms to track. You can add symptoms in your profile settings.
+                </p>
+              </div>
             )}
           </CardContent>
         </Card>
