@@ -46,12 +46,12 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-purple-50 to-purple-100 p-6">
+    <div className="min-h-screen flex flex-col items-center justify-center app-gradient p-6">
       <div className="w-full max-w-md bg-white rounded-3xl shadow-xl p-8">
         <div className="flex flex-col items-center mb-8">
           <div className="flex items-center gap-3 mb-4">
             <ImmuLogo />
-            <h1 className="text-3xl font-bold text-[#2d2f60]">IMMU</h1>
+            <h1 className="text-3xl font-bold text-primary-color">IMMU</h1>
           </div>
           <p className="text-center text-slate-600 text-sm leading-relaxed">
             Immu Health, your personal guide to the Autoimmune Protocol diet
@@ -96,7 +96,7 @@ export default function Login() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-pink-400 to-purple-400 text-white font-semibold text-lg hover:from-pink-500 hover:to-purple-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-3.5 rounded-xl gradient-button text-white font-semibold text-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? "Signing in..." : "Sign In"}
           </button>
