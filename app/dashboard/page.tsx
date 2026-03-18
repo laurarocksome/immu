@@ -1064,15 +1064,19 @@ export default function DashboardPage() {
         return
       }
 
+      let userStreak: number | null = null
+      
       if (user?.id) {
         setUserId(user.id)
 
-        const [dietInfoData, trackedDates, profile, userStreak] = await Promise.all([
+        const [dietInfoData, trackedDates, profile, streakData] = await Promise.all([
           loadDietInfo(user.id),
           loadTrackedDates(user.id),
           getUserProfile(user.id),
           getUserStreak(user.id),
         ])
+        
+        userStreak = streakData
 
         if (userStreak) {
           console.log("[v0] User streak from database:", userStreak)
