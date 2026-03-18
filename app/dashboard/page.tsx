@@ -35,7 +35,7 @@ import { getWeightLogs as fetchWeightLogs } from "@/lib/weight-data" // Renamed 
 
 async function getUserProfile(userId: string) {
   const supabase = createClient()
-  const { data, error } = await supabase.from("user_profiles").select("*").eq("user_id", userId).single()
+  const { data, error } = await supabase.from("user_profiles").select("*").eq("user_id", userId).maybeSingle()
 
   if (error) {
     console.error("[v0] Error loading user profile:", error)
@@ -46,7 +46,7 @@ async function getUserProfile(userId: string) {
 
 async function loadDietInfo(userId: string) {
   const supabase = createClient()
-  const { data, error } = await supabase.from("diet_info").select("*").eq("user_id", userId).single()
+  const { data, error } = await supabase.from("diet_info").select("*").eq("user_id", userId).maybeSingle()
 
   if (error) {
     console.error("[v0] Error loading diet info:", error)
