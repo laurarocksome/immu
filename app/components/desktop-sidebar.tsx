@@ -2,6 +2,7 @@
 
 import { useRouter, usePathname } from "next/navigation"
 import { List, Home, Plus, BookOpen, UtensilsCrossed } from "lucide-react"
+import { useEffect } from "react"
 
 export default function DesktopSidebar() {
   const router = useRouter()
@@ -9,10 +10,19 @@ export default function DesktopSidebar() {
 
   const isActive = (path: string) => pathname === path
 
-  const hideOn = ["/login", "/signup", "/get-started", "/", "/onboarding"]
-  if (hideOn.some(p => pathname === p || pathname.startsWith("/onboarding"))) {
-    return null
-  }
+  const hidden = pathname === "/login" || pathname === "/signup" || pathname === "/get-started" || pathname === "/" || pathname.startsWith("/onboarding")
+
+  useEffect(() => {
+    const shell = document.querySelector(".app-shell")
+    if (!shell) return
+    if (hidden) {
+      shell.classList.remove("has-sidebar")
+    } else {
+      shell.classList.add("has-sidebar")
+    }
+  }, [hidden])
+
+  if (hidden) return null
 
   return (
     <nav className="desktop-sidebar">
