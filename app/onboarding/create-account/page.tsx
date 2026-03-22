@@ -6,6 +6,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Logo from "@/app/components/logo"
 import { saveUserProfile, saveUserConditions, saveUserSymptoms, saveDietInfo, saveUserName } from "@/lib/user-data"
+import { saveWeightLog } from "@/lib/weight-data"
 import { createClient } from "@/lib/supabase/client"
 
 export default function CreateAccountPage() {
@@ -64,6 +65,11 @@ export default function CreateAccountPage() {
         height: userProfile.height,
         heightUnit: userProfile.heightUnit || "cm",
       })
+
+      // Also save initial weight to weight_logs for dashboard chart
+      if (userProfile.weight) {
+        await saveWeightLog(user.id, userProfile.weight, userProfile.weightUnit || "kg", today.split("T")[0])
+      }
 
       if (selectedConditions.length > 0) {
         await saveUserConditions(selectedConditions)

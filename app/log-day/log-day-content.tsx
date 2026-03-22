@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { ArrowLeft, Sun, Moon, Brain, Check, Plus, Minus } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -42,18 +42,8 @@ export default function LogDayContent() {
   
   // Symptoms
   const [symptoms, setSymptoms] = useState<Symptom[]>([])
-  const [availableSymptoms, setAvailableSymptoms] = useState<string[]>([
-    "Headache",
-    "Fatigue",
-    "Brain Fog",
-    "Bloating",
-    "Joint Pain",
-    "Skin Issues",
-    "Digestive Issues",
-    "Mood Changes",
-    "Insomnia",
-    "Cravings",
-  ])
+  const [availableSymptoms, setAvailableSymptoms] = useState<string[]>([])
+  const loadedRef = useRef(false)
   
   // Selected date
   const [selectedDate] = useState(() => {
@@ -62,6 +52,8 @@ export default function LogDayContent() {
   })
 
   useEffect(() => {
+    if (loadedRef.current) return
+    loadedRef.current = true
     async function loadUserData() {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
@@ -86,10 +78,13 @@ export default function LogDayContent() {
         .select("symptom")
         .eq("user_id", user.id)
       
+      const DEFAULT_SYMPTOMS = ["Headache","Fatigue","Brain Fog","Bloating","Joint Pain","Skin Issues","Digestive Issues","Mood Changes","Insomnia","Cravings"]
       let customSymptoms: string[] = []
       if (userSymptoms && userSymptoms.length > 0) {
         customSymptoms = userSymptoms.map(s => s.symptom)
-        setAvailableSymptoms(prev => [...new Set([...prev, ...customSymptoms])])
+        setAvailableSymptoms([...new Set([...customSymptoms, ...DEFAULT_SYMPTOMS])])
+      } else {
+        setAvailableSymptoms(DEFAULT_SYMPTOMS)
       }
       
       // Check if there's an existing log for today
