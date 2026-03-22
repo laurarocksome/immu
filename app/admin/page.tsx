@@ -1,107 +1,104 @@
-"use client"
+import { isAdmin } from "@/lib/supabase/admin-check"
+import { createServerClient } from "@supabase/ssr"
+import { cookies } from "next/headers"
+import AdminDashboard from "./admin-dashboard"
+import { Button } from "@/components/ui/button"
+import Link from "next/link"
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { ArrowLeft, Eye, EyeOff } from "lucide-react"
-import Logo from "@/app/components/logo"
-import { createBrowserClient } from "@supabase/ssr"
+export default async function AdminPage() {
+  const cookieStore = await cookies()
 
-const PAGES = [
-  { key: "recipes", label: "Recipes", path: "/recipes" },
-  { key: "nutrition", label: "Nutrition Guides", path: "/nutrition" },
-  { key: "food-list", label: "Products / Food List", path: "/food-list" },
-  { key: "calendar", label: "Calendar", path: "/calendar" },
-  { key: "faq", label: "FAQ", path: "/faq" },
-]
-
-export default function PageVisibilityAdmin() {
-  const router = useRouter()
-  const [hiddenPages, setHiddenPages] = useState<string[]>([])
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState<string | null>(null)
-
-  const supabase = createBrowserClient(
+  const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll()
+        },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options))
+          } catch {
+            // Server component
+          }
+        },
+      },
+    },
   )
 
-  useEffect(() => {
-    loadSettings()
-  }, [])
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
-  const loadSettings = async () => {
-    const { data } = await supabase
-      .from("app_settings")
-      .select("value")
-      .eq("key", "hidden_pages")
-      .single()
-    if (data) setHiddenPages(data.value || [])
-    setLoading(false)
-  }
-
-  const togglePage = async (pageKey: string) => {
-    setSaving(pageKey)
-    const newHidden = hiddenPages.includes(pageKey)
-      ? hiddenPages.filter(p => p !== pageKey)
-      : [...hiddenPages, pageKey]
-
-    const { error } = await supabase
-      .from("app_settings")
-      .upsert({ key: "hidden_pages", value: newHidden, updated_at: new Date().toISOString() })
-
-    if (!error) setHiddenPages(newHidden)
-    setSaving(null)
-  }
-
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-brand-lightest to-white">
-      <header className="p-4 flex items-center header-gradient text-white relative">
-        <button onClick={() => router.push("/admin")} className="absolute left-4 flex items-center text-white/80 hover:text-white">
-          <ArrowLeft className="h-5 w-5 mr-1" />
-          Back
-        </button>
-        <div className="mx-auto"><Logo variant="light" /></div>
-      </header>
-
-      <main className="max-w-lg mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold text-brand-dark mb-2">Page Visibility</h1>
-        <p className="text-brand-dark/60 mb-6">Toggle pages on/off for all users.</p>
-
-        {loading ? (
-          <div className="text-center py-8 text-brand-dark/50">Loading...</div>
-        ) : (
-          <div className="space-y-3">
-            {PAGES.map(page => {
-              const isHidden = hiddenPages.includes(page.key)
-              return (
-                <div key={page.key} className="glass-card p-4 flex items-center justify-between">
-                  <div>
-                    <p className="font-medium text-brand-dark">{page.label}</p>
-                    <p className="text-xs text-brand-dark/50">{page.path}</p>
-                  </div>
-                  <button
-                    onClick={() => togglePage(page.key)}
-                    disabled={saving === page.key}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                      isHidden
-                        ? "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                        : "bg-green-100 text-green-700 hover:bg-green-200"
-                    }`}
-                  >
-                    {saving === page.key ? (
-                      <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin inline-block" />
-                    ) : isHidden ? (
-                      <><EyeOff className="h-4 w-4" /><span>Hidden</span></>
-                    ) : (
-                      <><Eye className="h-4 w-4" /><span>Visible</span></>
-                    )}
-                  </button>
-                </div>
-              )
-            })}
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 p-4">
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
+          <div className="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-8 w-8 text-pink-500"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+              />
+            </svg>
           </div>
-        )}
-      </main>
-    </div>
-  )
+          <h1 className="text-2xl font-bold text-slate-900 mb-2">Admin Access Required</h1>
+          <p className="text-slate-600 mb-6">Please log in to access the admin panel.</p>
+          <Link href="/login">
+            <Button className="w-full bg-gradient-to-r from-pink-400 to-purple-400 hover:from-pink-500 hover:to-purple-500">
+              Log In
+            </Button>
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  const adminStatus = await isAdmin()
+
+  if (!adminStatus) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 p-4">
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-8 w-8 text-red-500"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
+              />
+            </svg>
+          </div>
+          <h1 className="text-2xl font-bold text-slate-900 mb-2">Access Denied</h1>
+          <p className="text-slate-600 mb-2">
+            You are logged in as: <strong>{user.email}</strong>
+          </p>
+          <p className="text-slate-600 mb-6">This account does not have admin privileges.</p>
+          <Link href="/dashboard">
+            <Button className="w-full bg-gradient-to-r from-pink-400 to-purple-400 hover:from-pink-500 hover:to-purple-500">
+              Back to Dashboard
+            </Button>
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  return <AdminDashboard />
 }
