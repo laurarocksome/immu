@@ -33,14 +33,13 @@ export default function RecipesPage() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
   )
 
+  const [pageVisible, setPageVisible] = useState<boolean | null>(null)
+
   useEffect(() => {
     async function init() {
       const visible = await isPageVisible("recipes")
-      if (!visible) {
-        router.replace("/dashboard")
-        return
-      }
-      loadRecipes()
+      setPageVisible(visible)
+      if (visible) loadRecipes()
     }
     init()
   }, [])

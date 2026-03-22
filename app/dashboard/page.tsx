@@ -182,6 +182,7 @@ export default function DashboardPage() {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
   // </CHANGE> Removed isUpdatingWeight and weightUpdateSuccess states - using modal for all weight updates
   const [userId, setUserId] = useState<string>("")
+  const [hiddenPages, setHiddenPages] = useState<string[]>([])
   const [dietInfo, setDietInfo] = useState<any>(null) // State to store diet information
 
   // To-do list states
@@ -1433,6 +1434,15 @@ export default function DashboardPage() {
 
   useEffect(() => {
     loadUserData()
+    async function loadHiddenPages() {
+      try {
+        const { createClient } = await import("@/lib/supabase/client")
+        const sb = createClient()
+        const { data } = await sb.from("app_settings").select("value").eq("key", "hidden_pages").single()
+        if (data) setHiddenPages(data.value || [])
+      } catch {}
+    }
+    loadHiddenPages()
   }, [])
 
   // Effect to generate to-do items when adaptation phase or day changes
@@ -2514,13 +2524,15 @@ export default function DashboardPage() {
 
       {/* Bottom Navigation */}
       <nav className="bottom-nav grid grid-cols-5 border-t border-pink-200 bg-white/80 backdrop-blur-sm">
-        <button
-          className="flex flex-col items-center justify-center py-3 text-xs"
-          onClick={() => router.push("/food-list")}
-        >
-          <List className="h-5 w-5 mb-1 text-primary-color" />
-          <span className="text-primary-color">Products</span>
-        </button>
+        {!hiddenPages.includes("food-list") && (
+          <button
+            className="flex flex-col items-center justify-center py-3 text-xs"
+            onClick={() => router.push("/food-list")}
+          >
+            <List className="h-5 w-5 mb-1 text-primary-color" />
+            <span className="text-primary-color">Products</span>
+          </button>
+        )}
         <button className="flex flex-col items-center justify-center py-3 text-xs text-accent-color">
           <Home className="h-5 w-5 mb-1 text-accent-color" />
           <span>Dashboard</span>
@@ -2531,20 +2543,24 @@ export default function DashboardPage() {
         >
           <Plus className="h-8 w-8" />
         </button>
-        <button
-          className="flex flex-col items-center justify-center py-3 text-xs"
-          onClick={() => router.push("/nutrition")}
-        >
-          <BookOpen className="h-5 w-5 mb-1 text-primary-color" />
-          <span className="text-primary-color">Nutrition</span>
-        </button>
-        <button
-          className="flex flex-col items-center justify-center py-3 text-xs"
-          onClick={() => router.push("/recipes")}
-        >
-          <UtensilsCrossed className="h-5 w-5 mb-1 text-primary-color" />
-          <span className="text-primary-color">Recipes</span>
-        </button>
+        {!hiddenPages.includes("nutrition") && (
+          <button
+            className="flex flex-col items-center justify-center py-3 text-xs"
+            onClick={() => router.push("/nutrition")}
+          >
+            <BookOpen className="h-5 w-5 mb-1 text-primary-color" />
+            <span className="text-primary-color">Nutrition</span>
+          </button>
+        )}
+        {!hiddenPages.includes("recipes") && (
+          <button
+            className="flex flex-col items-center justify-center py-3 text-xs"
+            onClick={() => router.push("/recipes")}
+          >
+            <UtensilsCrossed className="h-5 w-5 mb-1 text-primary-color" />
+            <span className="text-primary-color">Recipes</span>
+          </button>
+        )}
       </nav>
 
       {showWeightModal && (
