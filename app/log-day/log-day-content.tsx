@@ -86,8 +86,9 @@ export default function LogDayContent() {
         .select("symptom")
         .eq("user_id", user.id)
       
+      let customSymptoms: string[] = []
       if (userSymptoms && userSymptoms.length > 0) {
-        const customSymptoms = userSymptoms.map(s => s.symptom)
+        customSymptoms = userSymptoms.map(s => s.symptom)
         setAvailableSymptoms(prev => [...new Set([...prev, ...customSymptoms])])
       }
       
@@ -114,6 +115,13 @@ export default function LogDayContent() {
             severity: s.severity,
           })))
         }
+      } else if (customSymptoms.length > 0) {
+        // No log yet for today — pre-load user's onboarding symptoms for rating
+        setSymptoms(customSymptoms.map(name => ({
+          id: crypto.randomUUID(),
+          name,
+          severity: 1,
+        })))
       }
       
       setIsLoading(false)
