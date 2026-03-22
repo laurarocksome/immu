@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
 import { createClient } from "@/lib/supabase/client"
 import { logDailyEntry, logSymptoms, getCurrentPhaseAndDay } from "@/lib/supabase/user-tracking"
+import { saveDietInfo } from "@/lib/user-data"
 
 interface Symptom {
   id: string
@@ -33,6 +34,9 @@ export default function LogDayContent() {
   
   // AIP compliance (for elimination phase)
   const [aipCompliant, setAipCompliant] = useState(true)
+  const [showRestartModal, setShowRestartModal] = useState(false)
+  const [restartPhase, setRestartPhase] = useState<"adaptation" | "elimination">("elimination")
+  const [restartDays, setRestartDays] = useState(90)
   
   // Period tracking
   const [onPeriod, setOnPeriod] = useState(false)
@@ -358,7 +362,7 @@ export default function LogDayContent() {
                   100% Compliant
                 </button>
                 <button
-                  onClick={() => setAipCompliant(false)}
+                  onClick={() => { setAipCompliant(false); setShowRestartModal(true) }}
                   className={`flex-1 py-3 rounded-lg border-2 transition-all ${
                     !aipCompliant
                       ? "bg-orange-50 border-orange-500 text-orange-700"
@@ -367,6 +371,89 @@ export default function LogDayContent() {
                 >
                   Had exceptions
                 </button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Restart Diet Modal */}
+        {currentPhase === "Elimination" && showRestartModal && (
+          <Card className="border-orange-200 bg-orange-50">
+            <CardContent className="p-6">
+              <h2 className="text-lg font-semibold text-orange-800 mb-2">Restart Your Diet?</h2>
+              <p className="text-sm text-orange-700 mb-5">
+                AIP allows zero exceptions during elimination. To get accurate results, you need to restart from Day 1.
+              </p>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Start phase</label>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => { setRestartPhase("elimination"); setRestartDays(90) }}
+                      className={`flex-1 py-2 rounded-lg border-2 text-sm transition-all ${
+                        restartPhase === "elimination"
+                          ? "bg-pink-100 border-pink-400 text-pink-800"
+                          : "border-gray-200 text-gray-600"
+                      }`}
+                    >
+                      Elimination
+                    </button>
+                    <button
+                      onClick={() => { setRestartPhase("adaptation"); setRestartDays(118) }}
+                      className={`flex-1 py-2 rounded-lg border-2 text-sm transition-all ${
+                        restartPhase === "adaptation"
+                          ? "bg-pink-100 border-pink-400 text-pink-800"
+                          : "border-gray-200 text-gray-600"
+                      }`}
+                    >
+                      Adaptation + Elimination
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Elimination duration: {restartPhase === "adaptation" ? restartDays - 28 : restartDays} days
+                  </label>
+                  <input
+                    type="range"
+                    min={restartPhase === "adaptation" ? 58 : 30}
+                    max={restartPhase === "adaptation" ? 118 : 90}
+                    value={restartDays}
+                    onChange={e => setRestartDays(Number(e.target.value))}
+                    className="w-full accent-pink-400"
+                  />
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                  <button
+                    onClick={async () => {
+                      if (!userId) return
+                      const today = new Date().toISOString()
+                      await saveDietInfo({
+                        startDate: today,
+                        timelineDays: restartDays,
+                        adaptationChoice: restartPhase === "adaptation" ? "Yes" : "No",
+                        currentPhase: restartPhase,
+                      })
+                      localStorage.setItem("dietStartDate", today)
+                      localStorage.setItem("userDietTimeline", restartDays.toString())
+                      localStorage.setItem("userAdaptationChoice", restartPhase === "adaptation" ? "Yes" : "No")
+                      setShowRestartModal(false)
+                      router.push("/dashboard")
+                    }}
+                    className="flex-1 py-3 rounded-lg bg-pink-400 text-white font-medium hover:bg-pink-500 transition-colors"
+                  >
+                    Restart Diet
+                  </button>
+                  <button
+                    onClick={() => { setShowRestartModal(false); setAipCompliant(true) }}
+                    className="flex-1 py-3 rounded-lg border-2 border-gray-200 text-gray-600 font-medium hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
             </CardContent>
           </Card>
