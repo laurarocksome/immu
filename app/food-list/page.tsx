@@ -20,6 +20,7 @@ import {
 } from "lucide-react"
 import Logo from "@/app/components/logo"
 import { createBrowserClient } from "@supabase/ssr"
+import { isPageVisible } from "@/lib/page-visibility"
 
 // Function to determine the current diet phase and day
 const determineDietPhase = () => {
@@ -218,6 +219,14 @@ export default function FoodListPage() {
   const router = useRouter()
 
   // Effect to load diet phase, favorites, and user statuses on component mount
+  useEffect(() => {
+    async function checkVisibility() {
+      const visible = await isPageVisible("food-list")
+      if (!visible) { router.replace("/dashboard"); return }
+    }
+    checkVisibility()
+  }, [])
+
   useEffect(() => {
     async function fetchFoods() {
       try {

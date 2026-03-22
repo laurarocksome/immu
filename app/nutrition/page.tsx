@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import { List, Home, Plus, BookOpen, UtensilsCrossed, User } from "lucide-react"
 import Logo from "@/app/components/logo"
 import { useState, useEffect } from "react"
+import { isPageVisible } from "@/lib/page-visibility"
 
 export default function NutritionPage() {
   const router = useRouter()
@@ -25,6 +26,14 @@ export default function NutritionPage() {
   const [currentPhase, setCurrentPhase] = useState<string | null>(null)
 
   // Add useEffect to determine the current phase when the component mounts
+  useEffect(() => {
+    async function checkVisibility() {
+      const visible = await isPageVisible("nutrition")
+      if (!visible) { router.replace("/dashboard"); return }
+    }
+    checkVisibility()
+  }, [])
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       // Get diet data from localStorage

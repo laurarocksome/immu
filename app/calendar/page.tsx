@@ -23,6 +23,14 @@ function ProgressBar() {
   })
 
   useEffect(() => {
+    async function checkVisibility() {
+      const visible = await isPageVisible("calendar")
+      if (!visible) { router.replace("/dashboard"); return }
+    }
+    checkVisibility()
+  }, [])
+
+  useEffect(() => {
     // Only access localStorage on the client side
     if (typeof window !== "undefined") {
       const dietTimeline = localStorage.getItem("userDietTimeline")

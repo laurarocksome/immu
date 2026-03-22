@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { List, Home, Plus, BookOpen, UtensilsCrossed, User, Search, Filter } from "lucide-react"
 import Logo from "@/app/components/logo"
 import { createBrowserClient } from "@supabase/ssr"
+import { isPageVisible } from "@/lib/page-visibility"
 
 type Recipe = {
   id: string
@@ -33,7 +34,15 @@ export default function RecipesPage() {
   )
 
   useEffect(() => {
-    loadRecipes()
+    async function init() {
+      const visible = await isPageVisible("recipes")
+      if (!visible) {
+        router.replace("/dashboard")
+        return
+      }
+      loadRecipes()
+    }
+    init()
   }, [])
 
   const loadRecipes = async () => {
