@@ -1758,7 +1758,7 @@ export default function DashboardPage() {
       )}
       {/* Header */}
       <header className="p-4 flex justify-between items-center header-gradient text-white">
-        <Logo />
+        <Logo variant="light" />
         <div className="flex items-center">
           <button
             className="w-10 h-10 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 transition-colors mr-2"
