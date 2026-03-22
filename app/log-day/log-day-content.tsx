@@ -81,7 +81,7 @@ export default function LogDayContent() {
       const DEFAULT_SYMPTOMS = ["Headache","Fatigue","Brain Fog","Bloating","Joint Pain","Skin Issues","Digestive Issues","Mood Changes","Insomnia","Cravings"]
       let customSymptoms: string[] = []
       if (userSymptoms && userSymptoms.length > 0) {
-        customSymptoms = userSymptoms.map(s => s.symptom)
+        customSymptoms = [...new Set(userSymptoms.map(s => s.symptom))]
         setAvailableSymptoms([...new Set([...customSymptoms, ...DEFAULT_SYMPTOMS])])
       } else {
         setAvailableSymptoms(DEFAULT_SYMPTOMS)
@@ -112,7 +112,8 @@ export default function LogDayContent() {
         }
       } else if (customSymptoms.length > 0) {
         // No log yet for today — pre-load user's onboarding symptoms for rating
-        setSymptoms(customSymptoms.map(name => ({
+        const unique = [...new Set(customSymptoms)]
+        setSymptoms(unique.map(name => ({
           id: crypto.randomUUID(),
           name,
           severity: 1,
