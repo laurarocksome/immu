@@ -1259,29 +1259,24 @@ export default function DashboardPage() {
     setUserSymptoms(symptomNames)
 
     const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    const dietStart = localStorage.getItem("dietStartDate")
-    const startDate = dietStart ? new Date(dietStart) : today
-    startDate.setHours(0, 0, 0, 0)
-
-    // Build a map: date string -> diet day number
     const dateMap = new Map<string, number>()
-    symptomHistory.forEach((dayLog) => {
-      const logDate = new Date(dayLog.log_date)
-      logDate.setHours(0, 0, 0, 0)
-      const dietDay = Math.floor((logDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1
-      dateMap.set(dayLog.log_date, dietDay)
+    // Get last 7 days that have logs, sorted
+    const sortedLogs = [...symptomHistory].sort((a, b) => a.log_date.localeCompare(b.log_date))
+    const lastSeven = sortedLogs.slice(-7)
+    while (lastSeven.length < 7) lastSeven.unshift(null as any)
+
+    // Build chart date labels
+    const newChartDates = lastSeven.map(log => {
+      if (!log) return "-"
+      const d = new Date(log.log_date)
+      return d.toLocaleDateString("en-US", { month: "short", day: "numeric" })
     })
-
-    // Get sorted unique diet days for the last 7 logged days
-    const sortedDays = Array.from(dateMap.values()).sort((a, b) => a - b)
-    const lastSevenDays = sortedDays.slice(-7)
-    // Pad to 7 slots if fewer logs
-    while (lastSevenDays.length < 7) lastSevenDays.unshift(0)
-
-    // Build chart labels
-    const newChartDates = lastSevenDays.map(d => d > 0 ? `Day ${d}` : "-")
     setChartDates(newChartDates)
+
+    // Build index map
+    lastSeven.forEach((log, i) => {
+      if (log) dateMap.set(log.log_date, i)
+    })
 
     // Create chart data
     const colors = ["#f4a6b8", "#f6c1b0", "#f9cdd9", "#e87a97", "#f09f88"]
@@ -1289,9 +1284,8 @@ export default function DashboardPage() {
       const values = new Array(7).fill(0)
 
       symptomHistory.forEach((dayLog) => {
-        const dietDay = dateMap.get(dayLog.log_date)
-        const slotIndex = lastSevenDays.indexOf(dietDay!)
-        if (slotIndex !== -1 && dayLog.symptom_logs) {
+        const slotIndex = dateMap.get(dayLog.log_date)
+        if (slotIndex !== undefined && dayLog.symptom_logs) {
           const symptomLog = dayLog.symptom_logs.find((log: any) => log.symptom === symptomName)
           if (symptomLog) {
             values[slotIndex] = symptomLog.severity
@@ -1323,24 +1317,12 @@ export default function DashboardPage() {
 
     setHasLoggedWellness(true)
 
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    const dietStart2 = localStorage.getItem("dietStartDate")
-    const startDate2 = dietStart2 ? new Date(dietStart2) : today
-    startDate2.setHours(0, 0, 0, 0)
+    const sortedWellness = [...wellnessHistory].sort((a, b) => a.log_date.localeCompare(b.log_date))
+    const lastSevenW = sortedWellness.slice(-7)
+    while (lastSevenW.length < 7) lastSevenW.unshift(null as any)
 
-    // Build date -> diet day map
-    const dateMap = new Map<string, number>()
-    wellnessHistory.forEach((log) => {
-      const logDate = new Date(log.log_date)
-      logDate.setHours(0, 0, 0, 0)
-      const dietDay = Math.floor((logDate.getTime() - startDate2.getTime()) / (1000 * 60 * 60 * 24)) + 1
-      dateMap.set(log.log_date, dietDay)
-    })
-
-    const sortedDays2 = Array.from(dateMap.values()).sort((a, b) => a - b)
-    const lastSevenDays2 = sortedDays2.slice(-7)
-    while (lastSevenDays2.length < 7) lastSevenDays2.unshift(0)
+    const wellnessDateMap = new Map<string, number>()
+    lastSevenW.forEach((log, i) => { if (log) wellnessDateMap.set(log.log_date, i) })
 
     // Create chart data for all 7 days, initialized with 0
     const moodData: number[] = [0, 0, 0, 0, 0, 0, 0]
@@ -1349,9 +1331,8 @@ export default function DashboardPage() {
 
     // Fill in actual data from database
     wellnessHistory.forEach((log) => {
-      const dietDay = dateMap.get(log.log_date)
-      const dayIndex = lastSevenDays2.indexOf(dietDay!)
-      if (dayIndex !== -1) {
+      const dayIndex = wellnessDateMap.get(log.log_date)
+      if (dayIndex !== undefined) {
         moodData[dayIndex] = log.mood ? ((log.mood - 1) / 4) * 100 : 0
         sleepData[dayIndex] = log.sleep ? ((log.sleep - 1) / 4) * 100 : 0
         stressData[dayIndex] = log.stress ? ((5 - log.stress) / 4) * 100 : 0
