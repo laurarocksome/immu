@@ -2163,7 +2163,7 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Wellness curve */}
-                    <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                    <svg className="absolute inset-0 h-full w-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
                       {/* Filled area */}
                       <defs>
                         <linearGradient id="wellness-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -2341,7 +2341,7 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Weight curve */}
-                    <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                    <svg className="absolute inset-0 h-full w-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
                       {/* Filled area */}
                       <defs>
                         <linearGradient id="weight-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
