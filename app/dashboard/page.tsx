@@ -1700,9 +1700,21 @@ export default function DashboardPage() {
   }
 
   const handleWeightSaved = async () => {
-    // Reload user data to update the chart and current weight
-    await loadUserData()
-    setShowWeightModal(false) // Close the modal after saving
+    // Reload just weight data after save
+    if (userId) {
+      const weights = await fetchWeightLogs(userId, 30)
+      if (weights && weights.length > 0) {
+        const chartData = weights.map(w => ({
+          date: new Date(w.log_date).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+          weight: w.weight,
+          unit: w.weight_unit,
+        }))
+        setWeightData(chartData)
+        setCurrentWeight(weights[weights.length - 1].weight)
+        setWeightUnit(weights[weights.length - 1].weight_unit)
+      }
+    }
+    setShowWeightModal(false)
   }
 
   return (
