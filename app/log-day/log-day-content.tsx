@@ -2,13 +2,11 @@
 
 import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, Sun, Moon, Brain, Check, Plus, Minus } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Textarea } from "@/components/ui/textarea"
+import { ArrowLeft, Sun, Moon, Brain } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
-import { logDailyEntry, logSymptoms, getCurrentPhaseAndDay } from "@/lib/supabase/user-tracking"
+import { logSymptoms, getCurrentPhaseAndDay } from "@/lib/supabase/user-tracking"
 import { saveDietInfo } from "@/lib/user-data"
+import Logo from "@/app/components/logo"
 
 interface Symptom {
   id: string
@@ -22,38 +20,27 @@ export default function LogDayContent() {
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
-  
-  // Wellness scores (1-5)
+
   const [mood, setMood] = useState(3)
   const [sleep, setSleep] = useState(3)
   const [stress, setStress] = useState(3)
-  
-  // Phase info
+
   const [currentPhase, setCurrentPhase] = useState<string>("Adaptation")
   const [currentDay, setCurrentDay] = useState<number>(1)
-  
-  // AIP compliance (for elimination phase)
+
   const [aipCompliant, setAipCompliant] = useState(true)
   const [showRestartModal, setShowRestartModal] = useState(false)
   const [restartPhase, setRestartPhase] = useState<"adaptation" | "elimination">("elimination")
   const [restartDays, setRestartDays] = useState(90)
-  
-  // Period tracking
+
   const [onPeriod, setOnPeriod] = useState(false)
-  
-  // Notes
   const [notes, setNotes] = useState("")
-  
-  // Symptoms
+
   const [symptoms, setSymptoms] = useState<Symptom[]>([])
   const [availableSymptoms, setAvailableSymptoms] = useState<string[]>([])
   const loadedRef = useRef(false)
-  
-  // Selected date
-  const [selectedDate] = useState(() => {
-    const today = new Date()
-    return today.toISOString().split("T")[0]
-  })
+
+  const [selectedDate] = useState(() => new Date().toISOString().split("T")[0])
 
   useEffect(() => {
     if (loadedRef.current) return
@@ -61,27 +48,15 @@ export default function LogDayContent() {
     async function loadUserData() {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
-      
-      if (!user) {
-        router.push("/login")
-        return
-      }
-      
+      if (!user) { router.push("/login"); return }
       setUserId(user.id)
-      
-      // Get current phase info
+
       const phaseInfo = await getCurrentPhaseAndDay(user.id)
-      if (phaseInfo) {
-        setCurrentPhase(phaseInfo.phase)
-        setCurrentDay(phaseInfo.day)
-      }
-      
-      // Load user's custom symptoms from user_symptoms table
+      if (phaseInfo) { setCurrentPhase(phaseInfo.phase); setCurrentDay(phaseInfo.day) }
+
       const { data: userSymptoms } = await supabase
-        .from("user_symptoms")
-        .select("symptom")
-        .eq("user_id", user.id)
-      
+        .from("user_symptoms").select("symptom").eq("user_id", user.id)
+
       const DEFAULT_SYMPTOMS = ["Headache","Fatigue","Brain Fog","Bloating","Joint Pain","Skin Issues","Digestive Issues","Mood Changes","Insomnia","Cravings"]
       let customSymptoms: string[] = []
       if (userSymptoms && userSymptoms.length > 0) {
@@ -90,15 +65,11 @@ export default function LogDayContent() {
       } else {
         setAvailableSymptoms(DEFAULT_SYMPTOMS)
       }
-      
-      // Check if there's an existing log for today
+
       const { data: existingLog } = await supabase
-        .from("daily_logs")
-        .select("*, symptom_logs(*)")
-        .eq("user_id", user.id)
-        .eq("log_date", selectedDate)
-        .maybeSingle()
-      
+        .from("daily_logs").select("*, symptom_logs(*)")
+        .eq("user_id", user.id).eq("log_date", selectedDate).maybeSingle()
+
       if (existingLog) {
         setMood(existingLog.mood || 3)
         setSleep(existingLog.sleep || 3)
@@ -106,458 +77,274 @@ export default function LogDayContent() {
         setAipCompliant(existingLog.aip_compliant ?? true)
         setOnPeriod(existingLog.on_period ?? false)
         setNotes(existingLog.notes || "")
-        
-        if (existingLog.symptom_logs && existingLog.symptom_logs.length > 0) {
-          setSymptoms(existingLog.symptom_logs.map((s: { id: string; symptom: string; severity: number }) => ({
-            id: s.id,
-            name: s.symptom,
-            severity: s.severity,
-          })))
+        if (existingLog.symptom_logs?.length > 0) {
+          setSymptoms(existingLog.symptom_logs.map((s: any) => ({ id: s.id, name: s.symptom, severity: s.severity })))
         }
       } else if (customSymptoms.length > 0) {
-        // No log yet for today — pre-load user's onboarding symptoms for rating
-        const unique = [...new Set(customSymptoms)]
-        setSymptoms(unique.map(name => ({
-          id: crypto.randomUUID(),
-          name,
-          severity: 1,
-        })))
+        setSymptoms([...new Set(customSymptoms)].map(name => ({ id: crypto.randomUUID(), name, severity: 1 })))
       }
-      
       setIsLoading(false)
     }
-    
     loadUserData()
   }, [router, selectedDate])
 
   const handleSave = async () => {
     if (!userId) return
-    
     setIsSaving(true)
-    
     try {
       const supabase = createClient()
-      const today = selectedDate
-      
-      // Check if entry exists
       const { data: existing } = await supabase
-        .from("daily_logs")
-        .select("id")
-        .eq("user_id", userId)
-        .eq("log_date", today)
-        .maybeSingle()
-      
+        .from("daily_logs").select("id")
+        .eq("user_id", userId).eq("log_date", selectedDate).maybeSingle()
+
       let dailyLogId: string
-      
       if (existing) {
-        // Update existing
-        const { data, error } = await supabase
-          .from("daily_logs")
-          .update({
-            mood,
-            sleep,
-            stress,
-            aip_compliant: aipCompliant,
-            on_period: onPeriod,
-            notes,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", existing.id)
-          .select()
-          .single()
-        
+        const { data, error } = await supabase.from("daily_logs")
+          .update({ mood, sleep, stress, aip_compliant: aipCompliant, on_period: onPeriod, notes, updated_at: new Date().toISOString() })
+          .eq("id", existing.id).select().single()
         if (error) throw error
         dailyLogId = data.id
       } else {
-        // Create new
-        const { data, error } = await supabase
-          .from("daily_logs")
-          .insert({
-            user_id: userId,
-            log_date: today,
-            mood,
-            sleep,
-            stress,
-            aip_compliant: aipCompliant,
-            on_period: onPeriod,
-            notes,
-          })
-          .select()
-          .single()
-        
+        const { data, error } = await supabase.from("daily_logs")
+          .insert({ user_id: userId, log_date: selectedDate, mood, sleep, stress, aip_compliant: aipCompliant, on_period: onPeriod, notes })
+          .select().single()
         if (error) throw error
         dailyLogId = data.id
       }
-      
-      // Save symptoms
       if (symptoms.length > 0) {
-        await logSymptoms(dailyLogId, symptoms.map(s => ({
-          symptom: s.name,
-          severity: s.severity,
-        })))
+        await logSymptoms(dailyLogId, symptoms.map(s => ({ symptom: s.name, severity: s.severity })))
       }
-      
       setShowSuccess(true)
-      setTimeout(() => {
-        router.push("/dashboard")
-      }, 1500)
+      setTimeout(() => router.push("/dashboard"), 1500)
     } catch (error) {
-      console.error("[v0] Error saving log:", error)
+      console.error("Error saving log:", error)
     } finally {
       setIsSaving(false)
     }
   }
 
-  const addSymptom = (symptomName: string) => {
-    if (symptoms.find(s => s.name === symptomName)) return
-    
-    setSymptoms(prev => [...prev, {
-      id: crypto.randomUUID(),
-      name: symptomName,
-      severity: 2,
-    }])
+  const addSymptom = (name: string) => {
+    if (symptoms.find(s => s.name === name)) return
+    setSymptoms(prev => [...prev, { id: crypto.randomUUID(), name, severity: 1 }])
   }
 
-  const removeSymptom = (symptomId: string) => {
-    setSymptoms(prev => prev.filter(s => s.id !== symptomId))
-  }
+  const removeSymptom = (id: string) => setSymptoms(prev => prev.filter(s => s.id !== id))
+  const updateSymptomSeverity = (id: string, severity: number) =>
+    setSymptoms(prev => prev.map(s => s.id === id ? { ...s, severity: Math.max(1, Math.min(5, severity)) } : s))
 
-  const updateSymptomSeverity = (symptomId: string, severity: number) => {
-    setSymptoms(prev => prev.map(s => 
-      s.id === symptomId ? { ...s, severity: Math.max(1, Math.min(5, severity)) } : s
-    ))
-  }
-
-  const ScoreSelector = ({ 
-    value, 
-    onChange, 
-    label, 
-    icon: Icon,
-    lowLabel = "Poor",
-    highLabel = "Great"
-  }: { 
-    value: number
-    onChange: (val: number) => void
-    label: string
-    icon: React.ComponentType<{ className?: string }>
-    lowLabel?: string
-    highLabel?: string
+  const ScoreRow = ({ label, icon: Icon, value, onChange, lowLabel, highLabel }: {
+    label: string; icon: any; value: number; onChange: (v: number) => void; lowLabel: string; highLabel: string
   }) => (
     <div className="space-y-3">
       <div className="flex items-center gap-2">
-        <Icon className="h-5 w-5 text-[#D4A5A5]" />
-        <span className="font-medium text-foreground">{label}</span>
+        <Icon className="h-5 w-5 text-pink-400" />
+        <span className="font-medium text-brand-dark">{label}</span>
       </div>
       <div className="flex items-center justify-between">
-        <span className="text-xs text-muted-foreground">{lowLabel}</span>
+        <span className="text-xs text-brand-dark/50 w-10">{lowLabel}</span>
         <div className="flex gap-2">
-          {[1, 2, 3, 4, 5].map((score) => (
-            <button
-              key={score}
-              onClick={() => onChange(score)}
-              className={`w-10 h-10 rounded-full border-2 transition-all ${
+          {[1,2,3,4,5].map(score => (
+            <button key={score} onClick={() => onChange(score)}
+              className={`w-10 h-10 rounded-full border-2 font-medium transition-all text-sm ${
                 value === score
-                  ? "bg-[#D4A5A5] border-[#D4A5A5] text-white"
-                  : "border-[#D4A5A5]/30 text-foreground hover:border-[#D4A5A5]"
+                  ? "bg-pink-400 border-pink-400 text-white"
+                  : "border-pink-200 text-brand-dark hover:border-pink-400"
               }`}
-            >
-              {score}
-            </button>
+            >{score}</button>
           ))}
         </div>
-        <span className="text-xs text-muted-foreground">{highLabel}</span>
+        <span className="text-xs text-brand-dark/50 w-10 text-right">{highLabel}</span>
       </div>
     </div>
   )
 
-  if (isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[#FDF5F3]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#D4A5A5]" />
-      </div>
-    )
-  }
+  if (isLoading) return (
+    <div className="min-h-screen app-gradient flex items-center justify-center">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-400" />
+    </div>
+  )
 
-  if (showSuccess) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[#FDF5F3]">
-        <div className="text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-            <Check className="h-8 w-8 text-green-600" />
-          </div>
-          <h2 className="text-xl font-semibold text-foreground">Log Saved!</h2>
-          <p className="text-muted-foreground">Redirecting to dashboard...</p>
+  if (showSuccess) return (
+    <div className="min-h-screen app-gradient flex items-center justify-center">
+      <div className="text-center">
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-pink-100">
+          <svg className="h-8 w-8 text-pink-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
         </div>
+        <h2 className="text-xl font-bold text-brand-dark">Log Saved!</h2>
+        <p className="text-brand-dark/60">Redirecting to dashboard...</p>
       </div>
-    )
-  }
+    </div>
+  )
 
   return (
-    <div className="min-h-screen bg-[#FDF5F3]">
+    <div className="min-h-screen app-gradient flex flex-col">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-[#FDF5F3] px-4 py-4 border-b border-[#D4A5A5]/20">
-        <div className="flex items-center justify-between max-w-lg mx-auto">
-          <button onClick={() => router.back()} className="p-2 -ml-2">
-            <ArrowLeft className="h-6 w-6 text-foreground" />
-          </button>
-          <div className="text-center">
-            <h1 className="text-lg font-semibold text-foreground">Log Your Day</h1>
-            <p className="text-sm text-muted-foreground">
-              {currentPhase} - Day {currentDay}
-            </p>
-          </div>
-          <div className="w-10" />
-        </div>
+      <header className="p-4 flex justify-center items-center header-gradient text-white relative">
+        <button onClick={() => router.back()}
+          className="absolute left-4 text-white/80 hover:text-white transition-colors flex items-center">
+          <ArrowLeft className="h-5 w-5 mr-1" />
+          <span>Back</span>
+        </button>
+        <Logo variant="light" />
+      </header>
+
+      {/* Phase indicator */}
+      <div className="text-center pt-4 pb-2">
+        <p className="text-sm text-brand-dark/60">{currentPhase} – Day {currentDay}</p>
+        <h1 className="text-2xl font-bold text-brand-dark">Log Your Day</h1>
       </div>
 
-      <div className="max-w-lg mx-auto px-4 py-6 space-y-6 pb-32">
-        {/* Wellness Scores */}
-        <Card className="border-[#D4A5A5]/20 bg-white">
-          <CardContent className="p-6 space-y-6">
-            <h2 className="text-lg font-semibold text-foreground">How are you feeling?</h2>
-            
-            <ScoreSelector
-              value={mood}
-              onChange={setMood}
-              label="Mood"
-              icon={Sun}
-              lowLabel="Low"
-              highLabel="Great"
-            />
-            
-            <ScoreSelector
-              value={sleep}
-              onChange={setSleep}
-              label="Sleep Quality"
-              icon={Moon}
-              lowLabel="Poor"
-              highLabel="Excellent"
-            />
-            
-            <ScoreSelector
-              value={stress}
-              onChange={setStress}
-              label="Stress Level"
-              icon={Brain}
-              lowLabel="High"
-              highLabel="Low"
-            />
-          </CardContent>
-        </Card>
+      <main className="flex-1 px-4 pb-32 max-w-lg mx-auto w-full space-y-4 pt-4">
 
-        {/* AIP Compliance (only for Elimination phase) */}
+        {/* Wellness */}
+        <div className="glass-card p-6 space-y-6">
+          <h2 className="text-lg font-semibold text-brand-dark">How are you feeling?</h2>
+          <ScoreRow label="Mood" icon={Sun} value={mood} onChange={setMood} lowLabel="Low" highLabel="Great" />
+          <ScoreRow label="Sleep Quality" icon={Moon} value={sleep} onChange={setSleep} lowLabel="Poor" highLabel="Great" />
+          <ScoreRow label="Stress Level" icon={Brain} value={stress} onChange={setStress} lowLabel="High" highLabel="Low" />
+        </div>
+
+        {/* AIP Compliance */}
         {currentPhase === "Elimination" && (
-          <Card className="border-[#D4A5A5]/20 bg-white">
-            <CardContent className="p-6">
-              <h2 className="text-lg font-semibold text-foreground mb-4">AIP Compliance</h2>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setAipCompliant(true)}
-                  className={`flex-1 py-3 rounded-lg border-2 transition-all ${
-                    aipCompliant
-                      ? "bg-green-50 border-green-500 text-green-700"
-                      : "border-gray-200 text-gray-500"
-                  }`}
-                >
-                  100% Compliant
-                </button>
-                <button
-                  onClick={() => { setAipCompliant(false); setShowRestartModal(true) }}
-                  className={`flex-1 py-3 rounded-lg border-2 transition-all ${
-                    !aipCompliant
-                      ? "bg-orange-50 border-orange-500 text-orange-700"
-                      : "border-gray-200 text-gray-500"
-                  }`}
-                >
-                  Had exceptions
-                </button>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="glass-card p-6">
+            <h2 className="text-lg font-semibold text-brand-dark mb-4">AIP Compliance</h2>
+            <div className="flex gap-3">
+              <button onClick={() => setAipCompliant(true)}
+                className={`flex-1 py-3 rounded-full border-2 font-medium transition-all ${
+                  aipCompliant ? "bg-green-50 border-green-400 text-green-700" : "border-pink-200 text-brand-dark/60"
+                }`}>
+                100% Compliant
+              </button>
+              <button onClick={() => { setAipCompliant(false); setShowRestartModal(true) }}
+                className={`flex-1 py-3 rounded-full border-2 font-medium transition-all ${
+                  !aipCompliant ? "bg-orange-50 border-orange-400 text-orange-700" : "border-pink-200 text-brand-dark/60"
+                }`}>
+                Had exceptions
+              </button>
+            </div>
+          </div>
         )}
 
-        {/* Restart Diet Modal */}
+        {/* Restart modal */}
         {currentPhase === "Elimination" && showRestartModal && (
-          <Card className="border-orange-200 bg-orange-50">
-            <CardContent className="p-6">
-              <h2 className="text-lg font-semibold text-orange-800 mb-2">Restart Your Diet?</h2>
-              <p className="text-sm text-orange-700 mb-5">
-                AIP allows zero exceptions during elimination. To get accurate results, you need to restart from Day 1.
-              </p>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Start phase</label>
-                  <div className="flex gap-3">
-                    <button
-                      onClick={() => { setRestartPhase("elimination"); setRestartDays(90) }}
-                      className={`flex-1 py-2 rounded-lg border-2 text-sm transition-all ${
-                        restartPhase === "elimination"
-                          ? "bg-pink-100 border-pink-400 text-pink-800"
-                          : "border-gray-200 text-gray-600"
-                      }`}
-                    >
-                      Elimination
-                    </button>
-                    <button
-                      onClick={() => { setRestartPhase("adaptation"); setRestartDays(118) }}
-                      className={`flex-1 py-2 rounded-lg border-2 text-sm transition-all ${
-                        restartPhase === "adaptation"
-                          ? "bg-pink-100 border-pink-400 text-pink-800"
-                          : "border-gray-200 text-gray-600"
-                      }`}
-                    >
-                      Adaptation + Elimination
-                    </button>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Elimination duration: {restartPhase === "adaptation" ? restartDays - 28 : restartDays} days
-                  </label>
-                  <input
-                    type="range"
-                    min={restartPhase === "adaptation" ? 58 : 30}
-                    max={restartPhase === "adaptation" ? 118 : 90}
-                    value={restartDays}
-                    onChange={e => setRestartDays(Number(e.target.value))}
-                    className="w-full accent-pink-400"
-                  />
-                </div>
-
-                <div className="flex gap-3 pt-2">
-                  <button
-                    onClick={async () => {
-                      if (!userId) return
-                      const today = new Date().toISOString()
-                      await saveDietInfo({
-                        startDate: today,
-                        timelineDays: restartDays,
-                        adaptationChoice: restartPhase === "adaptation" ? "Yes" : "No",
-                        currentPhase: restartPhase,
-                      })
-                      localStorage.setItem("dietStartDate", today)
-                      localStorage.setItem("userDietTimeline", restartDays.toString())
-                      localStorage.setItem("userAdaptationChoice", restartPhase === "adaptation" ? "Yes" : "No")
-                      setShowRestartModal(false)
-                      router.push("/dashboard")
-                    }}
-                    className="flex-1 py-3 rounded-lg bg-pink-400 text-white font-medium hover:bg-pink-500 transition-colors"
-                  >
-                    Restart Diet
-                  </button>
-                  <button
-                    onClick={() => { setShowRestartModal(false); setAipCompliant(true) }}
-                    className="flex-1 py-3 rounded-lg border-2 border-gray-200 text-gray-600 font-medium hover:bg-gray-50 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                </div>
+          <div className="glass-card p-6 border-orange-200 bg-orange-50">
+            <h2 className="text-lg font-semibold text-orange-800 mb-2">Restart Your Diet?</h2>
+            <p className="text-sm text-orange-700 mb-5">
+              AIP allows zero exceptions during elimination. To get accurate results, restart from Day 1.
+            </p>
+            <div className="space-y-4">
+              <div className="flex gap-3">
+                <button onClick={() => { setRestartPhase("elimination"); setRestartDays(90) }}
+                  className={`flex-1 py-2 rounded-full border-2 text-sm font-medium transition-all ${
+                    restartPhase === "elimination" ? "bg-pink-100 border-pink-400 text-pink-800" : "border-gray-200 text-brand-dark/60"
+                  }`}>Elimination</button>
+                <button onClick={() => { setRestartPhase("adaptation"); setRestartDays(118) }}
+                  className={`flex-1 py-2 rounded-full border-2 text-sm font-medium transition-all ${
+                    restartPhase === "adaptation" ? "bg-pink-100 border-pink-400 text-pink-800" : "border-gray-200 text-brand-dark/60"
+                  }`}>Adaptation + Elimination</button>
               </div>
-            </CardContent>
-          </Card>
+              <div>
+                <label className="block text-sm text-brand-dark/70 mb-1">
+                  Elimination duration: {restartPhase === "adaptation" ? restartDays - 28 : restartDays} days
+                </label>
+                <input type="range"
+                  min={restartPhase === "adaptation" ? 58 : 30}
+                  max={restartPhase === "adaptation" ? 118 : 90}
+                  value={restartDays}
+                  onChange={e => setRestartDays(Number(e.target.value))}
+                  className="w-full accent-pink-400" />
+              </div>
+              <div className="flex gap-3">
+                <button onClick={async () => {
+                  if (!userId) return
+                  const today = new Date().toISOString()
+                  await saveDietInfo({ startDate: today, timelineDays: restartDays, adaptationChoice: restartPhase === "adaptation" ? "Yes" : "No", currentPhase: restartPhase })
+                  localStorage.setItem("dietStartDate", today)
+                  localStorage.setItem("userDietTimeline", restartDays.toString())
+                  localStorage.setItem("userAdaptationChoice", restartPhase === "adaptation" ? "Yes" : "No")
+                  setShowRestartModal(false)
+                  router.push("/dashboard")
+                }} className="flex-1 gradient-button text-center">Restart Diet</button>
+                <button onClick={() => { setShowRestartModal(false); setAipCompliant(true) }}
+                  className="flex-1 secondary-button text-center">Cancel</button>
+              </div>
+            </div>
+          </div>
         )}
 
         {/* Period Tracking */}
-        <Card className="border-[#D4A5A5]/20 bg-white">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-foreground">On Period?</h2>
-              <button
-                onClick={() => setOnPeriod(!onPeriod)}
-                className={`w-14 h-8 rounded-full transition-all ${
-                  onPeriod ? "bg-[#D4A5A5]" : "bg-gray-200"
-                }`}
-              >
-                <div
-                  className={`w-6 h-6 rounded-full bg-white shadow-sm transition-transform ${
-                    onPeriod ? "translate-x-7" : "translate-x-1"
-                  }`}
-                />
-              </button>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="glass-card p-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-brand-dark">On Period?</h2>
+            <button onClick={() => setOnPeriod(!onPeriod)}
+              className={`w-14 h-8 rounded-full transition-all ${onPeriod ? "bg-pink-400" : "bg-gray-200"}`}>
+              <div className={`w-6 h-6 rounded-full bg-white shadow-sm transition-transform mx-1 ${onPeriod ? "translate-x-6" : "translate-x-0"}`} />
+            </button>
+          </div>
+        </div>
 
         {/* Symptoms */}
-        <Card className="border-[#D4A5A5]/20 bg-white">
-          <CardContent className="p-6">
-            <h2 className="text-lg font-semibold text-foreground mb-4">Symptoms</h2>
-            
-            {/* Selected Symptoms */}
-            {symptoms.length > 0 && (
-              <div className="space-y-3 mb-4">
-                {symptoms.map((symptom) => (
-                  <div key={symptom.id} className="flex items-center justify-between bg-[#FDF5F3] rounded-lg p-3">
-                    <span className="font-medium text-foreground">{symptom.name}</span>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => updateSymptomSeverity(symptom.id, symptom.severity - 1)}
-                        className="p-1 rounded-full hover:bg-[#D4A5A5]/20"
-                      >
-                        <Minus className="h-4 w-4" />
-                      </button>
-                      <span className="w-6 text-center font-medium">{symptom.severity}</span>
-                      <button
-                        onClick={() => updateSymptomSeverity(symptom.id, symptom.severity + 1)}
-                        className="p-1 rounded-full hover:bg-[#D4A5A5]/20"
-                      >
-                        <Plus className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => removeSymptom(symptom.id)}
-                        className="ml-2 text-red-500 text-sm"
-                      >
-                        Remove
-                      </button>
-                    </div>
+        <div className="glass-card p-6">
+          <h2 className="text-lg font-semibold text-brand-dark mb-4">Symptoms</h2>
+
+          {symptoms.length > 0 && (
+            <div className="space-y-5 mb-5">
+              {symptoms.map(symptom => (
+                <div key={symptom.id}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-medium text-brand-dark">{symptom.name}</span>
+                    <button onClick={() => removeSymptom(symptom.id)}
+                      className="text-xs text-pink-400 hover:text-pink-600">Remove</button>
                   </div>
-                ))}
-              </div>
-            )}
-            
-            {/* Available Symptoms */}
-            <div className="flex flex-wrap gap-2">
-              {availableSymptoms
-                .filter(s => !symptoms.find(sym => sym.name === s))
-                .map((symptom) => (
-                  <button
-                    key={symptom}
-                    onClick={() => addSymptom(symptom)}
-                    className="px-3 py-1.5 text-sm rounded-full border border-[#D4A5A5]/30 text-foreground hover:bg-[#D4A5A5]/10 transition-colors"
-                  >
-                    + {symptom}
-                  </button>
-                ))}
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-brand-dark/50 w-10">None</span>
+                    <div className="flex gap-2">
+                      {[1,2,3,4,5].map(score => (
+                        <button key={score} onClick={() => updateSymptomSeverity(symptom.id, score)}
+                          className={`w-10 h-10 rounded-full border-2 font-medium transition-all text-sm ${
+                            symptom.severity === score
+                              ? "bg-pink-400 border-pink-400 text-white"
+                              : "border-pink-200 text-brand-dark hover:border-pink-400"
+                          }`}>{score}</button>
+                      ))}
+                    </div>
+                    <span className="text-xs text-brand-dark/50 w-10 text-right">Severe</span>
+                  </div>
+                </div>
+              ))}
             </div>
-          </CardContent>
-        </Card>
+          )}
+
+          <div className="flex flex-wrap gap-2">
+            {availableSymptoms
+              .filter(s => !symptoms.find(sym => sym.name === s))
+              .map(symptom => (
+                <button key={symptom} onClick={() => addSymptom(symptom)}
+                  className="px-3 py-1.5 text-sm rounded-full border border-pink-200 text-brand-dark hover:bg-pink-50 transition-colors">
+                  + {symptom}
+                </button>
+              ))}
+          </div>
+        </div>
 
         {/* Notes */}
-        <Card className="border-[#D4A5A5]/20 bg-white">
-          <CardContent className="p-6">
-            <h2 className="text-lg font-semibold text-foreground mb-4">Notes</h2>
-            <Textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Any additional notes about your day..."
-              className="min-h-[100px] border-[#D4A5A5]/30 focus:border-[#D4A5A5]"
-            />
-          </CardContent>
-        </Card>
-      </div>
+        <div className="glass-card p-6">
+          <h2 className="text-lg font-semibold text-brand-dark mb-4">Notes</h2>
+          <textarea value={notes} onChange={e => setNotes(e.target.value)}
+            placeholder="Any additional notes about your day..."
+            className="w-full min-h-[100px] p-3 rounded-xl bg-white/80 border border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-400 text-brand-dark resize-none" />
+        </div>
+      </main>
 
       {/* Save Button */}
-      <div className="fixed bottom-0 left-0 right-0 bg-[#FDF5F3] border-t border-[#D4A5A5]/20 p-4">
+      <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-sm border-t border-pink-100 p-4">
         <div className="max-w-lg mx-auto">
-          <Button
-            onClick={handleSave}
-            disabled={isSaving}
-            className="w-full bg-[#D4A5A5] hover:bg-[#C49494] text-white py-6 text-lg rounded-full"
-          >
+          <button onClick={handleSave} disabled={isSaving}
+            className="w-full gradient-button py-4 text-lg disabled:opacity-60">
             {isSaving ? "Saving..." : "Save Log"}
-          </Button>
+          </button>
         </div>
       </div>
     </div>
