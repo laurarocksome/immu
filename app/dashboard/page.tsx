@@ -2305,7 +2305,7 @@ export default function DashboardPage() {
               ) : (
                 <div className="relative min-h-[280px] md:min-h-[320px]">
                   {/* Y-axis labels */}
-                  <div className="absolute left-0 top-0 bottom-8 w-10 md:w-16 flex flex-col justify-between text-[10px] md:text-xs text-secondary-color py-4">
+                  <div className="absolute left-0 top-0 bottom-8 w-10 md:w-16 flex flex-col justify-between text-[10px] md:text-xs text-secondary-color py-4 pointer-events-none">
                     <span className="leading-tight">{Math.max(...weightData.map((d) => d.weight)).toFixed(1)}</span>
                     <span className="leading-tight">
                       {(
@@ -2317,7 +2317,7 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Vertical grid lines */}
-                  <div className="absolute left-10 md:left-16 right-0 top-0 bottom-8 flex justify-between">
+                  <div className="absolute left-10 md:left-16 right-0 top-0 bottom-8 flex justify-between pointer-events-none">
                     {weightData.map((item, index) => (
                       <div
                         key={index}
@@ -2332,7 +2332,7 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Chart area */}
-                  <div className="absolute left-10 md:left-16 right-0 top-0 bottom-8 px-2 md:px-4 pt-4">
+                  <div className="absolute left-10 md:left-16 right-0 top-0 bottom-8 px-2 md:px-4 pt-4 pointer-events-none">
                     {/* Grid lines */}
                     <div className="absolute inset-0">
                       <div className="border-b border-green-100 absolute top-[25%] left-0 right-0"></div>
