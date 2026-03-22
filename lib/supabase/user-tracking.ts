@@ -6,19 +6,30 @@ import { createClient } from "@/lib/supabase/client"
 export async function getCurrentPhaseAndDay(userId: string) {
   const supabase = createClient()
 
-  const { data: dietInfo, error } = await supabase
+  // Get the current active phase from phase_history
+  const { data: activePhase, error: phaseError } = await supabase
+    .from("phase_history")
+    .select("phase, started_at")
+    .eq("user_id", userId)
+    .is("ended_at", null)
+    .order("started_at", { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  // Get diet info as fallback
+  const { data: dietInfo, error: dietError } = await supabase
     .from("diet_info")
     .select("start_date, current_phase, timeline_days, adaptation_choice")
     .eq("user_id", userId)
-    .single()
+    .maybeSingle()
 
-  if (error || !dietInfo) {
+  if (!activePhase && !dietInfo) {
     return null
   }
 
-  const startDate = new Date(dietInfo.start_date)
-  const today = new Date()
-  const daysSinceStart = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
+  // Use phase_history as primary source, fallback to diet_info
+  const currentPhase = activePhase?.phase || dietInfo?.current_phase || "Adaptation"
+  const phaseStartDate = activePhase?.started_at || dietInfo?.start_date
 
   // Determine adaptation days based on choice
   const hasAdaptation = dietInfo.adaptation_choice?.toLowerCase() === "yes"
@@ -42,10 +53,10 @@ export async function getCurrentPhaseAndDay(userId: string) {
 
   return {
     phase: currentPhase,
-    day: currentDay,
-    totalDays: daysSinceStart + 1,
-    startDate: dietInfo.start_date,
-    adaptationDays,
+    day: daysInPhase,
+    totalDays,
+    startDate: dietInfo?.start_date || phaseStartDate,
+    adaptationDays: dietInfo?.adaptation_choice === "14-day" ? 14 : 28,
   }
 }
 
