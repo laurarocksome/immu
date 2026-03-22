@@ -88,18 +88,17 @@ async function loadTrackedDates(userId: string) {
 //   return data || []
 // }
 
-// Update the chart dates to show daily data
-const chartDates = ["Day 1", "Day 2", "Day 3", "Day 4", "Day 5", "Day 6", "Day 7"]
+// chartDates is now computed dynamically as state in DashboardPage
 
 // Sample symptom tracking data for the chart with more distinct colors
 const symptomHistoryData = {
-  dates: chartDates,
+  dates: ["Day 1", "Day 2", "Day 3", "Day 4", "Day 5", "Day 6", "Day 7"],
   symptoms: [], // Will be populated based on user's selected symptoms
 }
 
 // Sample wellness data structure
 const wellnessHistoryData = {
-  dates: chartDates,
+  dates: ["Day 1", "Day 2", "Day 3", "Day 4", "Day 5", "Day 6", "Day 7"],
   scores: [0, 0, 0, 0, 0, 0, 0], // Will be populated with wellness scores
   color: "#f4a6b8",
   gradient: ["#f4a6b8", "#f4a6b833"],
@@ -198,6 +197,7 @@ export default function DashboardPage() {
   // Add a new state for reintroduction phase day
   const [reintroductionDay, setReintroductionDay] = useState(0)
   const [currentPhase, setCurrentPhase] = useState<"adaptation" | "elimination" | "reintroduction">("elimination")
+  const [chartDates, setChartDates] = useState<string[]>(["Day 1", "Day 2", "Day 3", "Day 4", "Day 5", "Day 6", "Day 7"])
 
   // Add a state for wellness data
   const [wellnessData, setWellnessData] = useState<any>({ mood: [], sleep: [], stress: [] }) // Changed to object for structured data
@@ -1124,6 +1124,21 @@ export default function DashboardPage() {
       const dietTimeline = localStorage.getItem("userDietTimeline")
       const startDate = localStorage.getItem("dietStartDate")
 
+      // Compute dynamic chart labels based on diet start date
+      const computedDates = Array.from({ length: 7 }, (_, i) => {
+        const date = new Date()
+        date.setDate(date.getDate() - (6 - i))
+        if (startDate) {
+          const start = new Date(startDate)
+          start.setHours(0, 0, 0, 0)
+          date.setHours(0, 0, 0, 0)
+          const dayNum = Math.floor((date.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1
+          return dayNum > 0 ? `Day ${dayNum}` : "-"
+        }
+        return `Day ${i + 1}`
+      })
+      setChartDates(computedDates)
+
       if (!startDate) {
         const today = new Date().toISOString()
         localStorage.setItem("dietStartDate", today)
@@ -1986,11 +2001,11 @@ export default function DashboardPage() {
 
                     {/* Vertical grid lines */}
                     <div className="absolute left-10 md:left-16 right-0 top-0 bottom-8 flex justify-between">
-                      {symptomHistoryData.dates.map((date, index) => (
+                      {chartDates.map((date, index) => (
                         <div
                           key={index}
                           className="h-full border-r border-pink-100 flex flex-col justify-end items-center"
-                          style={{ width: `${100 / symptomHistoryData.dates.length}%` }}
+                          style={{ width: `${100 / chartDates.length}%` }}
                         >
                           <span className="text-[10px] md:text-xs text-secondary-color mb-2 whitespace-nowrap">
                             {date}
@@ -2112,11 +2127,11 @@ export default function DashboardPage() {
 
                   {/* Vertical grid lines */}
                   <div className="absolute left-10 md:left-16 right-0 top-0 bottom-8 flex justify-between z-0">
-                    {wellnessHistoryData.dates.map((date, index) => (
+                    {chartDates.map((date, index) => (
                       <div
                         key={index}
                         className="h-full border-r border-peach-100 flex flex-col justify-end items-center"
-                        style={{ width: `${100 / wellnessHistoryData.dates.length}%` }}
+                        style={{ width: `${100 / chartDates.length}%` }}
                       >
                         <span className="text-[10px] md:text-xs text-secondary-color mb-2 whitespace-nowrap">
                           {date}
