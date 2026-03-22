@@ -31,14 +31,25 @@ export async function getCurrentPhaseAndDay(userId: string) {
   const currentPhase = activePhase?.phase || dietInfo?.current_phase || "Adaptation"
   const phaseStartDate = activePhase?.started_at || dietInfo?.start_date
 
-  // Calculate days in current phase
-  const startDate = new Date(phaseStartDate)
-  const today = new Date()
-  const daysInPhase = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1
+  // Determine adaptation days based on choice
+  const hasAdaptation = dietInfo.adaptation_choice?.toLowerCase() === "yes"
+  const adaptationDays = 28
 
-  // Calculate total days since diet start
-  const dietStartDate = new Date(dietInfo?.start_date || phaseStartDate)
-  const totalDays = Math.floor((today.getTime() - dietStartDate.getTime()) / (1000 * 60 * 60 * 24)) + 1
+  let currentPhase = "Adaptation"
+  let currentDay = daysSinceStart + 1
+
+  if (!hasAdaptation) {
+    currentPhase = "Elimination"
+    currentDay = daysSinceStart + 1
+  } else if (daysSinceStart >= adaptationDays) {
+    currentPhase = "Elimination"
+    currentDay = daysSinceStart - adaptationDays + 1
+  }
+
+  // Check if they've moved to reintroduction (manual phase change)
+  if (dietInfo.current_phase === "reintroduction" || dietInfo.current_phase === "Reintroduction") {
+    currentPhase = "Reintroduction"
+  }
 
   return {
     phase: currentPhase,

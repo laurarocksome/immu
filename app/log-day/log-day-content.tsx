@@ -105,15 +105,10 @@ export default function LogDayContent() {
         .select("symptom")
         .eq("user_id", user.id)
       
-      console.log("[v0] User symptoms loaded:", userSymptoms, "Error:", symptomsError)
-      
+      let customSymptoms: string[] = []
       if (userSymptoms && userSymptoms.length > 0) {
-        // Use only the symptoms the user selected during onboarding
-        const onboardingSymptoms = userSymptoms.map(s => s.symptom)
-        setAvailableSymptoms(onboardingSymptoms)
-      } else {
-        // Fallback: no symptoms to track if none were selected during onboarding
-        setAvailableSymptoms([])
+        customSymptoms = userSymptoms.map(s => s.symptom)
+        setAvailableSymptoms(prev => [...new Set([...prev, ...customSymptoms])])
       }
       
       // Check if there's an existing log for today
@@ -145,6 +140,13 @@ export default function LogDayContent() {
             severity: s.severity,
           })))
         }
+      } else if (customSymptoms.length > 0) {
+        // No log yet for today — pre-load user's onboarding symptoms for rating
+        setSymptoms(customSymptoms.map(name => ({
+          id: crypto.randomUUID(),
+          name,
+          severity: 1,
+        })))
       }
       
       setIsLoading(false)
