@@ -109,7 +109,7 @@ export default function NutritionPage() {
               </div>
               <div className="w-24 h-24 rounded-xl overflow-hidden bg-pink-100 flex items-center justify-center">
                 <img
-                  src="/placeholder.svg?height=96&width=96"
+                  src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=200&h=200&fit=crop"
                   alt="Adaptation phase"
                   className="object-cover w-full h-full"
                 />
@@ -134,7 +134,7 @@ export default function NutritionPage() {
               </div>
               <div className="w-24 h-24 rounded-xl overflow-hidden bg-pink-200 flex items-center justify-center">
                 <img
-                  src="/placeholder.svg?height=96&width=96"
+                  src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=200&h=200&fit=crop"
                   alt="Elimination phase"
                   className="object-cover w-full h-full"
                 />
@@ -159,7 +159,7 @@ export default function NutritionPage() {
               </div>
               <div className="w-24 h-24 rounded-xl overflow-hidden bg-pink-300 flex items-center justify-center">
                 <img
-                  src="/placeholder.svg?height=96&width=96"
+                  src="https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=200&h=200&fit=crop"
                   alt="Reintroduction phase"
                   className="object-cover w-full h-full"
                 />
