@@ -6,6 +6,7 @@ import { ArrowLeft, Sun, Moon, Brain } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { logSymptoms, getCurrentPhaseAndDay } from "@/lib/supabase/user-tracking"
 import { saveDietInfo } from "@/lib/user-data"
+import { useLanguage } from "@/lib/i18n/context"
 import Logo from "@/app/components/logo"
 
 interface Symptom {
@@ -16,6 +17,7 @@ interface Symptom {
 
 export default function LogDayContent() {
   const router = useRouter()
+  const { t } = useLanguage()
   const [userId, setUserId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)

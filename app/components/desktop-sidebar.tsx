@@ -3,11 +3,13 @@
 import { useRouter, usePathname } from "next/navigation"
 import { List, Home, Plus, BookOpen, UtensilsCrossed } from "lucide-react"
 import { useEffect, useState } from "react"
+import { useLanguage } from "@/lib/i18n/context"
 
 export default function DesktopSidebar() {
   const router = useRouter()
   const pathname = usePathname()
   const [hiddenPages, setHiddenPages] = useState<string[]>([])
+  const { t } = useLanguage()
 
   const isActive = (path: string) => pathname === path
 
