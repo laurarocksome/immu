@@ -279,64 +279,46 @@ export default function FoodListPage() {
     localStorage.setItem("userModifiedStatuses", JSON.stringify(newStatuses))
   }
 
-  // Update the getProductStatus function to replace "Can't eat yet" with "Can't eat"
   const getProductStatus = (product: any) => {
-    // Check if the user has manually modified the status
+    // 1. User manual override takes priority
     if (userModifiedStatuses[product.name]) {
       return userModifiedStatuses[product.name]
     }
 
-    // If in elimination phase
-    if (currentPhase === "elimination") {
-      // Non-AIP items are "Can't eat"
-      if (!product.isAIP) {
-        return "Can't eat"
-      }
-      // AIP items are "Can eat"
-      return "Can eat"
-    }
+    const dbStatus = product.status || (product.is_aip ? "Can eat" : "Can't eat")
 
-    // If in adaptation phase, apply the progressive restrictions
-    if (currentPhase === "adaptation") {
-      // Days 1-7: Only caffeine is restricted
-      if (adaptationDay <= 7) {
-        if (containsCaffeine(product)) {
-          return "Can't eat"
-        }
-        // All other products (including non-AIP) are "Can eat" during adaptation
-        return "Can eat"
-      }
-
-      // Days 8-14: Caffeine and alcohol are restricted
-      if (adaptationDay <= 14) {
-        if (containsCaffeine(product) || containsAlcohol(product)) {
-          return "Can't eat"
-        }
-        // All other products (including non-AIP) are "Can eat"
-        return "Can eat"
-      }
-
-      // Days 15-28: Caffeine, alcohol, and sugar are restricted
-      if (adaptationDay <= 28) {
-        if (containsCaffeine(product) || containsAlcohol(product) || containsSugar(product)) {
-          return "Can't eat"
-        }
-        // All other products (including non-AIP) are "Can eat"
-        return "Can eat"
-      }
-    }
-
-    // If in reintroduction phase, non-AIP items are "Under evaluation" by default
+    // 2. Reintroduction: non-AIP moves to "Under evaluation"
     if (currentPhase === "reintroduction") {
-      if (!product.isAIP) {
-        return "Under evaluation"
-      }
-      // AIP items remain "Can eat"
+      return dbStatus === "Can't eat" ? "Under evaluation" : "Can eat"
+    }
+
+    // 3. Elimination: use DB status directly
+    if (currentPhase === "elimination") {
+      return dbStatus
+    }
+
+    // 4. Adaptation: progressively restrict by tag week by week
+    // Only non-AIP products get restricted during adaptation
+    if (currentPhase === "adaptation") {
+      const tags = (product.tags || []).map((t: string) => t.toLowerCase())
+      const name = product.name.toLowerCase()
+
+      const hasCaffeine = tags.includes("caffeine") || containsCaffeine(product)
+      const hasAlcohol = tags.includes("alcohol") || containsAlcohol(product)
+      const hasSugar = tags.includes("sugar") || containsSugar(product)
+
+      // Week 1 (days 1-7): restrict caffeine
+      if (adaptationDay <= 7 && hasCaffeine) return "Can't eat"
+      // Week 2 (days 8-14): + alcohol
+      if (adaptationDay <= 14 && (hasCaffeine || hasAlcohol)) return "Can't eat"
+      // Week 3-4 (days 15-28): + sugar
+      if (adaptationDay <= 28 && (hasCaffeine || hasAlcohol || hasSugar)) return "Can't eat"
+
+      // Everything else is allowed during adaptation
       return "Can eat"
     }
 
-    // Default fallback - should not reach here in normal flow
-    return product.isAIP ? "Can eat" : "Can't eat"
+    return dbStatus
   }
 
   // Filter and sort products based on user selections
