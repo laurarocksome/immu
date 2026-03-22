@@ -618,7 +618,7 @@ export default function FoodListPage() {
                               <span
                                 className={`px-2 py-0.5 rounded text-xs ${product.isAIP ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}
                               >
-                                {product.isAIP ? "AIP" : "Non-AIP"}
+                                {product.is_aip ? "AIP" : "Non-AIP"}
                               </span>
 
                               {product.tags.slice(0, 2).map((tag) => (
@@ -691,7 +691,7 @@ export default function FoodListPage() {
                     <span
                       className={`px-2 py-0.5 rounded text-xs ${product.isAIP ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}
                     >
-                      {product.isAIP ? "AIP" : "Non-AIP"}
+                      {product.is_aip ? "AIP" : "Non-AIP"}
                     </span>
 
                     {product.tags.slice(0, 2).map((tag) => (
