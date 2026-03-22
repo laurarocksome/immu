@@ -456,7 +456,7 @@ export default function CalendarPage() {
       </main>
 
       {/* Bottom Navigation */}
-      <nav className="grid grid-cols-5 border-t border-brand-dark/10 bg-white/80 backdrop-blur-sm">
+      <nav className="bottom-nav grid grid-cols-5 border-t border-brand-dark/10 bg-white/80 backdrop-blur-sm">
         <button
           className="flex flex-col items-center justify-center py-3 text-xs"
           onClick={() => router.push("/food-list")}
