@@ -25,8 +25,30 @@ export default function Login() {
     try {
       localStorage.clear()
       await signIn(email, password)
-      const today = new Date().toISOString()
-      localStorage.setItem("dietStartDate", today)
+
+      // Load start_date from Supabase, not today's date
+      try {
+        const { createClient } = await import("@/lib/supabase/client")
+        const supabase = createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+          const { data: dietInfo } = await supabase
+            .from("diet_info")
+            .select("start_date, timeline_days, adaptation_choice")
+            .eq("user_id", user.id)
+            .single()
+          if (dietInfo?.start_date) {
+            localStorage.setItem("dietStartDate", dietInfo.start_date)
+            localStorage.setItem("userDietTimeline", dietInfo.timeline_days?.toString() || "90")
+            localStorage.setItem("userAdaptationChoice", dietInfo.adaptation_choice === "yes" || dietInfo.adaptation_choice === "Yes" ? "Yes" : "No")
+          } else {
+            localStorage.setItem("dietStartDate", new Date().toISOString())
+          }
+        }
+      } catch (e) {
+        localStorage.setItem("dietStartDate", new Date().toISOString())
+      }
+
       router.push("/dashboard")
     } catch (err: any) {
       setError(err.message || "Failed to login. Please check your credentials.")
