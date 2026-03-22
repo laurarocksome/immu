@@ -159,7 +159,7 @@ body {
   background: white;
   border-right: 1px solid rgba(212, 165, 165, 0.2);
   padding: 1.5rem 1rem;
-  z-index: 50;
+  z-index: 40;
   gap: 0.5rem;
 }
 
