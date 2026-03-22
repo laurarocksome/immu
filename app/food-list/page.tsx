@@ -614,12 +614,11 @@ export default function FoodListPage() {
                           <div>
                             <h4 className="font-medium">{product.name}</h4>
                             <div className="flex flex-wrap gap-1 mt-1">
-                              {/* AIP/Non-AIP Tag */}
-                              <span
-                                className={`px-2 py-0.5 rounded text-xs ${product.isAIP ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}
-                              >
-                                {product.is_aip ? "AIP" : "Non-AIP"}
-                              </span>
+                              {!product.is_aip && (
+                                <span className="px-2 py-0.5 rounded text-xs bg-red-100 text-red-800">
+                                  Non-AIP
+                                </span>
+                              )}
 
                               {product.tags.slice(0, 2).map((tag) => (
                                 <span key={tag} className="bg-brand-lightest px-2 py-0.5 rounded text-xs">
@@ -687,12 +686,11 @@ export default function FoodListPage() {
                 <div>
                   <h4 className="font-medium">{product.name}</h4>
                   <div className="flex flex-wrap gap-1 mt-1">
-                    {/* AIP/Non-AIP Tag */}
-                    <span
-                      className={`px-2 py-0.5 rounded text-xs ${product.isAIP ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}
-                    >
-                      {product.is_aip ? "AIP" : "Non-AIP"}
-                    </span>
+                    {!product.is_aip && (
+                      <span className="px-2 py-0.5 rounded text-xs bg-red-100 text-red-800">
+                        Non-AIP
+                      </span>
+                    )}
 
                     {product.tags.slice(0, 2).map((tag) => (
                       <span key={tag} className="bg-brand-lightest px-2 py-0.5 rounded text-xs">
