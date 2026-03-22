@@ -130,6 +130,11 @@ body {
       max-width: 960px;
       padding: 2rem;
     }
+
+    .app-shell {
+      margin-left: 220px !important;
+      max-width: calc(100% - 220px) !important;
+    }
   }
 
   /* Tablet: centered narrow layout */

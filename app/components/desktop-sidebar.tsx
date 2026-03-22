@@ -11,8 +11,6 @@ export default function DesktopSidebar() {
 
   return (
     <nav className="desktop-sidebar">
-      <div className="sidebar-logo">✦ IMMU</div>
-
       <button
         className={`sidebar-link ${isActive("/food-list") ? "active" : ""}`}
         onClick={() => router.push("/food-list")}
