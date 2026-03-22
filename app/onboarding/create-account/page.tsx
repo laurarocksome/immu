@@ -6,7 +6,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Logo from "@/app/components/logo"
 import { saveUserProfile, saveUserConditions, saveUserSymptoms, saveDietInfo, saveUserName } from "@/lib/user-data"
-import { getSession } from "@/lib/auth"
+import { createClient } from "@/lib/supabase/client"
 
 export default function CreateAccountPage() {
   const router = useRouter()
@@ -16,7 +16,6 @@ export default function CreateAccountPage() {
   const [userName, setUserName] = useState("")
 
   useEffect(() => {
-    // Get user name from localStorage
     const userAccount = JSON.parse(localStorage.getItem("userAccount") || "{}")
     if (userAccount.name) {
       setUserName(userAccount.name)
@@ -35,7 +34,6 @@ export default function CreateAccountPage() {
     try {
       const today = new Date().toISOString()
 
-      // Get all data from localStorage
       const userProfile = JSON.parse(localStorage.getItem("userProfile") || "{}")
       const userAccount = JSON.parse(localStorage.getItem("userAccount") || "{}")
       const selectedConditions = JSON.parse(localStorage.getItem("selectedConditions") || "[]")
@@ -43,57 +41,52 @@ export default function CreateAccountPage() {
       const dietTimeline = localStorage.getItem("userDietTimeline") || "90"
       const adaptationChoice = localStorage.getItem("userAdaptationChoice") || "No"
 
-      const session = await getSession()
+      // Use getUser() directly - works even with unconfirmed email
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
 
-      if (session) {
-        // User is authenticated, save directly to Supabase
-        if (userAccount.name || userName) {
-          await saveUserName(userAccount.name || userName)
-        }
-
-        await saveUserProfile({
-          gender: userProfile.gender,
-          age: userProfile.age,
-          weight: userProfile.weight,
-          weightUnit: userProfile.weightUnit || "kg",
-          height: userProfile.height,
-          heightUnit: userProfile.heightUnit || "cm",
-        })
-
-        if (selectedConditions.length > 0) {
-          await saveUserConditions(selectedConditions)
-        }
-
-        if (selectedSymptoms.length > 0) {
-          await saveUserSymptoms(selectedSymptoms)
-        }
-
-        await saveDietInfo({
-          startDate: today,
-          timelineDays: Number.parseInt(dietTimeline),
-          adaptationChoice: adaptationChoice,
-          currentPhase: adaptationChoice === "Yes" ? "adaptation" : "elimination",
-        })
-      } else {
-        localStorage.setItem("pendingSync", "true")
+      if (!user) {
+        setError("Session not found. Please go back and sign up again.")
+        setIsLoading(false)
+        return
       }
 
-      // Keep dietStartDate in localStorage for compatibility
+      const name = userAccount.name || userName
+      if (name) {
+        await saveUserName(name)
+      }
+
+      await saveUserProfile({
+        gender: userProfile.gender,
+        age: userProfile.age,
+        weight: userProfile.weight,
+        weightUnit: userProfile.weightUnit || "kg",
+        height: userProfile.height,
+        heightUnit: userProfile.heightUnit || "cm",
+      })
+
+      if (selectedConditions.length > 0) {
+        await saveUserConditions(selectedConditions)
+      }
+
+      if (selectedSymptoms.length > 0) {
+        await saveUserSymptoms(selectedSymptoms)
+      }
+
+      await saveDietInfo({
+        startDate: today,
+        timelineDays: Number.parseInt(dietTimeline),
+        adaptationChoice: adaptationChoice,
+        currentPhase: adaptationChoice === "Yes" ? "adaptation" : "elimination",
+      })
+
       localStorage.setItem("dietStartDate", today)
       localStorage.setItem("onboardingComplete", "true")
 
-      // Navigate to dashboard
       router.push("/dashboard")
     } catch (err: any) {
       console.error("Error saving user data:", err)
-      if (err.message?.includes("Auth session missing")) {
-        localStorage.setItem("pendingSync", "true")
-        localStorage.setItem("dietStartDate", new Date().toISOString())
-        localStorage.setItem("onboardingComplete", "true")
-        router.push("/dashboard")
-      } else {
-        setError(err.message || "Failed to save your data. Please try again.")
-      }
+      setError(err.message || "Failed to save your data. Please try again.")
     } finally {
       setIsLoading(false)
     }
@@ -101,12 +94,10 @@ export default function CreateAccountPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-brand-lightest to-white text-brand-dark">
-      {/* Header */}
       <header className="p-4 flex justify-center items-center bg-brand-dark text-white">
         <Logo variant="light" />
       </header>
 
-      {/* Main Content */}
       <main className="flex-1 px-4 pb-8 overflow-auto">
         <div className="max-w-md mx-auto">
           <div className="mb-6 text-center">
@@ -114,7 +105,6 @@ export default function CreateAccountPage() {
             <p className="text-brand-dark/70">Review and confirm to start your AIP journey.</p>
           </div>
 
-          {/* Error message */}
           {error && (
             <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-xl text-center text-red-700">
               {error}
@@ -132,7 +122,6 @@ export default function CreateAccountPage() {
               <p className="text-sm text-brand-dark/60 mt-2">
                 We've collected all the information needed to personalize your AIP diet experience.
               </p>
-              {/* Updated email confirmation message colors from blue to pink */}
               <div className="mt-4 p-3 bg-pink-50 border border-pink-200 rounded-lg">
                 <p className="text-sm text-pink-700">
                   <span className="font-medium">Check your email!</span> We've sent you a confirmation link to verify
@@ -164,7 +153,6 @@ export default function CreateAccountPage() {
             </div>
           </div>
 
-          {/* Start button */}
           <button
             onClick={handleSubmit}
             disabled={isLoading}
@@ -175,7 +163,6 @@ export default function CreateAccountPage() {
         </div>
       </main>
 
-      {/* Progress indicator */}
       <div className="p-4 flex justify-center">
         <div className="flex space-x-2">
           {[...Array(10)].map((_, i) => (
