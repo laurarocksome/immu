@@ -134,7 +134,7 @@ export default function NutritionPage() {
               </div>
               <div className="w-24 h-24 rounded-xl overflow-hidden bg-pink-200 flex items-center justify-center">
                 <img
-                  src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=200&h=200&fit=crop"
+                  src="https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=200&h=200&fit=crop"
                   alt="Elimination phase"
                   className="object-cover w-full h-full"
                 />
