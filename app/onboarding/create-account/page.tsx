@@ -40,8 +40,8 @@ export default function CreateAccountPage() {
       const userAccount = JSON.parse(localStorage.getItem("userAccount") || "{}")
       const selectedConditions = JSON.parse(localStorage.getItem("selectedConditions") || "[]")
       const selectedSymptoms = JSON.parse(localStorage.getItem("selectedSymptoms") || "[]")
-      const dietTimeline = localStorage.getItem("dietTimeline") || "90"
-      const adaptationChoice = localStorage.getItem("adaptationChoice") || "yes"
+      const dietTimeline = localStorage.getItem("userDietTimeline") || "90"
+      const adaptationChoice = localStorage.getItem("userAdaptationChoice") || "No"
 
       const session = await getSession()
 
@@ -72,7 +72,7 @@ export default function CreateAccountPage() {
           startDate: today,
           timelineDays: Number.parseInt(dietTimeline),
           adaptationChoice: adaptationChoice,
-          currentPhase: "adaptation",
+          currentPhase: adaptationChoice === "Yes" ? "adaptation" : "elimination",
         })
       } else {
         localStorage.setItem("pendingSync", "true")
