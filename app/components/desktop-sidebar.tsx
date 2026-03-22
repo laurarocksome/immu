@@ -9,6 +9,11 @@ export default function DesktopSidebar() {
 
   const isActive = (path: string) => pathname === path
 
+  const hideOn = ["/login", "/signup", "/get-started", "/", "/onboarding"]
+  if (hideOn.some(p => pathname === p || pathname.startsWith("/onboarding"))) {
+    return null
+  }
+
   return (
     <nav className="desktop-sidebar">
       <button

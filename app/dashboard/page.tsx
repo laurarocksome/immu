@@ -2369,7 +2369,7 @@ export default function DashboardPage() {
                         const maxWeight = Math.max(...weightData.map((d) => d.weight))
                         const range = maxWeight - minWeight || 1
 
-                        const x = (i / (weightData.length - 1)) * 100
+                        const x = weightData.length > 1 ? (i / (weightData.length - 1)) * 100 : 50
                         const y = 100 - ((item.weight - minWeight) / range) * 100
 
                         return (
@@ -2546,8 +2546,7 @@ export default function DashboardPage() {
         </button>
       </nav>
 
-      {showWeightModal &&
-        userId && ( // Only show modal when userId is available
+      {showWeightModal && (
           <WeightLogModal
             userId={userId} // Pass userId from state
             currentWeight={currentWeight}
