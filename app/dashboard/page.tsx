@@ -2500,7 +2500,7 @@ export default function DashboardPage() {
       <ConfettiCelebration active={showConfetti} onComplete={() => setShowConfetti(false)} duration={4000} />
 
       {/* Bottom Navigation */}
-      <nav className="grid grid-cols-5 border-t border-pink-200 bg-white/80 backdrop-blur-sm">
+      <nav className="bottom-nav grid grid-cols-5 border-t border-pink-200 bg-white/80 backdrop-blur-sm">
         <button
           className="flex flex-col items-center justify-center py-3 text-xs"
           onClick={() => router.push("/food-list")}
@@ -2516,7 +2516,7 @@ export default function DashboardPage() {
           className="flex items-center justify-center rounded-full gradient-button h-14 w-14 -mt-7 mx-auto shadow-lg"
           onClick={() => router.push("/log-day")}
         >
-          <Plus className="h-6 w-6" />
+          <Plus className="h-8 w-8" />
         </button>
         <button
           className="flex flex-col items-center justify-center py-3 text-xs"
