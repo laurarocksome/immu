@@ -1043,7 +1043,7 @@ export default function DashboardPage() {
     setCurrentDate(date.toLocaleDateString("en-US", options))
 
     // Check if this is the first time loading the dashboard after onboarding
-    const isFirstLoad = sessionStorage.getItem("dashboardFirstLoad") !== "false"
+    const isFirstLoad = localStorage.getItem("dashboardFirstLoad") !== "false"
 
     if (typeof window !== "undefined") {
       // Get session and redirect if not authenticated
@@ -1163,10 +1163,10 @@ export default function DashboardPage() {
         setProgress(progressPercentage > 0 ? progressPercentage : 1)
       }
 
-      const isFirstEverLoad = sessionStorage.getItem("dashboardFirstLoad") === null
+      const isFirstEverLoad = localStorage.getItem("dashboardFirstLoad") === null
       if (isFirstEverLoad) {
         setShowWelcome(true)
-        sessionStorage.setItem("dashboardFirstLoad", "false")
+        localStorage.setItem("dashboardFirstLoad", "false")
 
         // Get user account info if available
         const accountInfo = JSON.parse(localStorage.getItem("userAccount") || "{}")
@@ -1194,28 +1194,14 @@ export default function DashboardPage() {
         loadSymptomData()
       }
 
-      // Process wellness data (this should ideally use the data loaded from DB)
+      // Process wellness data from localStorage (period/digestive only - score comes from DB)
       const loggedDayStr = localStorage.getItem("loggedDay")
       const loggedSymptomsStr = localStorage.getItem("loggedSymptoms")
 
       if (loggedDayStr) {
         try {
           const loggedDay = JSON.parse(loggedDayStr)
-          setHasLoggedWellness(true)
-
-          // Get logged symptoms if available
-          const loggedSymptoms: LoggedSymptom[] = loggedSymptomsStr ? JSON.parse(loggedSymptomsStr) : []
-
-          // Calculate wellness score from the logged data
-          const score = calculateWellnessScore(loggedDay.mood, loggedDay.sleep, loggedDay.stress, loggedSymptoms)
-
-          setWellnessScore(score)
-
-          // Update the wellness history data
-          const updatedScores = [...wellnessHistoryData.scores]
-          updatedScores[0] = score
-          wellnessHistoryData.scores = updatedScores
-          setWellnessData(updatedScores) // Update the wellnessData state
+          // NOTE: Do NOT set wellnessScore from localStorage - DB data takes priority
 
           // Store period data
           if (loggedDay.onPeriod === true) {
@@ -1358,9 +1344,13 @@ export default function DashboardPage() {
     }
 
     if (latestDayIndex >= 0) {
-      const avgScore = Math.round(
-        (moodData[latestDayIndex] + sleepData[latestDayIndex] + stressData[latestDayIndex]) / 3,
-      )
+      const m = moodData[latestDayIndex]
+      const s = sleepData[latestDayIndex]
+      const st = stressData[latestDayIndex]
+      const count = [m, s, st].filter(v => v > 0).length
+      const avgScore = count > 0
+        ? Math.round((m + s + st) / count)
+        : 0
       setWellnessScore(avgScore)
     }
   }
@@ -1499,45 +1489,75 @@ export default function DashboardPage() {
   const createSmoothCurvePath = (values: number[]) => {
     const points = values.map((value, i) => {
       const x = (i / (values.length - 1)) * 100
-      // Invert the y value since SVG 0,0 is top-left
       const y = 100 - (value / 5) * 100
-      return { x, y }
+      return { x, y, value }
     })
 
-    let path = `M ${points[0].x},${points[0].y}`
-
-    for (let i = 0; i < points.length - 1; i++) {
-      const x1 = points[i].x + (points[i + 1].x - points[i].x) / 3
-      const y1 = points[i].y
-      const x2 = points[i].x + (2 * (points[i + 1].x - points[i].x)) / 3
-      const y2 = points[i + 1].y
-      path += ` C ${x1},${y1} ${x2},${y2} ${points[i + 1].x},${points[i + 1].y}`
+    // Build segments of consecutive non-zero values
+    const segments: typeof points[] = []
+    let current: typeof points = []
+    for (const pt of points) {
+      if (pt.value > 0) {
+        current.push(pt)
+      } else {
+        if (current.length > 0) { segments.push(current); current = [] }
+      }
     }
+    if (current.length > 0) segments.push(current)
 
-    return path
+    if (segments.length === 0) return ""
+
+    let path = ""
+    for (const seg of segments) {
+      if (seg.length === 1) {
+        path += ` M ${seg[0].x},${seg[0].y}`
+        continue
+      }
+      path += ` M ${seg[0].x},${seg[0].y}`
+      for (let i = 0; i < seg.length - 1; i++) {
+        const x1 = seg[i].x + (seg[i+1].x - seg[i].x) / 3
+        const y1 = seg[i].y
+        const x2 = seg[i].x + (2 * (seg[i+1].x - seg[i].x)) / 3
+        const y2 = seg[i+1].y
+        path += ` C ${x1},${y1} ${x2},${y2} ${seg[i+1].x},${seg[i+1].y}`
+      }
+    }
+    return path.trim()
   }
 
   // Function to create wellness curve path (scaled for 0-100)
   const createWellnessCurvePath = (values: number[]) => {
     const points = values.map((value, i) => {
       const x = (i / (values.length - 1)) * 100
-      // Invert the y value since SVG 0,0 is top-left
-      // Scale from 0-100 to 0-100% of chart height
       const y = 100 - value
-      return { x, y }
+      return { x, y, value }
     })
 
-    let path = `M ${points[0].x},${points[0].y}`
-
-    for (let i = 0; i < points.length - 1; i++) {
-      const x1 = points[i].x + (points[i + 1].x - points[i].x) / 3
-      const y1 = points[i].y
-      const x2 = points[i].x + (2 * (points[i + 1].x - points[i].x)) / 3
-      const y2 = points[i + 1].y
-      path += ` C ${x1},${y1} ${x2},${y2} ${points[i + 1].x},${points[i + 1].y}`
+    const segments: typeof points[] = []
+    let current: typeof points = []
+    for (const pt of points) {
+      if (pt.value > 0) {
+        current.push(pt)
+      } else {
+        if (current.length > 0) { segments.push(current); current = [] }
+      }
     }
+    if (current.length > 0) segments.push(current)
+    if (segments.length === 0) return ""
 
-    return path
+    let path = ""
+    for (const seg of segments) {
+      if (seg.length === 1) { path += ` M ${seg[0].x},${seg[0].y}`; continue }
+      path += ` M ${seg[0].x},${seg[0].y}`
+      for (let i = 0; i < seg.length - 1; i++) {
+        const x1 = seg[i].x + (seg[i+1].x - seg[i].x) / 3
+        const y1 = seg[i].y
+        const x2 = seg[i].x + (2 * (seg[i+1].x - seg[i].x)) / 3
+        const y2 = seg[i+1].y
+        path += ` C ${x1},${y1} ${x2},${y2} ${seg[i+1].x},${seg[i+1].y}`
+      }
+    }
+    return path.trim()
   }
 
   // Function to create wellness area path (for filled area below the line)

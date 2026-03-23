@@ -31,18 +31,36 @@ function ProgressBar() {
   }, [])
 
   useEffect(() => {
-    // Only access localStorage on the client side
-    if (typeof window !== "undefined") {
-      const dietTimeline = localStorage.getItem("userDietTimeline")
-      const startDate = localStorage.getItem("dietStartDate")
-      const adaptationChoice = localStorage.getItem("userAdaptationChoice")
+    async function loadDietData() {
+      try {
+        const { createClient } = await import("@/lib/supabase/client")
+        const sb = createClient()
+        const { data: { user } } = await sb.auth.getUser()
+
+        let startDate: string | null = null
+        let dietTimeline: string | null = null
+        let adaptationChoice: string | null = null
+
+        if (user) {
+          const { data } = await sb.from("diet_info").select("start_date, timeline_days, adaptation_choice").eq("user_id", user.id).single()
+          if (data) {
+            startDate = data.start_date
+            dietTimeline = data.timeline_days?.toString()
+            adaptationChoice = data.adaptation_choice
+          }
+        }
+
+        // Fallback to localStorage
+        if (!startDate) startDate = localStorage.getItem("dietStartDate")
+        if (!dietTimeline) dietTimeline = localStorage.getItem("userDietTimeline")
+        if (!adaptationChoice) adaptationChoice = localStorage.getItem("userAdaptationChoice")
 
       // Check if user has adaptation period
-      const hasAdaptation = adaptationChoice === "Yes"
+      const hasAdaptation = adaptationChoice === "Yes" || adaptationChoice === "yes"
 
       // Calculate days for each phase
       const adaptationDays = hasAdaptation ? 28 : 0
-      const totalSelectedDays = dietTimeline ? Number.parseInt(dietTimeline) : 30
+      const totalSelectedDays = dietTimeline ? Number.parseInt(dietTimeline) : 90
       const eliminationDays = hasAdaptation ? totalSelectedDays - adaptationDays : totalSelectedDays
       const reintroductionDays = 150 // 5 months in days
 
@@ -101,156 +119,91 @@ function ProgressBar() {
         progressPercentage,
         daysRemaining,
       })
+      } catch (e) {
+        console.error("Calendar load error:", e)
+      }
     }
+    loadDietData()
   }, [])
 
   // Render different UI based on current phase
+  const total = progressData.adaptationDays + progressData.eliminationDays + progressData.reintroductionDays
+  const adaptPct = total > 0 ? (progressData.adaptationDays / total) * 100 : 0
+  const elimPct = total > 0 ? (progressData.eliminationDays / total) * 100 : 0
+  const reintroPct = total > 0 ? (progressData.reintroductionDays / total) * 100 : 0
+
+  const phaseColor = progressData.currentPhase === "adaptation"
+    ? "bg-yellow-400" : progressData.currentPhase === "elimination"
+    ? "bg-pink-400" : "bg-green-400"
+
+  const phaseLabel = progressData.currentPhase === "adaptation"
+    ? "Adaptation Phase" : progressData.currentPhase === "elimination"
+    ? "Elimination Phase" : "Reintroduction Phase"
+
+  const nextDate = progressData.currentPhase === "adaptation"
+    ? progressData.adaptationEndDate : progressData.currentPhase === "elimination"
+    ? progressData.eliminationEndDate : progressData.reintroductionEndDate
+
   return (
-    <div className="space-y-4">
-      {/* Phase Timeline */}
-      <div className="relative pt-6">
-        <div className="h-2 bg-gray-200 rounded-full">
+    <div className="space-y-5">
+      {/* Phase bar */}
+      <div>
+        <div className="flex gap-1 h-3 rounded-full overflow-hidden mb-2">
           {progressData.adaptationDays > 0 && (
-            <div
-              className={`absolute h-2 bg-yellow-400 rounded-l-full ${progressData.currentPhase !== "adaptation" ? "rounded-r-full" : ""}`}
-              style={{
-                width: `${(progressData.adaptationDays / (progressData.adaptationDays + progressData.eliminationDays + progressData.reintroductionDays)) * 100}%`,
-                left: 0,
-              }}
-            ></div>
+            <div className={`h-full bg-yellow-400 ${progressData.currentPhase === "adaptation" ? "ring-2 ring-yellow-500 ring-offset-1" : ""}`}
+              style={{ width: `${adaptPct}%` }} />
           )}
-          <div
-            className={`absolute h-2 bg-pink-400 ${progressData.adaptationDays > 0 ? "" : "rounded-l-full"} ${progressData.currentPhase === "reintroduction" ? "" : "rounded-r-full"}`}
-            style={{
-              width: `${(progressData.eliminationDays / (progressData.adaptationDays + progressData.eliminationDays + progressData.reintroductionDays)) * 100}%`,
-              left: `${(progressData.adaptationDays / (progressData.adaptationDays + progressData.eliminationDays + progressData.reintroductionDays)) * 100}%`,
-            }}
-          ></div>
-          <div
-            className="absolute h-2 bg-green-300 rounded-r-full"
-            style={{
-              width: `${(progressData.reintroductionDays / (progressData.adaptationDays + progressData.eliminationDays + progressData.reintroductionDays)) * 100}%`,
-              left: `${((progressData.adaptationDays + progressData.eliminationDays) / (progressData.adaptationDays + progressData.eliminationDays + progressData.reintroductionDays)) * 100}%`,
-            }}
-          ></div>
+          <div className={`h-full bg-pink-400 ${progressData.currentPhase === "elimination" ? "ring-2 ring-pink-500 ring-offset-1" : ""}`}
+            style={{ width: `${elimPct}%` }} />
+          <div className={`h-full bg-green-300 ${progressData.currentPhase === "reintroduction" ? "ring-2 ring-green-500 ring-offset-1" : ""}`}
+            style={{ width: `${reintroPct}%` }} />
+        </div>
+        <div className="flex justify-between text-xs text-brand-dark/50">
+          {progressData.adaptationDays > 0 && <span className="text-yellow-600">Adaptation</span>}
+          <span className="text-pink-500">Elimination</span>
+          <span className="text-green-600">Reintroduction</span>
+        </div>
+      </div>
+
+      {/* Current phase info */}
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <p className="text-xs text-brand-dark/60">{phaseLabel}</p>
+          <p className="text-xl font-bold text-brand-dark">{progressData.daysRemaining} <span className="text-sm font-normal">days left</span></p>
         </div>
 
-        {/* Phase Labels */}
-        {progressData.adaptationDays > 0 && (
-          <div
-            className="absolute text-xs font-medium text-yellow-600 -top-6"
-            style={{
-              left: `${(progressData.adaptationDays / (progressData.adaptationDays + progressData.eliminationDays + progressData.reintroductionDays)) * 50}%`,
-              transform: "translateX(-50%)",
-            }}
-          >
-            Adaptation
+        <div className="flex-1 max-w-[140px]">
+          <div className="flex justify-between text-xs text-brand-dark/60 mb-1">
+            <span>Progress</span>
+            <span>{progressData.progressPercentage}%</span>
+          </div>
+          <div className="h-2 bg-gray-100 rounded-full">
+            <div className={`h-2 rounded-full ${phaseColor} transition-all`}
+              style={{ width: `${progressData.progressPercentage}%` }} />
+          </div>
+        </div>
+
+        {nextDate && (
+          <div className="text-right">
+            <p className="text-xs text-brand-dark/60">Next phase</p>
+            <p className="font-bold text-brand-dark">{nextDate}</p>
           </div>
         )}
-        <div
-          className="absolute text-xs font-medium text-pink-600 -top-6"
-          style={{
-            left: `${
-              (
-                progressData.adaptationDays /
-                  (progressData.adaptationDays + progressData.eliminationDays + progressData.reintroductionDays)
-              ) *
-                100 +
-              (
-                progressData.eliminationDays /
-                  (progressData.adaptationDays + progressData.eliminationDays + progressData.reintroductionDays)
-              ) *
-                50
-            }%`,
-            transform: "translateX(-50%)",
-          }}
-        >
-          Elimination
-        </div>
-        <div
-          className="absolute text-xs font-medium text-green-600 -top-6"
-          style={{
-            left: `${
-              (
-                (progressData.adaptationDays + progressData.eliminationDays) /
-                  (progressData.adaptationDays + progressData.eliminationDays + progressData.reintroductionDays)
-              ) *
-                100 +
-              (
-                progressData.reintroductionDays /
-                  (progressData.adaptationDays + progressData.eliminationDays + progressData.reintroductionDays)
-              ) *
-                50
-            }%`,
-            transform: "translateX(-50%)",
-          }}
-        >
-          Reintroduction
-        </div>
       </div>
 
-      {/* Current Phase Info */}
-      <div className="flex items-center justify-between mt-6">
-        <div className="text-center">
-          <p className="text-sm text-brand-dark/70">
-            {progressData.currentPhase === "adaptation"
-              ? "Adaptation Phase"
-              : progressData.currentPhase === "elimination"
-                ? "Elimination Phase"
-                : "Reintroduction Phase"}
-          </p>
-          <p className="font-bold">{progressData.daysRemaining} days left</p>
-        </div>
-
-        <div className="relative w-32">
-          <div className="h-2 bg-gray-200 rounded-full">
-            <div
-              className={`h-2 rounded-full ${
-                progressData.currentPhase === "adaptation"
-                  ? "bg-yellow-400"
-                  : progressData.currentPhase === "elimination"
-                    ? "bg-pink-400"
-                    : "bg-green-300"
-              }`}
-              style={{ width: `${progressData.progressPercentage}%` }}
-            ></div>
-          </div>
-          <div className="absolute -top-5 right-0 text-xs font-medium text-brand-dark">
-            {progressData.progressPercentage}%
-          </div>
-        </div>
-
-        <div className="text-center">
-          <p className="text-sm text-brand-dark/70">Next Phase</p>
-          <p className="font-bold">
-            {progressData.currentPhase === "adaptation"
-              ? progressData.adaptationEndDate
-              : progressData.currentPhase === "elimination"
-                ? progressData.eliminationEndDate
-                : progressData.reintroductionEndDate}
-          </p>
-        </div>
-      </div>
-
-      {/* Phase Details */}
-      <div className="grid grid-cols-3 gap-2 mt-4 text-center text-xs">
+      {/* Phase pills */}
+      <div className="flex gap-2 flex-wrap">
         {progressData.adaptationDays > 0 && (
-          <div
-            className={`p-2 rounded-lg ${progressData.currentPhase === "adaptation" ? "bg-yellow-100 text-yellow-800" : "bg-gray-100"}`}
-          >
+          <div className={`flex-1 min-w-[80px] text-center py-2 px-3 rounded-xl text-xs ${progressData.currentPhase === "adaptation" ? "bg-yellow-100 text-yellow-800 font-semibold" : "bg-gray-50 text-brand-dark/50"}`}>
             <p className="font-medium">Adaptation</p>
-            <p>{progressData.adaptationDays} days</p>
+            <p>{progressData.adaptationDays}d</p>
           </div>
         )}
-        <div
-          className={`p-2 rounded-lg ${progressData.currentPhase === "elimination" ? "bg-pink-100 text-pink-800" : "bg-gray-100"} ${progressData.adaptationDays === 0 ? "col-span-2" : ""}`}
-        >
+        <div className={`flex-1 min-w-[80px] text-center py-2 px-3 rounded-xl text-xs ${progressData.currentPhase === "elimination" ? "bg-pink-100 text-pink-800 font-semibold" : "bg-gray-50 text-brand-dark/50"}`}>
           <p className="font-medium">Elimination</p>
-          <p>{progressData.eliminationDays} days</p>
+          <p>{progressData.eliminationDays}d</p>
         </div>
-        <div
-          className={`p-2 rounded-lg ${progressData.currentPhase === "reintroduction" ? "bg-green-100 text-green-800" : "bg-gray-100"} ${progressData.adaptationDays === 0 ? "col-span-1" : ""}`}
-        >
+        <div className={`flex-1 min-w-[80px] text-center py-2 px-3 rounded-xl text-xs ${progressData.currentPhase === "reintroduction" ? "bg-green-100 text-green-800 font-semibold" : "bg-gray-50 text-brand-dark/50"}`}>
           <p className="font-medium">Reintroduction</p>
           <p>~5 months</p>
         </div>
@@ -334,17 +287,17 @@ export default function CalendarPage() {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-brand-lightest to-white text-brand-dark">
       {/* Header */}
-      <header className="p-4 flex justify-between items-center bg-brand-dark text-white">
-        <button onClick={handleBack} className="flex items-center text-white/80 hover:text-white">
+      <header className="p-4 flex justify-center items-center header-gradient text-white relative">
+        <button onClick={handleBack} className="absolute left-4 flex items-center text-white/80 hover:text-white">
           <ArrowLeft className="h-5 w-5 mr-1" />
           <span>Back</span>
         </button>
-        <Logo />
-        <div className="w-20"></div> {/* Empty div for spacing */}
+        <Logo variant="light" />
       </header>
 
       {/* Main Content */}
       <main className="flex-1 p-4 overflow-auto">
+        <div className="max-w-2xl mx-auto">
         <div className="mb-6">
           <h2 className="text-2xl font-bold mb-2">Calendar</h2>
           <p className="text-brand-dark/70">Track your AIP journey</p>
@@ -460,6 +413,7 @@ export default function CalendarPage() {
             <Plus className="h-4 w-4 mr-2" />
             Log Day
           </button>
+        </div>
         </div>
       </main>
 

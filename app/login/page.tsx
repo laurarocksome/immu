@@ -5,7 +5,6 @@ export const dynamic = "force-dynamic"
 import type React from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { setupTestData } from "../utils/test-utils"
 import { useState } from "react"
 import { signIn } from "@/lib/auth"
 import ImmuLogo from "@/app/components/immu-logo"
@@ -57,17 +56,6 @@ export default function Login() {
     }
   }
 
-  const handleSkip = async () => {
-    setIsLoading(true)
-    try {
-      localStorage.clear()
-      setupTestData()
-      router.push("/dashboard")
-    } catch (err) {
-      console.error("Error:", err)
-      setIsLoading(false)
-    }
-  }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center app-gradient p-6">
@@ -134,13 +122,6 @@ export default function Login() {
         </p>
       </div>
 
-      <button
-        onClick={handleSkip}
-        disabled={isLoading}
-        className="mt-8 text-sm text-slate-500 hover:text-slate-700 underline transition-colors disabled:opacity-50"
-      >
-        {isLoading ? "Loading..." : "Skip (Testing)"}
-      </button>
     </div>
   )
 }
