@@ -1149,46 +1149,17 @@ export default function DashboardPage() {
       // Determine phases based on localStorage (this should be updated to use dietInfoData if available)
       determinePhases()
 
-      // Get diet timeline data for progress bar (Supabase dietInfoData takes precedence)
-      const dietTimeline = localStorage.getItem("userDietTimeline")
+      // localStorage fallback for streak only (progress comes from Supabase)
       const startDate = localStorage.getItem("dietStartDate")
 
-      // Compute dynamic chart labels based on diet start date
-      const computedDates = Array.from({ length: 7 }, (_, i) => {
-        const date = new Date()
-        date.setDate(date.getDate() - (6 - i))
-        if (startDate) {
-          const start = new Date(startDate)
-          start.setHours(0, 0, 0, 0)
-          date.setHours(0, 0, 0, 0)
-          const dayNum = Math.floor((date.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1
-          return dayNum > 0 ? `Day ${dayNum}` : "-"
-        }
-        return `Day ${i + 1}`
-      })
-      setChartDates(computedDates)
-
       if (!startDate) {
-        const today = new Date().toISOString()
-        localStorage.setItem("dietStartDate", today)
-        // Only reset streak to 1 if Supabase didn't return a real streak
-        if (!userStreak) {
-          setStreakDays(1)
-        }
-        setProgress(1)
+        if (!userStreak) setStreakDays(1)
+        // Only set progress=1 if Supabase didn't already calculate it
+        if (!dietInfoData) setProgress(1)
       } else {
-        // Calculate days elapsed only for progress bar — NOT for streak (Supabase owns streak)
         const daysElapsed = Math.floor((new Date().getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24))
-
-        // Only fall back to localStorage streak if Supabase returned nothing
-        if (!userStreak) {
-          setStreakDays(Math.max(daysElapsed + 1, 1))
-        }
-
-        // Calculate progress percentage
-        const totalDays = dietTimeline ? Number.parseInt(dietTimeline) : 30
-        const progressPercentage = totalDays > 0 ? Math.min(Math.round((daysElapsed / totalDays) * 100), 100) : 1
-        setProgress(progressPercentage > 0 ? progressPercentage : 1)
+        if (!userStreak) setStreakDays(Math.max(daysElapsed + 1, 1))
+        // Supabase dietInfoData already set progress correctly above — do NOT overwrite it here
       }
 
       const isFirstEverLoad = localStorage.getItem("dashboardFirstLoad") === null
@@ -1218,15 +1189,8 @@ export default function DashboardPage() {
         setUserSymptoms(parsedSymptoms)
       }
 
-      // Load symptom data from localStorage ONLY as fallback if Supabase returned no history
-      // (loadSymptomDataFromDatabase already ran above and sets hasLoggedSymptoms)
-      if (!hasLoggedSymptoms) {
-        loadSymptomData()
-      }
-
       // Process wellness data from localStorage (period/digestive only - score comes from DB)
       const loggedDayStr = localStorage.getItem("loggedDay")
-      const loggedSymptomsStr = localStorage.getItem("loggedSymptoms")
 
       if (loggedDayStr) {
         try {
@@ -1337,6 +1301,14 @@ export default function DashboardPage() {
     const sortedWellness = [...wellnessHistory].sort((a, b) => a.log_date.localeCompare(b.log_date))
     const lastSevenW = sortedWellness.slice(-7)
     while (lastSevenW.length < 7) lastSevenW.unshift(null as any)
+
+    // Set chart date labels from actual log dates (overrides defaults)
+    const wellnessDates = lastSevenW.map(log => {
+      if (!log) return "-"
+      const d = new Date(log.log_date)
+      return d.toLocaleDateString("en-US", { month: "short", day: "numeric" })
+    })
+    setChartDates(wellnessDates)
 
     const wellnessDateMap = new Map<string, number>()
     lastSevenW.forEach((log, i) => { if (log) wellnessDateMap.set(log.log_date, i) })
@@ -1480,27 +1452,29 @@ export default function DashboardPage() {
     }
   }, [todoItems])
 
-  // Add an effect to reload symptom data when the component is focused
+  // Reload chart data when the page becomes visible again (works on mobile/PWA)
   useEffect(() => {
-    // Function to handle when the window gets focus
+    const handleVisible = () => {
+      if (document.visibilityState === "visible" && userId) {
+        loadSymptomDataFromDatabase(userId)
+        loadWellnessDataFromDatabase(userId)
+      }
+    }
     const handleFocus = () => {
-      // Reload data from the database on focus
       if (userId) {
         loadSymptomDataFromDatabase(userId)
         loadWellnessDataFromDatabase(userId)
       }
-      loadUserProfile() // Reload profile in case it changed
-      loadCompletedTodos() // Reload completed todos
+      loadUserProfile()
+      loadCompletedTodos()
     }
-
-    // Add event listener for focus
+    document.addEventListener("visibilitychange", handleVisible)
     window.addEventListener("focus", handleFocus)
-
-    // Clean up
     return () => {
+      document.removeEventListener("visibilitychange", handleVisible)
       window.removeEventListener("focus", handleFocus)
     }
-  }, [userId]) // Re-run when userId changes
+  }, [userId])
 
   const handleCloseWelcome = () => {
     setShowWelcome(false)
