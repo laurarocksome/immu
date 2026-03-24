@@ -1,11 +1,8 @@
 import type React from "react"
 import "./globals.css"
 import type { Metadata } from "next"
-import { Inter } from "next/font/google"
 import DesktopSidebar from "./components/desktop-sidebar"
 import { LanguageProvider } from "@/lib/i18n/context"
-
-const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "IMMU - AIP Diet Tracking App",
@@ -20,7 +17,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body>
         <LanguageProvider>
           <DesktopSidebar />
           <div className="app-shell">

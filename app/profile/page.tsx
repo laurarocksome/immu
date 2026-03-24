@@ -10,7 +10,6 @@ import { List, Home, Plus, BookOpen, UtensilsCrossed, ArrowLeft, Edit, Trash2 } 
 import Logo from "@/app/components/logo"
 import { deleteUser } from "@/lib/auth"
 import { createClient } from "@/lib/supabase/client"
-const supabase = createClient()
 
 type UserProfile = {
   gender: string
@@ -42,6 +41,7 @@ export default function ProfilePage() {
   useEffect(() => {
     const loadUserData = async () => {
       try {
+        const supabase = createClient()
         console.log("[v0] Starting to load user data")
         const {
           data: { user },
