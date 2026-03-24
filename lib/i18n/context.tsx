@@ -1,6 +1,7 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, useCallback } from "react"
+import { createClient } from "@/lib/supabase/client"
 
 type Translations = Record<string, string>
 
@@ -31,7 +32,6 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       setLoading(false)
       return
     }
-    const { createClient } = await import("@/lib/supabase/client")
     const supabase = createClient()
     const { data } = await supabase
       .from("translations")
@@ -48,15 +48,12 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   useEffect(() => {
-    // Load locale from localStorage first for instant response
     const saved = localStorage.getItem("immu_locale") || "en"
     setLocaleState(saved)
     loadTranslations(saved)
 
-    // Then check if user has a saved locale in DB
     async function loadUserLocale() {
       try {
-        const { createClient } = await import("@/lib/supabase/client")
         const supabase = createClient()
         const { data: { user } } = await supabase.auth.getUser()
         if (user) {
@@ -82,9 +79,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     setLoading(true)
     await loadTranslations(loc)
 
-    // Save to DB
     try {
-      const { createClient } = await import("@/lib/supabase/client")
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {

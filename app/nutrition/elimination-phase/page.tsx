@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { List, Home, Plus, BookOpen, UtensilsCrossed, User, ArrowLeft, ChevronRight, PlusIcon } from "lucide-react"
 import Logo from "@/app/components/logo"
 import Image from "next/image"
-import { createBrowserClient } from "@/lib/supabase/client"
+import { createBrowserClient } from "@supabase/ssr"
 
 export default function EliminationPhasePage() {
   const router = useRouter()

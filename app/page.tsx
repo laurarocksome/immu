@@ -8,8 +8,8 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import Logo from "@/app/components/logo"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
-import { signIn } from "@/lib/auth"
+import { useState, useEffect } from "react"
+import { signIn, getSession } from "@/lib/auth"
 
 export default function Home() {
   const router = useRouter()
@@ -17,6 +17,18 @@ export default function Home() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
+
+  useEffect(() => {
+    async function checkSession() {
+      try {
+        const session = await getSession()
+        if (session) {
+          router.replace("/dashboard")
+        }
+      } catch {}
+    }
+    checkSession()
+  }, [router])
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()

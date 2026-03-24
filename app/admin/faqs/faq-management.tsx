@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { createBrowserClient } from "@/lib/supabase/client"
+import { createBrowserClient } from "@supabase/ssr"
 
 interface FAQ {
   id: string

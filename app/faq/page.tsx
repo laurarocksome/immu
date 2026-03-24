@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { ArrowLeft, PlusIcon } from "lucide-react"
 import Logo from "@/app/components/logo"
-import { createBrowserClient } from "@/lib/supabase/client"
+import { createBrowserClient } from "@supabase/ssr"
 
 interface FAQItem {
   id: string
