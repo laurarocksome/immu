@@ -1165,13 +1165,15 @@ export default function DashboardPage() {
 
       const isFirstEverLoad = localStorage.getItem("dashboardFirstLoad") === null
       if (isFirstEverLoad) {
-        setShowWelcome(true)
         localStorage.setItem("dashboardFirstLoad", "false")
-
-        // Get user account info if available
-        const accountInfo = JSON.parse(localStorage.getItem("userAccount") || "{}")
-        if (accountInfo && accountInfo.name) {
-          setUserName(accountInfo.name)
+        // Only show welcome if user has no existing logs (truly new user)
+        if (user?.id) {
+          const { createClient: cc } = await import("@/lib/supabase/client")
+          const sb = cc()
+          const { count } = await sb.from("daily_logs").select("id", { count: "exact", head: true }).eq("user_id", user.id)
+          if ((count ?? 0) === 0) {
+            setShowWelcome(true)
+          }
         }
       }
 
