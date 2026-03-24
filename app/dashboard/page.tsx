@@ -1752,8 +1752,12 @@ export default function DashboardPage() {
   const createWeightAreaPath = (data: WeightChartData[]) => {
     if (data.length === 0) return ""
 
+    // Fill under the actual data only
+    if (!data || data.length < 2) return ""
     const curvePath = createWeightCurvePath(data)
-    return `${curvePath} L 100 100 L 0 100 Z`
+    const lastX = ((data.length - 1) / (data.length - 1)) * 100
+    const firstX = 0
+    return `${curvePath} L ${lastX},100 L ${firstX},100 Z`
   }
 
   const handleWeightSaved = async () => {
@@ -2107,38 +2111,38 @@ export default function DashboardPage() {
                             viewBox="0 0 100 100"
                             preserveAspectRatio="none"
                           >
-                            {/* Line */}
+                            {/* Line only - no dots here to avoid stretching */}
                             <path
                               d={createSmoothCurvePath(symptom.values)}
                               fill="none"
                               stroke={symptom.color}
-                              strokeWidth="0.5"
+                              strokeWidth="1"
                               strokeLinecap="round"
                               strokeLinejoin="round"
                             />
-
-                            {/* Add dots for data points */}
-                            {symptom.values.map((value, i) => {
-                              if (value === 0) return null
-
-                              const x = (i / (symptom.values.length - 1)) * 100
-                              const y = 100 - (value / 5) * 100
-                              // Check if this is an isolated point (no neighbours)
-                              const isIsolated = (i === 0 || symptom.values[i-1] === 0) &&
-                                                 (i === symptom.values.length-1 || symptom.values[i+1] === 0)
-
-                              return (
-                                <g key={`${i}-${symptom.name}`}>
-                                  <circle cx={x} cy={y} r={isIsolated ? "2" : "1.2"}
-                                    fill={symptom.color} stroke="white" strokeWidth="0.5" />
-                                  {isIsolated && (
-                                    <circle cx={x} cy={y} r="3.5"
-                                      fill="none" stroke={symptom.color} strokeWidth="0.4" opacity="0.5" />
-                                  )}
-                                </g>
-                              )
-                            })}
                           </svg>
+                          {/* Dots rendered as absolute positioned divs to avoid SVG stretching */}
+                          {symptom.values.map((value, i) => {
+                            if (value === 0) return null
+                            const xPct = (i / (symptom.values.length - 1)) * 100
+                            const yPct = 100 - (value / 5) * 100
+                            const isIsolated = (i === 0 || symptom.values[i-1] === 0) &&
+                                               (i === symptom.values.length-1 || symptom.values[i+1] === 0)
+                            return (
+                              <div key={`dot-${index}-${i}`}
+                                className="absolute rounded-full pointer-events-none"
+                                style={{
+                                  left: `calc(${xPct}% - ${isIsolated ? 4 : 3}px)`,
+                                  top: `calc(${yPct}% - ${isIsolated ? 4 : 3}px)`,
+                                  width: isIsolated ? 8 : 6,
+                                  height: isIsolated ? 8 : 6,
+                                  backgroundColor: symptom.color,
+                                  border: "1.5px solid white",
+                                  boxShadow: isIsolated ? `0 0 0 2px ${symptom.color}40` : "none"
+                                }}
+                              />
+                            )
+                          })}
                         )
                       })}
                     </div>
@@ -2242,8 +2246,8 @@ export default function DashboardPage() {
                       <path
                         d={createWellnessCurvePath(wellnessData.mood)}
                         fill="none"
-                        stroke="#f4a6b8" // Mood color
-                        strokeWidth="0.5"
+                        stroke="#f4a6b8"
+                        strokeWidth="1"
                         strokeLinecap="round"
                         strokeLinejoin="round"
                       />
@@ -2252,8 +2256,8 @@ export default function DashboardPage() {
                       <path
                         d={createWellnessCurvePath(wellnessData.sleep)}
                         fill="none"
-                        stroke="#f6c1b0" // Sleep color
-                        strokeWidth="0.5"
+                        stroke="#f6c1b0"
+                        strokeWidth="1"
                         strokeLinecap="round"
                         strokeLinejoin="round"
                       />
@@ -2262,36 +2266,36 @@ export default function DashboardPage() {
                       <path
                         d={createWellnessCurvePath(wellnessData.stress)}
                         fill="none"
-                        stroke="#f09f88" // Stress color
-                        strokeWidth="0.5"
+                        stroke="#f09f88"
+                        strokeWidth="1"
                         strokeLinecap="round"
                         strokeLinejoin="round"
                       />
 
-                      {/* Add dots for data points - small clean dots only */}
-                      {wellnessData.mood.map((value: number, i: number) => {
-                        if (value === 0 && wellnessData.sleep[i] === 0 && wellnessData.stress[i] === 0) return null
-
-                        const x = (i / (wellnessData.mood.length - 1)) * 100
-                        const yMood = 100 - value
-                        const ySleep = 100 - wellnessData.sleep[i]
-                        const yStress = 100 - wellnessData.stress[i]
-
-                        return (
-                          <g key={`wellness-dots-${i}`}>
-                            {value > 0 && (
-                              <circle cx={x} cy={yMood} r="1" fill="#f4a6b8" />
-                            )}
-                            {wellnessData.sleep[i] > 0 && (
-                              <circle cx={x} cy={ySleep} r="1" fill="#f6c1b0" />
-                            )}
-                            {wellnessData.stress[i] > 0 && (
-                              <circle cx={x} cy={yStress} r="1" fill="#f09f88" />
-                            )}
-                          </g>
-                        )
-                      })}
                     </svg>
+                  </div>
+                  {/* Wellness dots - absolute positioned to avoid SVG stretch */}
+                  <div className="absolute left-10 md:left-16 right-0 top-0 bottom-8 px-2 md:px-4 pt-4 pointer-events-none">
+                    {wellnessData.mood.map((value: number, i: number) => {
+                      if (value === 0 && wellnessData.sleep[i] === 0 && wellnessData.stress[i] === 0) return null
+                      const x = (i / (wellnessData.mood.length - 1)) * 100
+                      return (
+                        <div key={`wdots-${i}`}>
+                          {value > 0 && (
+                            <div className="absolute w-2 h-2 rounded-full bg-pink-300 border border-white"
+                              style={{ left: `calc(${x}% - 4px)`, top: `calc(${100 - value}% - 4px)` }} />
+                          )}
+                          {wellnessData.sleep[i] > 0 && (
+                            <div className="absolute w-2 h-2 rounded-full bg-peach-200 border border-white"
+                              style={{ left: `calc(${x}% - 4px)`, top: `calc(${100 - wellnessData.sleep[i]}% - 4px)`, backgroundColor: "#f6c1b0" }} />
+                          )}
+                          {wellnessData.stress[i] > 0 && (
+                            <div className="absolute w-2 h-2 rounded-full border border-white"
+                              style={{ left: `calc(${x}% - 4px)`, top: `calc(${100 - wellnessData.stress[i]}% - 4px)`, backgroundColor: "#f09f88" }} />
+                          )}
+                        </div>
+                      )
+                    })}
                   </div>
 
                   {/* Wellness Score Display */}
@@ -2422,29 +2426,25 @@ export default function DashboardPage() {
                         strokeLinejoin="round"
                       />
 
-                      {/* Add dots for data points */}
-                      {weightData.map((item, i) => {
-                        const minWeight = Math.min(...weightData.map((d) => d.weight))
-                        const maxWeight = Math.max(...weightData.map((d) => d.weight))
-                        const range = maxWeight - minWeight || 1
-
-                        const x = weightData.length > 1 ? (i / (weightData.length - 1)) * 100 : 50
-                        const y = 100 - ((item.weight - minWeight) / range) * 100
-
-                        return (
-                          <circle
-                            key={`${i}-${item.date}`}
-                            cx={x}
-                            cy={y}
-                            r="0.8"
-                            fill="white"
-                            stroke="#22c55e"
-                            strokeWidth="0.8"
-                          />
-                        )
-                      })}
+                      {/* No dots in SVG - rendered separately to avoid stretch */}
                     </svg>
                   </div>
+                  {/* Weight dots - absolute positioned */}
+                  {weightData.length > 0 && (
+                    <div className="absolute left-10 md:left-16 right-0 top-0 bottom-8 px-2 md:px-4 pt-4 pointer-events-none">
+                      {weightData.map((item, i) => {
+                        const minWeight = Math.min(...weightData.map(d => d.weight))
+                        const maxWeight = Math.max(...weightData.map(d => d.weight))
+                        const range = maxWeight - minWeight || 1
+                        const x = weightData.length > 1 ? (i / (weightData.length - 1)) * 100 : 50
+                        const y = 100 - ((item.weight - minWeight) / range) * 100
+                        return (
+                          <div key={`wt-${i}`} className="absolute w-2 h-2 rounded-full bg-green-400 border-2 border-white"
+                            style={{ left: `calc(${x}% - 4px)`, top: `calc(${y}% - 4px)` }} />
+                        )
+                      })}
+                    </div>
+                  )}
 
                   {/* Current Weight Display */}
                   <div className="flex items-center justify-center mt-12">
