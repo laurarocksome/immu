@@ -1050,7 +1050,7 @@ export default function DashboardPage() {
       // Get session and redirect if not authenticated
       const session = await getSession()
       if (!session) {
-        router.push("/auth/signin")
+        router.push("/")
         return
       }
 

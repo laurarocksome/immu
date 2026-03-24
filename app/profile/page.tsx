@@ -8,7 +8,7 @@ import { useLanguage } from "@/lib/i18n/context"
 import { useRouter } from "next/navigation"
 import { List, Home, Plus, BookOpen, UtensilsCrossed, ArrowLeft, Edit, Trash2 } from "lucide-react"
 import Logo from "@/app/components/logo"
-import { deleteUser } from "@/lib/auth"
+import { deleteUser, signOut } from "@/lib/auth"
 import { createClient } from "@/lib/supabase/client"
 
 type UserProfile = {
@@ -393,7 +393,10 @@ export default function ProfilePage() {
           </div>
 
           <button
-            onClick={() => {
+            onClick={async () => {
+              try {
+                await signOut()
+              } catch (_) {}
               localStorage.clear()
               router.push("/")
             }}
