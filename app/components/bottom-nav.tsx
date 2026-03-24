@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation"
 import { List, Home, Plus, BookOpen, UtensilsCrossed } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 
+const CACHE_KEY = "immu_hidden_pages"
+
 type ActivePage = "food-list" | "dashboard" | "nutrition" | "recipes" | "other"
 
 interface BottomNavProps {
@@ -13,15 +15,32 @@ interface BottomNavProps {
 
 export default function BottomNav({ active = "other" }: BottomNavProps) {
   const router = useRouter()
-  const [hiddenPages, setHiddenPages] = useState<string[]>([])
+
+  const [hiddenPages, setHiddenPages] = useState<string[]>(() => {
+    if (typeof window === "undefined") return []
+    try {
+      const cached = localStorage.getItem(CACHE_KEY)
+      return cached ? JSON.parse(cached) : []
+    } catch {
+      return []
+    }
+  })
+
+  const [loaded, setLoaded] = useState(() => {
+    if (typeof window === "undefined") return false
+    return !!localStorage.getItem(CACHE_KEY)
+  })
 
   useEffect(() => {
     async function load() {
       try {
         const sb = createClient()
         const { data } = await sb.from("app_settings").select("value").eq("key", "hidden_pages").single()
-        if (data) setHiddenPages(data.value || [])
+        const pages = data?.value || []
+        setHiddenPages(pages)
+        localStorage.setItem(CACHE_KEY, JSON.stringify(pages))
       } catch {}
+      setLoaded(true)
     }
     load()
   }, [])
@@ -31,6 +50,26 @@ export default function BottomNav({ active = "other" }: BottomNavProps) {
 
   const icon = (page: string) =>
     `h-5 w-5 mb-1 ${active === page ? "text-pink-400" : "text-brand-dark"}`
+
+  if (!loaded) {
+    return (
+      <nav className="bottom-nav grid grid-cols-5 border-t border-brand-dark/10 bg-white/80 backdrop-blur-sm">
+        <div />
+        <button className={btn("dashboard")} onClick={() => router.push("/dashboard")}>
+          <Home className={icon("dashboard")} />
+          <span>Dashboard</span>
+        </button>
+        <button
+          className="flex items-center justify-center rounded-full gradient-button h-14 w-14 -mt-7 mx-auto shadow-lg"
+          onClick={() => router.push("/log-day")}
+        >
+          <Plus className="h-6 w-6" />
+        </button>
+        <div />
+        <div />
+      </nav>
+    )
+  }
 
   return (
     <nav className="bottom-nav grid grid-cols-5 border-t border-brand-dark/10 bg-white/80 backdrop-blur-sm">
