@@ -38,6 +38,26 @@ Set as Replit secrets (not in `.env.local`):
 4. **ChunkLoadError** — `lib/i18n/context.tsx` switched from dynamic to static `createClient` imports.
 5. **Fast Refresh infinite loop** — Turbopack (`--turbo` flag) used instead of webpack; `next.config.mjs` instructs both Turbopack and webpack to ignore `.next`, `node_modules`, `.cache`, `.git`, `.local` directories (Replit writes to `.cache/replit/toolchain.json`, which was triggering inotify-based recompile loops).
 
+## Chart Design
+
+All three dashboard charts are custom SVG in `app/dashboard/page.tsx`. Design principles applied:
+
+- **Fixed stroke distortion**: `vectorEffect="non-scaling-stroke"` on all SVG `<path>` elements, `strokeWidth="2"`. Charts use `preserveAspectRatio="none"` so the SVG stretches to fill, but vector-effect keeps strokes pixel-perfect.
+- **Gradient area fills**: each chart line has a corresponding area-fill path with a `<linearGradient>` fading from `stopOpacity="0.28"` → `0.02`.
+- **Dots as absolute-positioned divs**: rendered outside SVG to avoid stretch distortion; `w-2.5 h-2.5`, `border-2 border-white`, subtle box-shadow glow.
+- **Fixed container heights**: `h-[300px]` (symptom, wellness), `h-[280px]` (weight) — no more `min-h` that caused layout issues.
+- **Wellness score badge**: top-right absolute overlay inside chart area (not below), so it doesn't push content.
+- **Weight current-weight display**: bottom-right overlay inside chart area.
+- **Filter pills** (symptom chart): border + tinted background on selection, no hard ring/offset.
+
+Helper functions (all defined inside the component):
+- `createSmoothCurvePath` — cubic bezier for symptom lines
+- `createSmoothAreaPath` — area fill for symptom chart
+- `createWellnessCurvePath` — cubic bezier for wellness lines (0-100 scale)
+- `createWellnessAreaPath` — area fill for stress line
+- `createWeightCurvePath` — cubic bezier for weight line
+- `createWeightAreaPath` — area fill for weight chart
+
 ## Dev Command
 
 ```bash

@@ -1528,6 +1528,37 @@ export default function DashboardPage() {
     return path.trim()
   }
 
+  // Area fill path for symptom chart (closes curve to bottom)
+  const createSmoothAreaPath = (values: number[]) => {
+    const points = values.map((value, i) => {
+      const x = (i / (values.length - 1)) * 100
+      const y = 100 - (value / 5) * 100
+      return { x, y, value }
+    })
+    const segments: typeof points[] = []
+    let current: typeof points = []
+    for (const pt of points) {
+      if (pt.value > 0) { current.push(pt) }
+      else { if (current.length > 0) { segments.push(current); current = [] } }
+    }
+    if (current.length > 0) segments.push(current)
+    if (segments.length === 0) return ""
+    let path = ""
+    for (const seg of segments) {
+      if (seg.length < 2) continue
+      path += ` M ${seg[0].x},${seg[0].y}`
+      for (let i = 0; i < seg.length - 1; i++) {
+        const x1 = seg[i].x + (seg[i+1].x - seg[i].x) / 3
+        const y1 = seg[i].y
+        const x2 = seg[i].x + (2 * (seg[i+1].x - seg[i].x)) / 3
+        const y2 = seg[i+1].y
+        path += ` C ${x1},${y1} ${x2},${y2} ${seg[i+1].x},${seg[i+1].y}`
+      }
+      path += ` L ${seg[seg.length-1].x},100 L ${seg[0].x},100 Z`
+    }
+    return path.trim()
+  }
+
   // Function to create wellness curve path (scaled for 0-100)
   const createWellnessCurvePath = (values: number[]) => {
     const points = values.map((value, i) => {
@@ -2063,111 +2094,119 @@ export default function DashboardPage() {
                 </div>
               ) : (
                 <>
-                  <div className="relative min-h-[280px] md:min-h-[320px]">
+                  <div className="relative h-[300px]">
                     {/* Y-axis labels */}
-                    <div className="absolute left-0 top-0 bottom-8 w-10 md:w-16 flex flex-col justify-between text-[10px] md:text-xs text-secondary-color py-4">
-                      <span className="leading-tight">Severe</span>
-                      <span className="leading-tight">Moderate</span>
-                      <span className="leading-tight">Mild</span>
-                      <span className="leading-tight">Very mild</span>
-                      <span className="leading-tight">None</span>
+                    <div className="absolute left-0 top-0 bottom-10 w-10 md:w-16 flex flex-col justify-between text-[10px] md:text-xs text-secondary-color py-2 pointer-events-none z-10">
+                      <span>Severe</span>
+                      <span>Moderate</span>
+                      <span>Mild</span>
+                      <span>Very mild</span>
+                      <span>None</span>
                     </div>
 
-                    {/* Vertical grid lines */}
-                    <div className="absolute left-10 md:left-16 right-0 top-0 bottom-8 flex justify-between">
+                    {/* Vertical grid + date labels */}
+                    <div className="absolute left-10 md:left-16 right-0 top-0 bottom-10 flex z-0">
                       {chartDates.map((date, index) => (
                         <div
                           key={index}
-                          className="h-full border-r border-pink-100 flex flex-col justify-end items-center"
+                          className="h-full border-r border-pink-100/70 last:border-r-0 flex flex-col justify-end items-center"
                           style={{ width: `${100 / chartDates.length}%` }}
                         >
-                          <span className="text-[10px] md:text-xs text-secondary-color mb-2 whitespace-nowrap">
+                          <span className="text-[10px] text-secondary-color pb-2 whitespace-nowrap">
                             {date}
                           </span>
                         </div>
                       ))}
                     </div>
 
-                    {/* Chart area */}
-                    <div className="absolute left-10 md:left-16 right-0 top-0 bottom-8 px-2 md:px-4 pt-4">
-                      {/* Grid lines */}
-                      <div className="absolute inset-0">
-                        <div className="border-b border-pink-100 absolute top-[20%] left-0 right-0"></div>
-                        <div className="border-b border-pink-100 absolute top-[40%] left-0 right-0"></div>
-                        <div className="border-b border-pink-100 absolute top-[60%] left-0 right-0"></div>
-                        <div className="border-b border-pink-100 absolute top-[80%] left-0 right-0"></div>
-                      </div>
+                    {/* Chart drawing area */}
+                    <div className="absolute left-10 md:left-16 right-0 top-0 bottom-10">
+                      {/* Horizontal grid lines */}
+                      {[20, 40, 60, 80].map(pct => (
+                        <div key={pct} className="border-b border-pink-100/60 absolute w-full pointer-events-none" style={{ top: `${pct}%` }} />
+                      ))}
 
-                      {/* Only show the selected symptom or all if none selected */}
-                      {symptomData.map((symptom, index) => {
-                        // Only render if this is the selected symptom or no selection
-                        if (selectedSymptom !== null && selectedSymptom !== symptom.name) {
-                          return null
-                        }
-
-                        return (
-                          <React.Fragment key={index}>
-                            <svg
-                              className="absolute inset-0 h-full w-full transition-opacity duration-300"
-                              viewBox="0 0 100 100"
-                              preserveAspectRatio="none"
-                            >
+                      {/* SVG: gradient area fills + lines */}
+                      <svg
+                        className="absolute inset-0 h-full w-full pointer-events-none"
+                        viewBox="0 0 100 100"
+                        preserveAspectRatio="none"
+                      >
+                        <defs>
+                          {symptomData.map((symptom, idx) =>
+                            (selectedSymptom === null || selectedSymptom === symptom.name) ? (
+                              <linearGradient key={`sg-${idx}`} id={`sg-${idx}`} x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stopColor={symptom.color} stopOpacity="0.28" />
+                                <stop offset="100%" stopColor={symptom.color} stopOpacity="0.02" />
+                              </linearGradient>
+                            ) : null
+                          )}
+                        </defs>
+                        {symptomData.map((symptom, index) => {
+                          if (selectedSymptom !== null && selectedSymptom !== symptom.name) return null
+                          const area = createSmoothAreaPath(symptom.values)
+                          return (
+                            <React.Fragment key={index}>
+                              {area && <path d={area} fill={`url(#sg-${index})`} />}
                               <path
                                 d={createSmoothCurvePath(symptom.values)}
                                 fill="none"
                                 stroke={symptom.color}
-                                strokeWidth="1"
+                                strokeWidth="2"
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
+                                vectorEffect="non-scaling-stroke"
                               />
-                            </svg>
-                            {symptom.values.map((value, i) => {
-                              if (value === 0) return null
-                              const xPct = (i / (symptom.values.length - 1)) * 100
-                              const yPct = 100 - (value / 5) * 100
-                              const isIsolated = (i === 0 || symptom.values[i-1] === 0) &&
-                                                 (i === symptom.values.length-1 || symptom.values[i+1] === 0)
-                              return (
-                                <div key={`dot-${index}-${i}`}
-                                  className="absolute rounded-full pointer-events-none"
-                                  style={{
-                                    left: `calc(${xPct}% - ${isIsolated ? 4 : 3}px)`,
-                                    top: `calc(${yPct}% - ${isIsolated ? 4 : 3}px)`,
-                                    width: isIsolated ? 8 : 6,
-                                    height: isIsolated ? 8 : 6,
-                                    backgroundColor: symptom.color,
-                                    border: "1.5px solid white",
-                                    boxShadow: isIsolated ? `0 0 0 2px ${symptom.color}40` : "none"
-                                  }}
-                                />
-                              )
-                            })}
-                          </React.Fragment>
-                        )
-                      })}
+                            </React.Fragment>
+                          )
+                        })}
+                      </svg>
+
+                      {/* Dots overlay */}
+                      <div className="absolute inset-0 pointer-events-none">
+                        {symptomData.flatMap((symptom, index) => {
+                          if (selectedSymptom !== null && selectedSymptom !== symptom.name) return []
+                          return symptom.values.map((value, i) => {
+                            if (value === 0) return null
+                            const xPct = (i / (symptom.values.length - 1)) * 100
+                            const yPct = 100 - (value / 5) * 100
+                            const isIsolated = (i === 0 || symptom.values[i-1] === 0) &&
+                                               (i === symptom.values.length-1 || symptom.values[i+1] === 0)
+                            return (
+                              <div
+                                key={`d-${index}-${i}`}
+                                className="absolute rounded-full pointer-events-none border-2 border-white"
+                                style={{
+                                  left: `calc(${xPct}% - ${isIsolated ? 5 : 4}px)`,
+                                  top: `calc(${yPct}% - ${isIsolated ? 5 : 4}px)`,
+                                  width: isIsolated ? 10 : 8,
+                                  height: isIsolated ? 10 : 8,
+                                  backgroundColor: symptom.color,
+                                  boxShadow: `0 0 0 1.5px ${symptom.color}55`,
+                                }}
+                              />
+                            )
+                          })
+                        })}
+                      </div>
                     </div>
                   </div>
 
-                  {/* Symptom Selector */}
+                  {/* Symptom filter pills */}
                   <div className="mt-4 flex flex-wrap gap-2 justify-center">
                     {symptomData.map((symptom) => (
                       <button
                         key={symptom.name}
                         onClick={() => handleSymptomSelect(symptom.name)}
-                        className={`flex items-center px-2 md:px-3 py-1 rounded-full text-xs md:text-sm border ${
-                          selectedSymptom === symptom.name ? "ring-2 ring-offset-2 ring-pink-300" : ""
-                        }`}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all hover:shadow-sm"
                         style={{
-                          borderColor: symptom.color,
-                          backgroundColor: selectedSymptom === symptom.name ? symptom.color : "transparent",
-                          color: selectedSymptom === symptom.name ? "white" : symptom.color,
+                          borderColor: symptom.color + "80",
+                          backgroundColor: selectedSymptom === symptom.name ? symptom.color + "20" : "transparent",
+                          color: symptom.color,
                         }}
                       >
-                        <div
-                          className="w-2 h-2 rounded-full mr-1 md:mr-2"
-                          style={{ backgroundColor: symptom.color }}
-                        ></div>
-                        <span className="truncate max-w-[100px] md:max-w-none">{symptom.name}</span>
+                        <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: symptom.color }} />
+                        <span className="truncate max-w-[80px] md:max-w-none">{symptom.name}</span>
                       </button>
                     ))}
                   </div>
@@ -2190,129 +2229,90 @@ export default function DashboardPage() {
                   </p>
                 </div>
               ) : (
-                <div className="relative min-h-[280px] md:min-h-[320px]">
-                  {/* Y-axis labels */}
-                  <div className="absolute left-0 top-0 bottom-8 w-10 md:w-16 flex flex-col justify-between text-[10px] md:text-xs text-secondary-color py-4 z-10">
-                    <span className="leading-tight">100</span>
-                    <span className="leading-tight">75</span>
-                    <span className="leading-tight">50</span>
-                    <span className="leading-tight">25</span>
-                    <span className="leading-tight">0</span>
-                  </div>
-
-                  {/* Vertical grid lines */}
-                  <div className="absolute left-10 md:left-16 right-0 top-0 bottom-8 flex justify-between z-0">
-                    {chartDates.map((date, index) => (
-                      <div
-                        key={index}
-                        className="h-full border-r border-peach-100 flex flex-col justify-end items-center"
-                        style={{ width: `${100 / chartDates.length}%` }}
-                      >
-                        <span className="text-[10px] md:text-xs text-secondary-color mb-2 whitespace-nowrap">
-                          {date}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-
+                <div className="relative">
                   {/* Chart area */}
-                  <div className="absolute left-10 md:left-16 right-0 top-0 bottom-8 px-2 md:px-4 pt-4 z-0">
-                    {/* Grid lines */}
-                    <div className="absolute inset-0">
-                      <div className="border-b border-pink-100 absolute top-[20%] left-0 right-0"></div>
-                      <div className="border-b border-pink-100 absolute top-[40%] left-0 right-0"></div>
-                      <div className="border-b border-pink-100 absolute top-[60%] left-0 right-0"></div>
-                      <div className="border-b border-pink-100 absolute top-[80%] left-0 right-0"></div>
+                  <div className="relative h-[300px]">
+                    {/* Y-axis labels */}
+                    <div className="absolute left-0 top-0 bottom-10 w-10 md:w-16 flex flex-col justify-between text-[10px] md:text-xs text-secondary-color py-2 pointer-events-none z-10">
+                      <span>100</span>
+                      <span>75</span>
+                      <span>50</span>
+                      <span>25</span>
+                      <span>0</span>
                     </div>
 
-                    {/* Wellness curve */}
-                    <svg className="absolute inset-0 h-full w-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
-                      {/* Filled area */}
-                      <defs>
-                        <linearGradient id="wellness-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                          <stop offset="0%" stopColor={wellnessHistoryData.gradient[0]} />
-                          <stop offset="100%" stopColor={wellnessHistoryData.gradient[1]} />
-                        </linearGradient>
-                      </defs>
-
-                      {/* Area fill for Stress (inverted) */}
-                      <path
-                        d={createWellnessAreaPath(wellnessData.stress)}
-                        fill="url(#wellness-gradient)"
-                        opacity="0.6"
-                      />
-
-                      {/* Line for Mood */}
-                      <path
-                        d={createWellnessCurvePath(wellnessData.mood)}
-                        fill="none"
-                        stroke="#f4a6b8"
-                        strokeWidth="1"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-
-                      {/* Line for Sleep */}
-                      <path
-                        d={createWellnessCurvePath(wellnessData.sleep)}
-                        fill="none"
-                        stroke="#f6c1b0"
-                        strokeWidth="1"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-
-                      {/* Line for Stress (inverted) */}
-                      <path
-                        d={createWellnessCurvePath(wellnessData.stress)}
-                        fill="none"
-                        stroke="#f09f88"
-                        strokeWidth="1"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-
-                    </svg>
-                  </div>
-                  {/* Wellness dots - absolute positioned to avoid SVG stretch */}
-                  <div className="absolute left-10 md:left-16 right-0 top-0 bottom-8 px-2 md:px-4 pt-4 pointer-events-none">
-                    {wellnessData.mood.map((value: number, i: number) => {
-                      if (value === 0 && wellnessData.sleep[i] === 0 && wellnessData.stress[i] === 0) return null
-                      const x = (i / (wellnessData.mood.length - 1)) * 100
-                      return (
-                        <div key={`wdots-${i}`}>
-                          {value > 0 && (
-                            <div className="absolute w-2 h-2 rounded-full bg-pink-300 border border-white"
-                              style={{ left: `calc(${x}% - 4px)`, top: `calc(${100 - value}% - 4px)` }} />
-                          )}
-                          {wellnessData.sleep[i] > 0 && (
-                            <div className="absolute w-2 h-2 rounded-full bg-peach-200 border border-white"
-                              style={{ left: `calc(${x}% - 4px)`, top: `calc(${100 - wellnessData.sleep[i]}% - 4px)`, backgroundColor: "#f6c1b0" }} />
-                          )}
-                          {wellnessData.stress[i] > 0 && (
-                            <div className="absolute w-2 h-2 rounded-full border border-white"
-                              style={{ left: `calc(${x}% - 4px)`, top: `calc(${100 - wellnessData.stress[i]}% - 4px)`, backgroundColor: "#f09f88" }} />
-                          )}
+                    {/* Vertical grid + date labels */}
+                    <div className="absolute left-10 md:left-16 right-0 top-0 bottom-10 flex z-0">
+                      {chartDates.map((date, index) => (
+                        <div
+                          key={index}
+                          className="h-full border-r border-pink-100/70 last:border-r-0 flex flex-col justify-end items-center"
+                          style={{ width: `${100 / chartDates.length}%` }}
+                        >
+                          <span className="text-[10px] text-secondary-color pb-2 whitespace-nowrap">
+                            {date}
+                          </span>
                         </div>
-                      )
-                    })}
-                  </div>
+                      ))}
+                    </div>
 
-                  {/* Wellness Score Display */}
-                  <div className="flex items-center justify-center mt-12 relative z-20">
-                    <div className="text-center">
-                      <p className="text-sm text-secondary-color mb-2">Current Wellness Score</p>
+                    {/* Chart drawing area */}
+                    <div className="absolute left-10 md:left-16 right-0 top-0 bottom-10">
+                      {/* Horizontal grid lines */}
+                      {[20, 40, 60, 80].map(pct => (
+                        <div key={pct} className="border-b border-pink-100/60 absolute w-full pointer-events-none" style={{ top: `${pct}%` }} />
+                      ))}
+
+                      {/* SVG lines + area */}
+                      <svg className="absolute inset-0 h-full w-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
+                        <defs>
+                          <linearGradient id="wg-stress" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stopColor={wellnessHistoryData.gradient[0]} stopOpacity="0.25" />
+                            <stop offset="100%" stopColor={wellnessHistoryData.gradient[1]} stopOpacity="0.03" />
+                          </linearGradient>
+                        </defs>
+                        <path d={createWellnessAreaPath(wellnessData.stress)} fill="url(#wg-stress)" />
+                        <path d={createWellnessCurvePath(wellnessData.mood)} fill="none" stroke="#f4a6b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+                        <path d={createWellnessCurvePath(wellnessData.sleep)} fill="none" stroke="#f6c1b0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+                        <path d={createWellnessCurvePath(wellnessData.stress)} fill="none" stroke="#f09f88" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+                      </svg>
+
+                      {/* Dots */}
+                      <div className="absolute inset-0 pointer-events-none">
+                        {wellnessData.mood.map((value: number, i: number) => {
+                          if (value === 0 && wellnessData.sleep[i] === 0 && wellnessData.stress[i] === 0) return null
+                          const x = wellnessData.mood.length > 1 ? (i / (wellnessData.mood.length - 1)) * 100 : 50
+                          return (
+                            <React.Fragment key={`wdots-${i}`}>
+                              {value > 0 && (
+                                <div className="absolute w-2.5 h-2.5 rounded-full border-2 border-white"
+                                  style={{ left: `calc(${x}% - 5px)`, top: `calc(${100 - value}% - 5px)`, backgroundColor: "#f4a6b8", boxShadow: "0 0 0 1px #f4a6b855" }} />
+                              )}
+                              {wellnessData.sleep[i] > 0 && (
+                                <div className="absolute w-2.5 h-2.5 rounded-full border-2 border-white"
+                                  style={{ left: `calc(${x}% - 5px)`, top: `calc(${100 - wellnessData.sleep[i]}% - 5px)`, backgroundColor: "#f6c1b0", boxShadow: "0 0 0 1px #f6c1b055" }} />
+                              )}
+                              {wellnessData.stress[i] > 0 && (
+                                <div className="absolute w-2.5 h-2.5 rounded-full border-2 border-white"
+                                  style={{ left: `calc(${x}% - 5px)`, top: `calc(${100 - wellnessData.stress[i]}% - 5px)`, backgroundColor: "#f09f88", boxShadow: "0 0 0 1px #f09f8855" }} />
+                              )}
+                            </React.Fragment>
+                          )
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Wellness Score Badge — top-right overlay */}
+                    <div className="absolute top-2 right-2 z-20 text-right">
+                      <p className="text-[10px] text-secondary-color mb-1">Wellness Score</p>
                       <div
-                        className="w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-xl"
+                        className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-base shadow-md ml-auto"
                         style={{
                           backgroundColor:
-                            wellnessScore >= 75
-                              ? "#9bb8a0"
-                              : wellnessScore >= 50
-                                ? "#f6d84c"
-                                : wellnessScore >= 25
-                                  ? "#f6c1b0"
-                                  : "#f4a6b8",
+                            wellnessScore >= 75 ? "#9bb8a0"
+                            : wellnessScore >= 50 ? "#f6d84c"
+                            : wellnessScore >= 25 ? "#f6c1b0"
+                            : "#f4a6b8",
                         }}
                       >
                         {wellnessScore}
@@ -2320,25 +2320,22 @@ export default function DashboardPage() {
                     </div>
                   </div>
 
-                  {/* Wellness Factors */}
+                  {/* Legend */}
                   <div className="flex flex-wrap gap-4 mt-4 justify-center">
-                    <div className="flex items-center">
-                      <div className="w-3 h-3 rounded-full mr-2 bg-[#f4a6b8]"></div>
-                      <span className="text-sm text-primary-color">Mood</span>
-                    </div>
-                    <div className="flex items-center">
-                      <div className="w-3 h-3 rounded-full mr-2 bg-[#f6c1b0]"></div>
-                      <span className="text-sm text-primary-color">Sleep</span>
-                    </div>
-                    <div className="flex items-center">
-                      <div className="w-3 h-3 rounded-full mr-2 bg-[#f09f88]"></div>
-                      <span className="text-sm text-primary-color">Stress</span>
-                    </div>
+                    {[
+                      { label: "Mood", color: "#f4a6b8" },
+                      { label: "Sleep", color: "#f6c1b0" },
+                      { label: "Stress", color: "#f09f88" },
+                    ].map(({ label, color }) => (
+                      <div key={label} className="flex items-center gap-2">
+                        <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }} />
+                        <span className="text-sm text-primary-color">{label}</span>
+                      </div>
+                    ))}
                   </div>
 
-                  {/* Message for users who haven't logged wellness yet */}
                   {!hasLoggedWellness && (
-                    <div className="mt-4 text-center text-sm text-secondary-color p-2 bg-peach-50 rounded-lg">
+                    <div className="mt-3 text-center text-sm text-secondary-color p-2 bg-peach-50 rounded-lg">
                       Log your first day to start tracking your wellness score over time. Your score is calculated from
                       your mood, sleep quality, and stress levels.
                     </div>
@@ -2366,98 +2363,89 @@ export default function DashboardPage() {
                   </div>
                 </div>
               ) : (
-                <div className="relative min-h-[280px] md:min-h-[320px]">
-                  {/* Y-axis labels */}
-                  <div className="absolute left-0 top-0 bottom-8 w-10 md:w-16 flex flex-col justify-between text-[10px] md:text-xs text-secondary-color py-4 pointer-events-none">
-                    <span className="leading-tight">{Math.max(...weightData.map((d) => d.weight)).toFixed(1)}</span>
-                    <span className="leading-tight">
-                      {(
-                        (Math.max(...weightData.map((d) => d.weight)) + Math.min(...weightData.map((d) => d.weight))) /
-                        2
-                      ).toFixed(1)}
-                    </span>
-                    <span className="leading-tight">{Math.min(...weightData.map((d) => d.weight)).toFixed(1)}</span>
-                  </div>
-
-                  {/* Vertical grid lines */}
-                  <div className="absolute left-10 md:left-16 right-0 top-0 bottom-8 flex justify-between pointer-events-none">
-                    {weightData.map((item, index) => (
-                      <div
-                        key={index}
-                        className="h-full border-r border-green-100 flex flex-col justify-end items-center"
-                        style={{ width: `${100 / weightData.length}%` }}
-                      >
-                        <span className="text-[10px] md:text-xs text-secondary-color mb-2 whitespace-nowrap">
-                          {item.date}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-
+                <div className="relative">
                   {/* Chart area */}
-                  <div className="absolute left-10 md:left-16 right-0 top-0 bottom-8 px-2 md:px-4 pt-4 pointer-events-none">
-                    {/* Grid lines */}
-                    <div className="absolute inset-0">
-                      <div className="border-b border-green-100 absolute top-[25%] left-0 right-0"></div>
-                      <div className="border-b border-green-100 absolute top-[50%] left-0 right-0"></div>
-                      <div className="border-b border-green-100 absolute top-[75%] left-0 right-0"></div>
+                  <div className="relative h-[280px]">
+                    {/* Y-axis labels */}
+                    <div className="absolute left-0 top-0 bottom-10 w-10 md:w-16 flex flex-col justify-between text-[10px] md:text-xs text-secondary-color py-2 pointer-events-none z-10">
+                      <span>{Math.max(...weightData.map((d) => d.weight)).toFixed(1)}</span>
+                      <span>
+                        {(
+                          (Math.max(...weightData.map((d) => d.weight)) + Math.min(...weightData.map((d) => d.weight))) /
+                          2
+                        ).toFixed(1)}
+                      </span>
+                      <span>{Math.min(...weightData.map((d) => d.weight)).toFixed(1)}</span>
                     </div>
 
-                    {/* Weight curve */}
-                    <svg className="absolute inset-0 h-full w-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
-                      {/* Filled area */}
-                      <defs>
-                        <linearGradient id="weight-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                          <stop offset="0%" stopColor="#86efac" stopOpacity="0.3" />
-                          <stop offset="100%" stopColor="#86efac" stopOpacity="0.05" />
-                        </linearGradient>
-                      </defs>
-
-                      {/* Area fill */}
-                      <path d={createWeightAreaPath(weightData)} fill="url(#weight-gradient)" />
-
-                      {/* Line on top */}
-                      <path
-                        d={createWeightCurvePath(weightData)}
-                        fill="none"
-                        stroke="#22c55e"
-                        strokeWidth="0.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-
-                      {/* No dots in SVG - rendered separately to avoid stretch */}
-                    </svg>
-                  </div>
-                  {/* Weight dots - absolute positioned */}
-                  {weightData.length > 0 && (
-                    <div className="absolute left-10 md:left-16 right-0 top-0 bottom-8 px-2 md:px-4 pt-4 pointer-events-none">
-                      {weightData.map((item, i) => {
-                        const minWeight = Math.min(...weightData.map(d => d.weight))
-                        const maxWeight = Math.max(...weightData.map(d => d.weight))
-                        const range = maxWeight - minWeight || 1
-                        const x = weightData.length > 1 ? (i / (weightData.length - 1)) * 100 : 50
-                        const y = 100 - ((item.weight - minWeight) / range) * 100
-                        return (
-                          <div key={`wt-${i}`} className="absolute w-2 h-2 rounded-full bg-green-400 border-2 border-white"
-                            style={{ left: `calc(${x}% - 4px)`, top: `calc(${y}% - 4px)` }} />
-                        )
-                      })}
+                    {/* Vertical grid + date labels */}
+                    <div className="absolute left-10 md:left-16 right-0 top-0 bottom-10 flex z-0">
+                      {weightData.map((item, index) => (
+                        <div
+                          key={index}
+                          className="h-full border-r border-green-100/70 last:border-r-0 flex flex-col justify-end items-center"
+                          style={{ width: `${100 / weightData.length}%` }}
+                        >
+                          <span className="text-[10px] text-secondary-color pb-2 whitespace-nowrap">
+                            {item.date}
+                          </span>
+                        </div>
+                      ))}
                     </div>
-                  )}
 
-                  {/* Current Weight Display */}
-                  <div className="flex items-center justify-center mt-12">
-                    <div className="text-center">
-                      <p className="text-sm text-secondary-color mb-2">Current Weight</p>
-                      <div className="text-3xl font-bold text-green-600">
-                        {currentWeight?.toFixed(1)} {weightUnit}
+                    {/* Chart drawing area */}
+                    <div className="absolute left-10 md:left-16 right-0 top-0 bottom-10 pointer-events-none">
+                      {/* Horizontal grid lines */}
+                      {[25, 50, 75].map(pct => (
+                        <div key={pct} className="border-b border-green-100/60 absolute w-full" style={{ top: `${pct}%` }} />
+                      ))}
+
+                      {/* SVG */}
+                      <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                        <defs>
+                          <linearGradient id="weight-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stopColor="#86efac" stopOpacity="0.35" />
+                            <stop offset="100%" stopColor="#86efac" stopOpacity="0.03" />
+                          </linearGradient>
+                        </defs>
+                        <path d={createWeightAreaPath(weightData)} fill="url(#weight-gradient)" />
+                        <path
+                          d={createWeightCurvePath(weightData)}
+                          fill="none"
+                          stroke="#22c55e"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          vectorEffect="non-scaling-stroke"
+                        />
+                      </svg>
+
+                      {/* Dots */}
+                      <div className="absolute inset-0">
+                        {weightData.map((item, i) => {
+                          const minWeight = Math.min(...weightData.map(d => d.weight))
+                          const maxWeight = Math.max(...weightData.map(d => d.weight))
+                          const range = maxWeight - minWeight || 1
+                          const x = weightData.length > 1 ? (i / (weightData.length - 1)) * 100 : 50
+                          const y = 100 - ((item.weight - minWeight) / range) * 100
+                          return (
+                            <div key={`wt-${i}`} className="absolute w-2.5 h-2.5 rounded-full border-2 border-white"
+                              style={{ left: `calc(${x}% - 5px)`, top: `calc(${y}% - 5px)`, backgroundColor: "#22c55e", boxShadow: "0 0 0 1px #22c55e55" }} />
+                          )
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Current Weight — bottom-right overlay */}
+                    <div className="absolute bottom-10 right-2 z-20 text-right">
+                      <p className="text-[10px] text-secondary-color">Current Weight</p>
+                      <div className="text-2xl font-bold text-green-600 leading-tight">
+                        {currentWeight?.toFixed(1)} <span className="text-sm font-normal">{weightUnit}</span>
                       </div>
                       {weightData.length > 1 && (
-                        <p className="text-xs text-secondary-color mt-2">
+                        <p className="text-[10px] text-secondary-color">
                           {weightData[weightData.length - 1].weight > weightData[0].weight ? "+" : ""}
-                          {(weightData[weightData.length - 1].weight - weightData[0].weight).toFixed(1)} {weightUnit}{" "}
-                          from start
+                          {(weightData[weightData.length - 1].weight - weightData[0].weight).toFixed(1)} {weightUnit} from start
                         </p>
                       )}
                     </div>
