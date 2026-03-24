@@ -37,6 +37,7 @@ export default function ProfilePage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [needsSync, setNeedsSync] = useState(false)
+  const [hiddenPages, setHiddenPages] = useState<string[]>([])
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -202,6 +203,17 @@ export default function ProfilePage() {
     loadUserData()
   }, [])
 
+  useEffect(() => {
+    async function loadHiddenPages() {
+      try {
+        const supabase = createClient()
+        const { data } = await supabase.from("app_settings").select("value").eq("key", "hidden_pages").single()
+        if (data) setHiddenPages(data.value || [])
+      } catch {}
+    }
+    loadHiddenPages()
+  }, [])
+
   const handleBackToDashboard = () => {
     router.push("/dashboard")
   }
@@ -229,12 +241,12 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-brand-lightest to-white text-brand-dark">
-      <header className="p-4 flex justify-between items-center bg-gradient-to-r from-pink-50 to-peach-50">
-        <button onClick={handleBackToDashboard} className="flex items-center text-brand-dark/70 hover:text-brand-dark">
-          <ArrowLeft className="h-5 w-5 mr-1" />
-          <span className="text-sm font-medium">Back</span>
+      <header className="p-4 border-b border-pink-200/30 flex justify-between items-center bg-gradient-to-r from-pink-300 to-peach-300">
+        <button onClick={handleBackToDashboard} className="flex items-center gap-1 bg-white/20 rounded-full px-3 py-1.5">
+          <ArrowLeft className="h-4 w-4 text-white" />
+          <span className="text-sm font-medium text-white">Back</span>
         </button>
-        <Logo variant="dark" />
+        <Logo variant="light" />
         <div className="w-20"></div>
       </header>
 
@@ -489,13 +501,17 @@ export default function ProfilePage() {
           <BookOpen className="h-5 w-5 mb-1 text-brand-dark" />
           <span className="text-brand-dark">Nutrition</span>
         </button>
-        <button
-          className="flex flex-col items-center justify-center py-3 text-xs"
-          onClick={() => router.push("/recipes")}
-        >
-          <UtensilsCrossed className="h-5 w-5 mb-1 text-brand-dark" />
-          <span className="text-brand-dark">Recipes</span>
-        </button>
+        {!hiddenPages.includes("recipes") ? (
+          <button
+            className="flex flex-col items-center justify-center py-3 text-xs"
+            onClick={() => router.push("/recipes")}
+          >
+            <UtensilsCrossed className="h-5 w-5 mb-1 text-brand-dark" />
+            <span className="text-brand-dark">Recipes</span>
+          </button>
+        ) : (
+          <div />
+        )}
       </nav>
     </div>
   )
