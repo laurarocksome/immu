@@ -648,8 +648,16 @@ export default function FoodListPage() {
                           </div>
 
                           <div className="flex items-center space-x-2">
-                            {/* Add the Editable Status Dropdown here */}
-                            <div className="relative inline-block mr-2">
+                            {/* Info button before status — placeholder keeps alignment when absent */}
+                            {product.tooltip ? (
+                              <button className="text-gray-400 hover:text-gray-600 flex-shrink-0" title={product.tooltip}>
+                                <Info className="h-4 w-4" />
+                              </button>
+                            ) : (
+                              <div className="w-4 flex-shrink-0" />
+                            )}
+                            {/* Editable Status Dropdown */}
+                            <div className="relative inline-block">
                               <select
                                 value={getProductStatus(product)}
                                 onChange={(e) => updateProductStatus(product.name, e.target.value)}
@@ -661,12 +669,6 @@ export default function FoodListPage() {
                               </select>
                               <ChevronDown className="absolute right-1 top-1/2 transform -translate-y-1/2 h-3 w-3 pointer-events-none" />
                             </div>
-
-                            {product.tooltip && (
-                              <button className="text-gray-400 hover:text-gray-600" title={product.tooltip}>
-                                <Info className="h-4 w-4" />
-                              </button>
-                            )}
                             <button
                               onClick={() => toggleFavorite(product.name)}
                               className="text-gray-400 hover:text-pink-400"
@@ -718,8 +720,16 @@ export default function FoodListPage() {
                 </div>
 
                 <div className="flex items-center space-x-2">
-                  {/* Add the Editable Status Dropdown here */}
-                  <div className="relative inline-block mr-2">
+                  {/* Info button before status — placeholder keeps alignment when absent */}
+                  {product.tooltip ? (
+                    <button className="text-gray-400 hover:text-gray-600 flex-shrink-0" title={product.tooltip}>
+                      <Info className="h-4 w-4" />
+                    </button>
+                  ) : (
+                    <div className="w-4 flex-shrink-0" />
+                  )}
+                  {/* Editable Status Dropdown */}
+                  <div className="relative inline-block">
                     <select
                       value={getProductStatus(product)}
                       onChange={(e) => updateProductStatus(product.name, e.target.value)}
@@ -731,12 +741,6 @@ export default function FoodListPage() {
                     </select>
                     <ChevronDown className="absolute right-1 top-1/2 transform -translate-y-1/2 h-3 w-3 pointer-events-none" />
                   </div>
-
-                  {product.tooltip && (
-                    <button className="text-gray-400 hover:text-gray-600" title={product.tooltip}>
-                      <Info className="h-4 w-4" />
-                    </button>
-                  )}
                   <button onClick={() => toggleFavorite(product.name)} className="text-gray-400 hover:text-pink-400">
                     <Heart
                       className={`h-5 w-5 ${favorites.includes(product.name) ? "fill-pink-400 text-pink-400" : ""}`}
