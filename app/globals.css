@@ -102,6 +102,22 @@ body {
     background: linear-gradient(to bottom, #ffffff, #fce6ec 50%, #fff5f8);
   }
 
+  /* Mobile: fixed bottom nav — always visible, never scrolls away */
+  @media (max-width: 1023px) {
+    .bottom-nav {
+      position: fixed !important;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 50;
+    }
+
+    /* Ensure page content doesn't hide behind the fixed nav */
+    .app-shell {
+      padding-bottom: 64px;
+    }
+  }
+
   /* Desktop: full-width layout */
   @media (min-width: 1024px) {
     body {
@@ -125,15 +141,15 @@ body {
       display: flex !important;
     }
 
-    /* Desktop: main content with sidebar offset */
+    /* Desktop: main content with sidebar offset on the right */
     .desktop-main {
-      margin-left: 220px;
+      margin-right: 220px;
       max-width: 960px;
       padding: 2rem;
     }
 
     .app-shell.has-sidebar {
-      margin-left: 220px;
+      margin-right: 220px;
       max-width: calc(100% - 220px);
     }
   }
@@ -148,17 +164,17 @@ body {
   }
 }
 
-/* Desktop sidebar */
+/* Desktop sidebar — right side */
 .desktop-sidebar {
   display: none;
   position: fixed;
   top: 0;
-  left: 0;
+  right: 0;
   width: 220px;
   height: 100vh;
   flex-direction: column;
   background: white;
-  border-right: 1px solid rgba(212, 165, 165, 0.2);
+  border-left: 1px solid rgba(212, 165, 165, 0.2);
   padding: 1.5rem 1rem;
   z-index: 40;
   gap: 0.5rem;
