@@ -44,16 +44,15 @@ export default function MyDietPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-brand-lightest to-white text-brand-dark">
-      <header className="p-4 flex justify-between items-center bg-gradient-to-r from-pink-50 to-peach-50">
+      <header className="p-4 border-b border-pink-200/30 flex justify-between items-center bg-gradient-to-r from-pink-300 to-peach-300">
         <button
           onClick={() => router.push("/profile")}
-          className="flex items-center text-brand-dark/70 hover:text-brand-dark"
+          className="mr-2 w-8 h-8 rounded-full flex items-center justify-center bg-white/20 hover:bg-white/30 transition-colors"
         >
-          <ArrowLeft className="h-5 w-5 mr-1" />
-          <span className="text-sm font-medium">Back</span>
+          <ArrowLeft className="h-4 w-4 text-white" />
         </button>
-        <Logo variant="dark" />
-        <div className="w-20" />
+        <Logo variant="light" />
+        <div className="w-8" />
       </header>
 
       <main className="flex-1 px-4 pb-8 overflow-auto">
