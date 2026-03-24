@@ -168,6 +168,7 @@ export default function DashboardPage() {
   const [hasLoggedSymptoms, setHasLoggedSymptoms] = useState(false)
   const [hasLoggedWellness, setHasLoggedWellness] = useState(false)
   const [selectedSymptom, setSelectedSymptom] = useState<string | null>(null)
+  const [selectedWellness, setSelectedWellness] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<"symptoms" | "wellness" | "weight">("symptoms")
   const [wellnessScore, setWellnessScore] = useState<number>(0)
   const [symptomData, setSymptomData] = useState<any[]>([])
@@ -277,6 +278,10 @@ export default function DashboardPage() {
       setSelectedSymptom(symptomName) // Select the symptom
       console.log("[v0] Selected symptom:", symptomName)
     }
+  }
+
+  const handleWellnessSelect = (label: string) => {
+    setSelectedWellness(prev => prev === label ? null : label)
   }
 
   // Function to calculate wellness score (1-100) based on mood, sleep, stress, and symptoms
@@ -1559,74 +1564,39 @@ export default function DashboardPage() {
     return path.trim()
   }
 
-  // Function to create wellness curve path (scaled for 0-100)
-  const createWellnessCurvePath = (values: number[]) => {
-    const points = values.map((value, i) => {
-      const x = (i / (values.length - 1)) * 100
-      const y = 100 - value
-      return { x, y, value }
-    })
-
-    const segments: typeof points[] = []
-    let current: typeof points = []
-    for (const pt of points) {
-      if (pt.value > 0) {
-        current.push(pt)
-      } else {
-        if (current.length > 0) { segments.push(current); current = [] }
-      }
+  // Connects ALL non-zero points regardless of gaps (handles sparse wellness data)
+  const createWellnessLinePath = (values: number[]) => {
+    const pts = values
+      .map((v, i) => ({ x: (values.length > 1 ? i / (values.length - 1) : 0.5) * 100, y: 100 - v, v }))
+      .filter(p => p.v > 0)
+    if (pts.length === 0) return ""
+    if (pts.length === 1) return `M ${pts[0].x},${pts[0].y}`
+    let path = `M ${pts[0].x},${pts[0].y}`
+    for (let i = 0; i < pts.length - 1; i++) {
+      const x1 = pts[i].x + (pts[i+1].x - pts[i].x) / 3
+      const y1 = pts[i].y
+      const x2 = pts[i].x + (2 * (pts[i+1].x - pts[i].x)) / 3
+      const y2 = pts[i+1].y
+      path += ` C ${x1},${y1} ${x2},${y2} ${pts[i+1].x},${pts[i+1].y}`
     }
-    if (current.length > 0) segments.push(current)
-    if (segments.length === 0) return ""
-
-    let path = ""
-    for (const seg of segments) {
-      if (seg.length === 1) { path += ` M ${seg[0].x},${seg[0].y}`; continue }
-      path += ` M ${seg[0].x},${seg[0].y}`
-      for (let i = 0; i < seg.length - 1; i++) {
-        const x1 = seg[i].x + (seg[i+1].x - seg[i].x) / 3
-        const y1 = seg[i].y
-        const x2 = seg[i].x + (2 * (seg[i+1].x - seg[i].x)) / 3
-        const y2 = seg[i+1].y
-        path += ` C ${x1},${y1} ${x2},${y2} ${seg[i+1].x},${seg[i+1].y}`
-      }
-    }
-    return path.trim()
+    return path
   }
 
-  // Function to create wellness area path - fills only under actual data segments
-  const createWellnessAreaPath = (values: number[]) => {
-    const points = values.map((value, i) => ({
-      x: (i / (values.length - 1)) * 100,
-      y: 100 - value,
-      value
-    }))
-
-    const segments: typeof points[] = []
-    let current: typeof points = []
-    for (const pt of points) {
-      if (pt.value > 0) { current.push(pt) }
-      else { if (current.length > 0) { segments.push(current); current = [] } }
+  const createWellnessAreaFill = (values: number[]) => {
+    const pts = values
+      .map((v, i) => ({ x: (values.length > 1 ? i / (values.length - 1) : 0.5) * 100, y: 100 - v, v }))
+      .filter(p => p.v > 0)
+    if (pts.length < 2) return ""
+    let path = `M ${pts[0].x},${pts[0].y}`
+    for (let i = 0; i < pts.length - 1; i++) {
+      const x1 = pts[i].x + (pts[i+1].x - pts[i].x) / 3
+      const y1 = pts[i].y
+      const x2 = pts[i].x + (2 * (pts[i+1].x - pts[i].x)) / 3
+      const y2 = pts[i+1].y
+      path += ` C ${x1},${y1} ${x2},${y2} ${pts[i+1].x},${pts[i+1].y}`
     }
-    if (current.length > 0) segments.push(current)
-    if (segments.length === 0) return ""
-
-    let path = ""
-    for (const seg of segments) {
-      if (seg.length < 2) continue
-      // Draw the line
-      path += ` M ${seg[0].x},${seg[0].y}`
-      for (let i = 0; i < seg.length - 1; i++) {
-        const x1 = seg[i].x + (seg[i+1].x - seg[i].x) / 3
-        const y1 = seg[i].y
-        const x2 = seg[i].x + (2 * (seg[i+1].x - seg[i].x)) / 3
-        const y2 = seg[i+1].y
-        path += ` C ${x1},${y1} ${x2},${y2} ${seg[i+1].x},${seg[i+1].y}`
-      }
-      // Close to bottom
-      path += ` L ${seg[seg.length-1].x},100 L ${seg[0].x},100 Z`
-    }
-    return path.trim()
+    path += ` L ${pts[pts.length-1].x},100 L ${pts[0].x},100 Z`
+    return path
   }
 
   // Find the getDigestiveSymptomTip function and ensure it's properly implemented
@@ -2229,7 +2199,27 @@ export default function DashboardPage() {
                   </p>
                 </div>
               ) : (
-                <div className="relative">
+                <>
+                  {/* Wellness score summary row */}
+                  <div className="flex items-center justify-between mb-3 px-1">
+                    <span className="text-sm text-secondary-color">Wellness Score</span>
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md"
+                        style={{
+                          backgroundColor:
+                            wellnessScore >= 75 ? "#9bb8a0"
+                            : wellnessScore >= 50 ? "#f6d84c"
+                            : wellnessScore >= 25 ? "#f6c1b0"
+                            : "#f4a6b8",
+                        }}
+                      >
+                        {wellnessScore}
+                      </div>
+                      <span className="text-xs text-secondary-color">/ 100</span>
+                    </div>
+                  </div>
+
                   {/* Chart area */}
                   <div className="relative h-[300px]">
                     {/* Y-axis labels */}
@@ -2259,78 +2249,99 @@ export default function DashboardPage() {
                     {/* Chart drawing area */}
                     <div className="absolute left-10 md:left-16 right-0 top-0 bottom-10">
                       {/* Horizontal grid lines */}
-                      {[20, 40, 60, 80].map(pct => (
+                      {[25, 50, 75].map(pct => (
                         <div key={pct} className="border-b border-pink-100/60 absolute w-full pointer-events-none" style={{ top: `${pct}%` }} />
                       ))}
 
-                      {/* SVG lines + area */}
-                      <svg className="absolute inset-0 h-full w-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
-                        <defs>
-                          <linearGradient id="wg-stress" x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" stopColor={wellnessHistoryData.gradient[0]} stopOpacity="0.25" />
-                            <stop offset="100%" stopColor={wellnessHistoryData.gradient[1]} stopOpacity="0.03" />
-                          </linearGradient>
-                        </defs>
-                        <path d={createWellnessAreaPath(wellnessData.stress)} fill="url(#wg-stress)" />
-                        <path d={createWellnessCurvePath(wellnessData.mood)} fill="none" stroke="#f4a6b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
-                        <path d={createWellnessCurvePath(wellnessData.sleep)} fill="none" stroke="#f6c1b0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
-                        <path d={createWellnessCurvePath(wellnessData.stress)} fill="none" stroke="#f09f88" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
-                      </svg>
+                      {(() => {
+                        const metrics = [
+                          { label: "Mood",   key: "mood",   color: "#f4a6b8", gradId: "wg-mood"   },
+                          { label: "Sleep",  key: "sleep",  color: "#f6c1b0", gradId: "wg-sleep"  },
+                          { label: "Stress", key: "stress", color: "#f09f88", gradId: "wg-stress" },
+                        ]
+                        const visible = metrics.filter(m => selectedWellness === null || selectedWellness === m.label)
+                        return (
+                          <>
+                            {/* SVG: gradient fills + lines */}
+                            <svg className="absolute inset-0 h-full w-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
+                              <defs>
+                                {visible.map(m => (
+                                  <linearGradient key={m.gradId} id={m.gradId} x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" stopColor={m.color} stopOpacity="0.3" />
+                                    <stop offset="100%" stopColor={m.color} stopOpacity="0.02" />
+                                  </linearGradient>
+                                ))}
+                              </defs>
+                              {visible.map(m => {
+                                const vals = wellnessData[m.key] as number[]
+                                return (
+                                  <React.Fragment key={m.label}>
+                                    <path d={createWellnessAreaFill(vals)} fill={`url(#${m.gradId})`} />
+                                    <path
+                                      d={createWellnessLinePath(vals)}
+                                      fill="none"
+                                      stroke={m.color}
+                                      strokeWidth="2"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      vectorEffect="non-scaling-stroke"
+                                    />
+                                  </React.Fragment>
+                                )
+                              })}
+                            </svg>
 
-                      {/* Dots */}
-                      <div className="absolute inset-0 pointer-events-none">
-                        {wellnessData.mood.map((value: number, i: number) => {
-                          if (value === 0 && wellnessData.sleep[i] === 0 && wellnessData.stress[i] === 0) return null
-                          const x = wellnessData.mood.length > 1 ? (i / (wellnessData.mood.length - 1)) * 100 : 50
-                          return (
-                            <React.Fragment key={`wdots-${i}`}>
-                              {value > 0 && (
-                                <div className="absolute w-2.5 h-2.5 rounded-full border-2 border-white"
-                                  style={{ left: `calc(${x}% - 5px)`, top: `calc(${100 - value}% - 5px)`, backgroundColor: "#f4a6b8", boxShadow: "0 0 0 1px #f4a6b855" }} />
-                              )}
-                              {wellnessData.sleep[i] > 0 && (
-                                <div className="absolute w-2.5 h-2.5 rounded-full border-2 border-white"
-                                  style={{ left: `calc(${x}% - 5px)`, top: `calc(${100 - wellnessData.sleep[i]}% - 5px)`, backgroundColor: "#f6c1b0", boxShadow: "0 0 0 1px #f6c1b055" }} />
-                              )}
-                              {wellnessData.stress[i] > 0 && (
-                                <div className="absolute w-2.5 h-2.5 rounded-full border-2 border-white"
-                                  style={{ left: `calc(${x}% - 5px)`, top: `calc(${100 - wellnessData.stress[i]}% - 5px)`, backgroundColor: "#f09f88", boxShadow: "0 0 0 1px #f09f8855" }} />
-                              )}
-                            </React.Fragment>
-                          )
-                        })}
-                      </div>
-                    </div>
-
-                    {/* Wellness Score Badge — top-right overlay */}
-                    <div className="absolute top-2 right-2 z-20 text-right">
-                      <p className="text-[10px] text-secondary-color mb-1">Wellness Score</p>
-                      <div
-                        className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-base shadow-md ml-auto"
-                        style={{
-                          backgroundColor:
-                            wellnessScore >= 75 ? "#9bb8a0"
-                            : wellnessScore >= 50 ? "#f6d84c"
-                            : wellnessScore >= 25 ? "#f6c1b0"
-                            : "#f4a6b8",
-                        }}
-                      >
-                        {wellnessScore}
-                      </div>
+                            {/* Dots */}
+                            <div className="absolute inset-0 pointer-events-none">
+                              {visible.flatMap(m => {
+                                const vals = wellnessData[m.key] as number[]
+                                return vals.map((v, i) => {
+                                  if (v === 0) return null
+                                  const x = vals.length > 1 ? (i / (vals.length - 1)) * 100 : 50
+                                  const isIsolated = (i === 0 || vals[i-1] === 0) && (i === vals.length - 1 || vals[i+1] === 0)
+                                  return (
+                                    <div
+                                      key={`${m.label}-${i}`}
+                                      className="absolute rounded-full border-2 border-white pointer-events-none"
+                                      style={{
+                                        left: `calc(${x}% - ${isIsolated ? 5 : 4}px)`,
+                                        top: `calc(${100 - v}% - ${isIsolated ? 5 : 4}px)`,
+                                        width: isIsolated ? 10 : 8,
+                                        height: isIsolated ? 10 : 8,
+                                        backgroundColor: m.color,
+                                        boxShadow: `0 0 0 1.5px ${m.color}55`,
+                                      }}
+                                    />
+                                  )
+                                })
+                              })}
+                            </div>
+                          </>
+                        )
+                      })()}
                     </div>
                   </div>
 
-                  {/* Legend */}
-                  <div className="flex flex-wrap gap-4 mt-4 justify-center">
+                  {/* Filter pills */}
+                  <div className="mt-4 flex flex-wrap gap-2 justify-center">
                     {[
-                      { label: "Mood", color: "#f4a6b8" },
-                      { label: "Sleep", color: "#f6c1b0" },
+                      { label: "Mood",   color: "#f4a6b8" },
+                      { label: "Sleep",  color: "#f6c1b0" },
                       { label: "Stress", color: "#f09f88" },
                     ].map(({ label, color }) => (
-                      <div key={label} className="flex items-center gap-2">
-                        <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }} />
-                        <span className="text-sm text-primary-color">{label}</span>
-                      </div>
+                      <button
+                        key={label}
+                        onClick={() => handleWellnessSelect(label)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all hover:shadow-sm"
+                        style={{
+                          borderColor: color + "80",
+                          backgroundColor: selectedWellness === label ? color + "20" : "transparent",
+                          color,
+                        }}
+                      >
+                        <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
+                        {label}
+                      </button>
                     ))}
                   </div>
 
@@ -2340,7 +2351,7 @@ export default function DashboardPage() {
                       your mood, sleep quality, and stress levels.
                     </div>
                   )}
-                </div>
+                </>
               )}
             </div>
           )}
