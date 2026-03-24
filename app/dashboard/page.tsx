@@ -1,4 +1,5 @@
 "use client"
+import React from "react"
 
 export const dynamic = "force-dynamic"
 
@@ -2105,44 +2106,43 @@ export default function DashboardPage() {
                         }
 
                         return (
-                          <svg
-                            key={index}
-                            className="absolute inset-0 h-full w-full transition-opacity duration-300"
-                            viewBox="0 0 100 100"
-                            preserveAspectRatio="none"
-                          >
-                            {/* Line only - no dots here to avoid stretching */}
-                            <path
-                              d={createSmoothCurvePath(symptom.values)}
-                              fill="none"
-                              stroke={symptom.color}
-                              strokeWidth="1"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
-                          {/* Dots rendered as absolute positioned divs to avoid SVG stretching */}
-                          {symptom.values.map((value, i) => {
-                            if (value === 0) return null
-                            const xPct = (i / (symptom.values.length - 1)) * 100
-                            const yPct = 100 - (value / 5) * 100
-                            const isIsolated = (i === 0 || symptom.values[i-1] === 0) &&
-                                               (i === symptom.values.length-1 || symptom.values[i+1] === 0)
-                            return (
-                              <div key={`dot-${index}-${i}`}
-                                className="absolute rounded-full pointer-events-none"
-                                style={{
-                                  left: `calc(${xPct}% - ${isIsolated ? 4 : 3}px)`,
-                                  top: `calc(${yPct}% - ${isIsolated ? 4 : 3}px)`,
-                                  width: isIsolated ? 8 : 6,
-                                  height: isIsolated ? 8 : 6,
-                                  backgroundColor: symptom.color,
-                                  border: "1.5px solid white",
-                                  boxShadow: isIsolated ? `0 0 0 2px ${symptom.color}40` : "none"
-                                }}
+                          <React.Fragment key={index}>
+                            <svg
+                              className="absolute inset-0 h-full w-full transition-opacity duration-300"
+                              viewBox="0 0 100 100"
+                              preserveAspectRatio="none"
+                            >
+                              <path
+                                d={createSmoothCurvePath(symptom.values)}
+                                fill="none"
+                                stroke={symptom.color}
+                                strokeWidth="1"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
                               />
-                            )
-                          })}
+                            </svg>
+                            {symptom.values.map((value, i) => {
+                              if (value === 0) return null
+                              const xPct = (i / (symptom.values.length - 1)) * 100
+                              const yPct = 100 - (value / 5) * 100
+                              const isIsolated = (i === 0 || symptom.values[i-1] === 0) &&
+                                                 (i === symptom.values.length-1 || symptom.values[i+1] === 0)
+                              return (
+                                <div key={`dot-${index}-${i}`}
+                                  className="absolute rounded-full pointer-events-none"
+                                  style={{
+                                    left: `calc(${xPct}% - ${isIsolated ? 4 : 3}px)`,
+                                    top: `calc(${yPct}% - ${isIsolated ? 4 : 3}px)`,
+                                    width: isIsolated ? 8 : 6,
+                                    height: isIsolated ? 8 : 6,
+                                    backgroundColor: symptom.color,
+                                    border: "1.5px solid white",
+                                    boxShadow: isIsolated ? `0 0 0 2px ${symptom.color}40` : "none"
+                                  }}
+                                />
+                              )
+                            })}
+                          </React.Fragment>
                         )
                       })}
                     </div>
