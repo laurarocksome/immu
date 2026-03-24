@@ -1562,15 +1562,39 @@ export default function DashboardPage() {
     return path.trim()
   }
 
-  // Function to create wellness area path (for filled area below the line)
+  // Function to create wellness area path - fills only under actual data segments
   const createWellnessAreaPath = (values: number[]) => {
-    const linePath = createWellnessCurvePath(values)
-    const lastPoint = values.length - 1
-    const lastX = 100 // 100% width
-    const firstX = 0 // 0% width
+    const points = values.map((value, i) => ({
+      x: (i / (values.length - 1)) * 100,
+      y: 100 - value,
+      value
+    }))
 
-    // Add line to bottom right, then to bottom left, then close path
-    return `${linePath} L ${lastX},100 L ${firstX},100 Z`
+    const segments: typeof points[] = []
+    let current: typeof points = []
+    for (const pt of points) {
+      if (pt.value > 0) { current.push(pt) }
+      else { if (current.length > 0) { segments.push(current); current = [] } }
+    }
+    if (current.length > 0) segments.push(current)
+    if (segments.length === 0) return ""
+
+    let path = ""
+    for (const seg of segments) {
+      if (seg.length < 2) continue
+      // Draw the line
+      path += ` M ${seg[0].x},${seg[0].y}`
+      for (let i = 0; i < seg.length - 1; i++) {
+        const x1 = seg[i].x + (seg[i+1].x - seg[i].x) / 3
+        const y1 = seg[i].y
+        const x2 = seg[i].x + (2 * (seg[i+1].x - seg[i].x)) / 3
+        const y2 = seg[i+1].y
+        path += ` C ${x1},${y1} ${x2},${y2} ${seg[i+1].x},${seg[i+1].y}`
+      }
+      // Close to bottom
+      path += ` L ${seg[seg.length-1].x},100 L ${seg[0].x},100 Z`
+    }
+    return path.trim()
   }
 
   // Find the getDigestiveSymptomTip function and ensure it's properly implemented
@@ -2095,21 +2119,23 @@ export default function DashboardPage() {
 
                             {/* Add dots for data points */}
                             {symptom.values.map((value, i) => {
-                              if (value === 0) return null // Don't show dots for zero values
+                              if (value === 0) return null
 
                               const x = (i / (symptom.values.length - 1)) * 100
                               const y = 100 - (value / 5) * 100
+                              // Check if this is an isolated point (no neighbours)
+                              const isIsolated = (i === 0 || symptom.values[i-1] === 0) &&
+                                                 (i === symptom.values.length-1 || symptom.values[i+1] === 0)
 
                               return (
-                                <circle
-                                  key={`${i}-${symptom.name}`}
-                                  cx={x}
-                                  cy={y}
-                                  r="0.8"
-                                  fill={symptom.color}
-                                  stroke="white"
-                                  strokeWidth="0.5"
-                                />
+                                <g key={`${i}-${symptom.name}`}>
+                                  <circle cx={x} cy={y} r={isIsolated ? "2" : "1.2"}
+                                    fill={symptom.color} stroke="white" strokeWidth="0.5" />
+                                  {isIsolated && (
+                                    <circle cx={x} cy={y} r="3.5"
+                                      fill="none" stroke={symptom.color} strokeWidth="0.4" opacity="0.5" />
+                                  )}
+                                </g>
                               )
                             })}
                           </svg>
@@ -2242,7 +2268,7 @@ export default function DashboardPage() {
                         strokeLinejoin="round"
                       />
 
-                      {/* Add dots for data points */}
+                      {/* Add dots for data points - small clean dots only */}
                       {wellnessData.mood.map((value: number, i: number) => {
                         if (value === 0 && wellnessData.sleep[i] === 0 && wellnessData.stress[i] === 0) return null
 
@@ -2254,13 +2280,13 @@ export default function DashboardPage() {
                         return (
                           <g key={`wellness-dots-${i}`}>
                             {value > 0 && (
-                              <circle cx={x} cy={yMood} r="0.8" fill="white" stroke="#f4a6b8" strokeWidth="0.8" />
+                              <circle cx={x} cy={yMood} r="1" fill="#f4a6b8" />
                             )}
                             {wellnessData.sleep[i] > 0 && (
-                              <circle cx={x} cy={ySleep} r="0.8" fill="white" stroke="#f6c1b0" strokeWidth="0.8" />
+                              <circle cx={x} cy={ySleep} r="1" fill="#f6c1b0" />
                             )}
                             {wellnessData.stress[i] > 0 && (
-                              <circle cx={x} cy={yStress} r="0.8" fill="white" stroke="#f09f88" strokeWidth="0.8" />
+                              <circle cx={x} cy={yStress} r="1" fill="#f09f88" />
                             )}
                           </g>
                         )
