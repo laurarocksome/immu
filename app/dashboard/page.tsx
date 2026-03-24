@@ -169,6 +169,7 @@ export default function DashboardPage() {
   const [hasLoggedWellness, setHasLoggedWellness] = useState(false)
   const [selectedSymptom, setSelectedSymptom] = useState<string | null>(null)
   const [selectedWellness, setSelectedWellness] = useState<string | null>(null)
+  const [isChartLoading, setIsChartLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<"symptoms" | "wellness" | "weight">("symptoms")
   const [wellnessScore, setWellnessScore] = useState<number>(0)
   const [symptomData, setSymptomData] = useState<any[]>([])
@@ -1117,8 +1118,12 @@ export default function DashboardPage() {
           }
         }
 
-        await loadSymptomDataFromDatabase(user.id)
-        await loadWellnessDataFromDatabase(user.id)
+        setIsChartLoading(true)
+        await Promise.all([
+          loadSymptomDataFromDatabase(user.id),
+          loadWellnessDataFromDatabase(user.id),
+        ])
+        setIsChartLoading(false)
       }
 
       // Load user profile data (this might be redundant if profile is already loaded from DB)
@@ -2051,8 +2056,20 @@ export default function DashboardPage() {
             </button>
           </div>
 
+          {/* Chart loading skeleton */}
+          {isChartLoading && (
+            <div className="h-[320px] flex flex-col items-center justify-center gap-3">
+              <div className="w-full h-[240px] rounded-xl bg-gradient-to-b from-pink-50 to-transparent animate-pulse" />
+              <div className="flex gap-2 justify-center">
+                {[1,2,3].map(i => (
+                  <div key={i} className="h-6 w-16 rounded-full bg-pink-100 animate-pulse" />
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Symptom Chart */}
-          {activeTab === "symptoms" && (
+          {!isChartLoading && activeTab === "symptoms" && (
             <div className="relative">
               {symptomData.length === 0 ? (
                 // Show empty state without chart when no data
@@ -2186,7 +2203,7 @@ export default function DashboardPage() {
           )}
 
           {/* Wellness Chart */}
-          {activeTab === "wellness" && (
+          {!isChartLoading && activeTab === "wellness" && (
             <div className="relative">
               {wellnessData.mood.every((score: number) => score === 0) &&
               wellnessData.sleep.every((score: number) => score === 0) &&
@@ -2356,7 +2373,7 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {activeTab === "weight" && (
+          {!isChartLoading && activeTab === "weight" && (
             <div className="relative">
               {weightData.length === 0 ? (
                 <div className="text-center text-sm text-secondary-color p-6 bg-green-50 rounded-lg min-h-[200px] flex items-center justify-center">
