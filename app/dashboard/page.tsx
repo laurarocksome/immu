@@ -452,7 +452,7 @@ export default function DashboardPage() {
     if (typeof window === "undefined") return
 
     const adaptationChoice = localStorage.getItem("userAdaptationChoice")
-    const hasAdaptation = adaptationChoice === "Yes"
+    const hasAdaptation = (adaptationChoice ?? "").toLowerCase() === "yes"
     const startDate = localStorage.getItem("dietStartDate")
 
     if (!startDate) {
@@ -462,7 +462,9 @@ export default function DashboardPage() {
     }
 
     const dietStartDate = new Date(startDate)
+    dietStartDate.setHours(0, 0, 0, 0)
     const today = new Date()
+    today.setHours(0, 0, 0, 0)
     const daysElapsed = Math.floor((today.getTime() - dietStartDate.getTime()) / (1000 * 60 * 60 * 24))
 
     // Get diet timeline
@@ -1103,11 +1105,15 @@ export default function DashboardPage() {
             setEliminationPhasePercentage(phaseProgress.eliminationPhasePercentage)
             setReintroductionDay(phaseProgress.reintroductionDay)
 
-            // Calculate progress for progress bar
-            const totalDays = dietInfoData.timeline_days
-            const progressPercentage =
-              totalDays > 0 ? Math.min(Math.round((phaseProgress.daysElapsed / totalDays) * 100), 100) : 1
-            setProgress(progressPercentage)
+            // Progress bar shows the current phase percentage
+            // For elimination: how much of the elimination phase is done
+            // For adaptation: how many adaptation days done out of 28
+            const adaptationDaysCount = (dietInfoData.adaptation_choice ?? "").toLowerCase() === "yes" ? 28 : 0
+            let progressPercentage = phaseProgress.eliminationPhasePercentage
+            if (phaseProgress.isAdaptationPhase && adaptationDaysCount > 0) {
+              progressPercentage = Math.min(Math.round((phaseProgress.adaptationDay / adaptationDaysCount) * 100), 100)
+            }
+            setProgress(Math.max(progressPercentage, 1))
           }
         }
 
@@ -1384,10 +1390,13 @@ export default function DashboardPage() {
     }
 
     const startDate = new Date(dietInfoData.start_date)
+    startDate.setHours(0, 0, 0, 0)
     const today = new Date()
+    today.setHours(0, 0, 0, 0)
     const daysElapsed = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
 
-    const adaptationDays = dietInfoData.adaptation_choice === "Yes" ? 28 : 0
+    const hasAdaptation = (dietInfoData.adaptation_choice ?? "").toLowerCase() === "yes"
+    const adaptationDays = hasAdaptation ? 28 : 0
     const eliminationDays = dietInfoData.timeline_days - adaptationDays
 
     let currentPhase = "adaptation"
@@ -1396,7 +1405,7 @@ export default function DashboardPage() {
     let eliminationPhasePercentage = 0
     let reintroductionDay = 0
 
-    if (dietInfoData.adaptation_choice === "Yes" && daysElapsed < adaptationDays) {
+    if (hasAdaptation && daysElapsed < adaptationDays) {
       currentPhase = "adaptation"
       isAdaptationPhase = true
       adaptationDay = daysElapsed + 1
@@ -1929,17 +1938,19 @@ export default function DashboardPage() {
                   {(() => {
                     // Use dietInfoData directly
                     const adaptationChoice = dietInfo.adaptation_choice
-                    const hasAdaptation = adaptationChoice === "Yes"
+                    const hasAdaptation = (adaptationChoice ?? "").toLowerCase() === "yes"
                     const startDate = dietInfo.start_date
                     const dietStartDate = startDate ? new Date(startDate) : new Date()
+                    dietStartDate.setHours(0, 0, 0, 0)
                     const totalSelectedDays = dietInfo.timeline_days
 
                     // Calculate days for each phase
                     const adaptationDays = hasAdaptation ? 28 : 0
                     const eliminationDays = totalSelectedDays - adaptationDays
 
-                    // Calculate days elapsed since diet start
+                    // Calculate days elapsed since diet start (normalize to midnight to avoid time-of-day skew)
                     const today = new Date()
+                    today.setHours(0, 0, 0, 0)
                     const daysElapsed = Math.floor((today.getTime() - dietStartDate.getTime()) / (1000 * 60 * 60 * 24))
 
                     // Determine current phase
@@ -1986,15 +1997,17 @@ export default function DashboardPage() {
                   <p className="text-sm text-secondary-color">
                     {(() => {
                       const adaptationChoice = dietInfo.adaptation_choice
-                      const hasAdaptation = adaptationChoice === "Yes"
+                      const hasAdaptation = (adaptationChoice ?? "").toLowerCase() === "yes"
                       const startDate = dietInfo.start_date
                       const dietStartDate = startDate ? new Date(startDate) : new Date()
+                      dietStartDate.setHours(0, 0, 0, 0)
                       const totalSelectedDays = dietInfo.timeline_days
 
                       const adaptationDays = hasAdaptation ? 28 : 0
                       const eliminationDays = totalSelectedDays - adaptationDays
 
                       const today = new Date()
+                      today.setHours(0, 0, 0, 0)
                       const daysElapsed = Math.floor(
                         (today.getTime() - dietStartDate.getTime()) / (1000 * 60 * 60 * 24),
                       )

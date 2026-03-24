@@ -27,7 +27,7 @@ const determineDietPhase = () => {
   if (typeof window === "undefined") return { phase: "elimination", adaptationDay: 0 }
 
   const adaptationChoice = localStorage.getItem("userAdaptationChoice")
-  const hasAdaptation = adaptationChoice === "Yes"
+  const hasAdaptation = (adaptationChoice ?? "").toLowerCase() === "yes"
   const startDate = localStorage.getItem("dietStartDate")
 
   if (!startDate) {
@@ -35,7 +35,9 @@ const determineDietPhase = () => {
   }
 
   const dietStartDate = new Date(startDate)
+  dietStartDate.setHours(0, 0, 0, 0)
   const today = new Date()
+  today.setHours(0, 0, 0, 0)
   const daysElapsed = Math.floor((today.getTime() - dietStartDate.getTime()) / (1000 * 60 * 60 * 24))
 
   // Calculate adaptation days

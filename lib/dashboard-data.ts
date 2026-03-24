@@ -54,9 +54,11 @@ export function calculateDietProgress(dietInfo: any) {
   const { start_date, timeline_days, adaptation_choice } = dietInfo
   if (!start_date || !timeline_days) return null
 
-  const hasAdaptation = adaptation_choice === "yes"
+  const hasAdaptation = (adaptation_choice ?? "").toLowerCase() === "yes"
   const dietStartDate = new Date(start_date)
+  dietStartDate.setHours(0, 0, 0, 0)
   const today = new Date()
+  today.setHours(0, 0, 0, 0)
   const daysElapsed = Math.floor((today.getTime() - dietStartDate.getTime()) / (1000 * 60 * 60 * 24))
 
   // Calculate adaptation and elimination days

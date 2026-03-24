@@ -77,8 +77,10 @@ function ProgressBar() {
       const reintroductionEndDate = new Date(eliminationEndDate)
       reintroductionEndDate.setDate(reintroductionEndDate.getDate() + reintroductionDays)
 
-      // Calculate days elapsed since diet start
+      // Calculate days elapsed since diet start (normalize to midnight to avoid time-of-day skew)
+      dietStartDate.setHours(0, 0, 0, 0)
       const today = new Date()
+      today.setHours(0, 0, 0, 0)
       const daysElapsed = Math.floor((today.getTime() - dietStartDate.getTime()) / (1000 * 60 * 60 * 24))
 
       // Determine current phase and days remaining
