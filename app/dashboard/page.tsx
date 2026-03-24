@@ -26,7 +26,8 @@ import Logo from "@/app/components/logo"
 import ConfettiCelebration from "@/app/components/confetti-celebration"
 import BottomNav from "@/app/components/bottom-nav"
 import { getSession } from "@/lib/auth"
-import { saveUserProfile, saveUserConditions, saveUserSymptoms, saveDietInfo, saveUserName } from "@/lib/user-data"
+import { saveUserProfile, saveUserConditions, saveDietInfo, saveUserName } from "@/lib/user-data"
+import { saveUserSymptomsAction } from "@/app/actions/symptoms"
 import { Button } from "@/components/ui/button" // Assuming Button component is available
 import { WeightLogModal } from "@/components/weight-log-modal" // Imported WeightLogModal component
 import { createClient } from "@/lib/supabase/client" // Import createClient from supabase client
@@ -250,7 +251,7 @@ export default function DashboardPage() {
 
       // Sync symptoms
       if (selectedSymptoms.length > 0) {
-        await saveUserSymptoms(selectedSymptoms)
+        await saveUserSymptomsAction(session.user.id, selectedSymptoms)
       }
 
       // Sync diet info

@@ -6,9 +6,9 @@ import { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { ArrowLeft } from "lucide-react"
 import Logo from "@/app/components/logo"
-import { saveUserSymptoms } from "@/lib/user-data"
 import { getSession } from "@/lib/auth"
 import { createClient } from "@/lib/supabase/client"
+import { saveUserSymptomsAction } from "@/app/actions/symptoms"
 
 export default function SymptomsPage() {
   const router = useRouter()
@@ -123,7 +123,7 @@ export default function SymptomsPage() {
       try {
         const session = await getSession()
         if (session?.user) {
-          await saveUserSymptoms(selectedSymptoms)
+          await saveUserSymptomsAction(session.user.id, selectedSymptoms)
         }
       } catch (error) {
         console.error("Error saving to database:", error)

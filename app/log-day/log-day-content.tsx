@@ -4,7 +4,8 @@ import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { ArrowLeft, Sun, Moon, Brain } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
-import { logSymptoms, getCurrentPhaseAndDay } from "@/lib/supabase/user-tracking"
+import { getCurrentPhaseAndDay } from "@/lib/supabase/user-tracking"
+import { logSymptomsAction } from "@/app/actions/symptoms"
 import { saveDietInfo } from "@/lib/user-data"
 import { useLanguage } from "@/lib/i18n/context"
 import Logo from "@/app/components/logo"
@@ -114,7 +115,7 @@ export default function LogDayContent() {
         dailyLogId = data.id
       }
       if (symptoms.length > 0) {
-        await logSymptoms(dailyLogId, symptoms.map(s => ({ symptom: s.name, severity: s.severity })))
+        await logSymptomsAction(dailyLogId, symptoms.map(s => ({ symptom: s.name, severity: s.severity })))
       }
       setShowSuccess(true)
       setTimeout(() => router.push("/dashboard"), 1500)

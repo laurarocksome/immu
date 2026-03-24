@@ -5,7 +5,8 @@ export const dynamic = "force-dynamic"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Logo from "@/app/components/logo"
-import { saveUserProfile, saveUserConditions, saveUserSymptoms, saveDietInfo, saveUserName } from "@/lib/user-data"
+import { saveUserProfile, saveUserConditions, saveDietInfo, saveUserName } from "@/lib/user-data"
+import { saveUserSymptomsAction } from "@/app/actions/symptoms"
 import { saveWeightLog } from "@/lib/weight-data"
 import { createClient } from "@/lib/supabase/client"
 
@@ -76,7 +77,7 @@ export default function CreateAccountPage() {
       }
 
       if (selectedSymptoms.length > 0) {
-        await saveUserSymptoms(selectedSymptoms)
+        await saveUserSymptomsAction(user.id, selectedSymptoms)
       }
 
       await saveDietInfo({
