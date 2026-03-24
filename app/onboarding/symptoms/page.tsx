@@ -8,7 +8,7 @@ import { ArrowLeft } from "lucide-react"
 import Logo from "@/app/components/logo"
 import { saveUserSymptoms } from "@/lib/user-data"
 import { getSession } from "@/lib/auth"
-import { supabase } from "@/lib/supabase/client"
+import { createClient } from "@/lib/supabase/client"
 
 export default function SymptomsPage() {
   const router = useRouter()
@@ -24,7 +24,7 @@ export default function SymptomsPage() {
       try {
         const session = await getSession()
         if (session?.user) {
-          const { data: symptomsData } = await supabase
+          const { data: symptomsData } = await createClient()
             .from("user_symptoms")
             .select("symptom")
             .eq("user_id", session.user.id)

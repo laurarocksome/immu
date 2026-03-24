@@ -16,7 +16,3 @@ export function createClient() {
   supabaseClient = createBrowserClient(supabaseUrl, supabaseAnonKey)
   return supabaseClient
 }
-
-// Export a getter function that creates the client on demand
-// This is used by files that import { supabase } directly
-export const supabase = createClient()
