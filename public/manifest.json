@@ -1,0 +1,25 @@
+{
+  "name": "IMMU - AIP Diet Tracker",
+  "short_name": "IMMU",
+  "description": "Track your AIP diet journey, monitor symptoms, and see your progress",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#f4a6b8",
+  "background_color": "#ffffff",
+  "categories": ["health", "fitness", "food"],
+  "icons": [
+    {
+      "src": "/pwa-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/apple-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
