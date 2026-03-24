@@ -2465,18 +2465,25 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Current Weight — bottom-right overlay */}
-                    <div className="absolute bottom-10 right-2 z-20 text-right">
-                      <p className="text-[10px] text-secondary-color">Current Weight</p>
-                      <div className="text-2xl font-bold text-green-600 leading-tight">
-                        {currentWeight?.toFixed(1)} <span className="text-sm font-normal">{weightUnit}</span>
-                      </div>
-                      {weightData.length > 1 && (
-                        <p className="text-[10px] text-secondary-color">
-                          {weightData[weightData.length - 1].weight > weightData[0].weight ? "+" : ""}
-                          {(weightData[weightData.length - 1].weight - weightData[0].weight).toFixed(1)} {weightUnit} from start
-                        </p>
-                      )}
-                    </div>
+                    {(() => {
+                      const latestWeight = weightData.length > 0 ? weightData[weightData.length - 1].weight : null
+                      const firstWeight = weightData.length > 0 ? weightData[0].weight : null
+                      const diff = latestWeight !== null && firstWeight !== null ? latestWeight - firstWeight : null
+                      return (
+                        <div className="absolute bottom-10 right-2 z-20 text-right">
+                          <p className="text-[10px] text-secondary-color">Current Weight</p>
+                          <div className="text-2xl font-bold text-green-600 leading-tight">
+                            {latestWeight !== null ? latestWeight.toFixed(1) : "—"}{" "}
+                            <span className="text-sm font-normal">{weightUnit}</span>
+                          </div>
+                          {diff !== null && weightData.length > 1 && (
+                            <p className="text-[10px] text-secondary-color">
+                              {diff > 0 ? "+" : ""}{diff.toFixed(1)} {weightUnit} from start
+                            </p>
+                          )}
+                        </div>
+                      )
+                    })()}
                   </div>
 
                   {/* Log Weight Button */}
