@@ -12,10 +12,6 @@ export default function GetStartedPage() {
     router.push("/onboarding/conditions")
   }
 
-  const handleSkip = () => {
-    setupTestData()
-    router.push("/dashboard")
-  }
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-brand-lightest to-white text-brand-dark">
@@ -43,13 +39,6 @@ export default function GetStartedPage() {
             </button>
           </div>
 
-          {/* Skip button for testing */}
-          <button
-            onClick={handleSkip}
-            className="w-full py-4 rounded-full border-2 border-dashed border-pink-300 bg-transparent text-pink-500 hover:bg-pink-50"
-          >
-            Skip (Testing)
-          </button>
         </div>
       </main>
     </div>
