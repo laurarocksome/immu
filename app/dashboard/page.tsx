@@ -1041,8 +1041,8 @@ export default function DashboardPage() {
 
   // Helper function to load all user data
   async function loadUserData() {
-    // Sync pending data to Supabase on initial load
-    await syncPendingDataToSupabase()
+    // Sync pending data to Supabase in the background — do NOT await so charts load immediately
+    syncPendingDataToSupabase()
 
     // Format current date
     const date = new Date()
@@ -1077,11 +1077,12 @@ export default function DashboardPage() {
       if (user?.id) {
         setUserId(user.id)
 
-        const [dietInfoData, trackedDates, profile, streakData] = await Promise.all([
+        const [dietInfoData, trackedDates, profile, streakData, weightLogs] = await Promise.all([
           loadDietInfo(user.id),
           loadTrackedDates(user.id),
           getUserProfile(user.id),
           getUserStreak(user.id),
+          fetchWeightLogs(user.id, 30),
         ])
         
         userStreak = streakData
@@ -1113,9 +1114,17 @@ export default function DashboardPage() {
         if (profile) {
           setUserProfile(profile)
           setWeightUnit(profile.weight_unit)
-          if (profile.weight) {
-            setCurrentWeight(profile.weight)
-          }
+        }
+
+        // Set weight data from logs (authoritative source — NOT from profile)
+        if (weightLogs && weightLogs.length > 0) {
+          const formattedWeights = weightLogs.map((log) => ({
+            date: new Date(log.log_date).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+            weight: Number(log.weight),
+          }))
+          setWeightData(formattedWeights)
+          setCurrentWeight(Number(weightLogs[weightLogs.length - 1].weight))
+          setWeightUnit(weightLogs[weightLogs.length - 1].weight_unit)
         }
 
         setIsChartLoading(true)
