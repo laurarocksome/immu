@@ -216,6 +216,7 @@ export default function FoodListPage() {
   const [showOnlyFavorites, setShowOnlyFavorites] = useState(false)
   const [userModifiedStatuses, setUserModifiedStatuses] = useState<Record<string, string>>({})
   const [allTags, setAllTags] = useState<string[]>([])
+  const [showRecipesNav, setShowRecipesNav] = useState(true)
 
   // Router for navigation
   const router = useRouter()
@@ -225,6 +226,8 @@ export default function FoodListPage() {
     async function checkVisibility() {
       const visible = await isPageVisible("food-list")
       if (!visible) { router.replace("/dashboard"); return }
+      const recipesVisible = await isPageVisible("recipes")
+      setShowRecipesNav(recipesVisible)
     }
     checkVisibility()
   }, [])
@@ -794,13 +797,16 @@ export default function FoodListPage() {
           <BookOpen className="h-5 w-5 mb-1 text-brand-brand" />
           <span className="text-brand-dark">Nutrition</span>
         </button>
-        <button
-          className="flex flex-col items-center justify-center py-3 text-xs"
-          onClick={() => handleNavigation("/recipes")}
-        >
-          <UtensilsCrossed className="h-5 w-5 mb-1 text-brand-dark" />
-          <span className="text-brand-dark">Recipes</span>
-        </button>
+        {showRecipesNav && (
+          <button
+            className="flex flex-col items-center justify-center py-3 text-xs"
+            onClick={() => handleNavigation("/recipes")}
+          >
+            <UtensilsCrossed className="h-5 w-5 mb-1 text-brand-dark" />
+            <span className="text-brand-dark">Recipes</span>
+          </button>
+        )}
+        {!showRecipesNav && <div />}
       </nav>
     </div>
   )

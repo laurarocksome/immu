@@ -2486,15 +2486,15 @@ export default function DashboardPage() {
                       </div>
                     </div>
 
-                    {/* Current Weight — bottom-right overlay */}
+                    {/* Current Weight — top-right overlay (avoids x-axis label collision) */}
                     {(() => {
                       const latestWeight = weightData.length > 0 ? weightData[weightData.length - 1].weight : null
                       const firstWeight = weightData.length > 0 ? weightData[0].weight : null
                       const diff = latestWeight !== null && firstWeight !== null ? latestWeight - firstWeight : null
                       return (
-                        <div className="absolute bottom-10 right-2 z-20 text-right">
+                        <div className="absolute top-3 right-2 z-20 text-right bg-white/80 rounded-xl px-2 py-1 backdrop-blur-sm">
                           <p className="text-[10px] text-secondary-color">Current Weight</p>
-                          <div className="text-2xl font-bold text-green-600 leading-tight">
+                          <div className="text-xl font-bold text-green-600 leading-tight">
                             {latestWeight !== null ? latestWeight.toFixed(1) : "—"}{" "}
                             <span className="text-sm font-normal">{weightUnit}</span>
                           </div>
