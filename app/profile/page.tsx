@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic"
 import { useEffect, useState } from "react"
 import { useLanguage } from "@/lib/i18n/context"
 import { useRouter } from "next/navigation"
-import { List, Home, Plus, BookOpen, UtensilsCrossed, ArrowLeft, Edit, Trash2 } from "lucide-react"
+import { List, Home, Plus, BookOpen, UtensilsCrossed, ArrowLeft, Edit, Trash2, ChevronRight, Salad } from "lucide-react"
 import Logo from "@/app/components/logo"
 import { deleteUser, signOut } from "@/lib/auth"
 import { createClient } from "@/lib/supabase/client"
@@ -308,6 +308,23 @@ export default function ProfilePage() {
               </div>
             </div>
           </div>
+
+          {/* My Diet */}
+          <button
+            onClick={() => router.push("/my-diet")}
+            className="w-full bg-white rounded-3xl p-5 mb-4 shadow-soft flex items-center justify-between text-left hover:shadow-md transition-shadow"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-r from-pink-100 to-peach-100 flex items-center justify-center">
+                <Salad className="h-5 w-5 text-pink-500" />
+              </div>
+              <div>
+                <p className="font-semibold text-brand-dark">My Diet</p>
+                <p className="text-brand-dark/50 text-xs mt-0.5">AIP — Active</p>
+              </div>
+            </div>
+            <ChevronRight className="h-5 w-5 text-brand-dark/30" />
+          </button>
 
           <div className="bg-white rounded-3xl p-6 mb-4 shadow-soft">
             <div className="flex justify-between items-center mb-5">
