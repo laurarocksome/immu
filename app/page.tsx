@@ -8,7 +8,6 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import Logo from "@/app/components/logo"
 import { useRouter } from "next/navigation"
-import { setupTestData } from "./utils/test-utils"
 import { useState } from "react"
 import { signIn } from "@/lib/auth"
 
@@ -40,17 +39,6 @@ export default function Home() {
     }
   }
 
-  const handleSkip = async () => {
-    setIsLoading(true)
-    try {
-      localStorage.clear()
-      setupTestData()
-      router.push("/dashboard")
-    } catch (error) {
-      console.error("Error:", error)
-      setIsLoading(false)
-    }
-  }
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-purple-50 via-pink-50 to-purple-100 p-6">
@@ -123,13 +111,6 @@ export default function Home() {
         </div>
 
         <div className="mt-6 text-center">
-          <button
-            onClick={handleSkip}
-            disabled={isLoading}
-            className="text-slate-500 hover:text-slate-700 text-sm font-medium transition-colors"
-          >
-            Skip (Testing)
-          </button>
         </div>
       </div>
     </main>
