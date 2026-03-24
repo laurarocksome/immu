@@ -218,6 +218,7 @@ export default function FoodListPage() {
   const [userModifiedStatuses, setUserModifiedStatuses] = useState<Record<string, string>>({})
   const [allTags, setAllTags] = useState<string[]>([])
   const [showRecipesNav, setShowRecipesNav] = useState(true)
+  const [openTooltip, setOpenTooltip] = useState<string | null>(null)
 
   // Router for navigation
   const router = useRouter()
@@ -276,6 +277,13 @@ export default function FoodListPage() {
   useEffect(() => {
     setAllTags(getAllTags(allProducts))
   }, [allProducts])
+
+  useEffect(() => {
+    if (!openTooltip) return
+    const close = () => setOpenTooltip(null)
+    document.addEventListener("click", close)
+    return () => document.removeEventListener("click", close)
+  }, [openTooltip])
 
   // Toggle product favorite status
   const toggleFavorite = (productName: string) => {
@@ -649,11 +657,25 @@ export default function FoodListPage() {
                           </div>
 
                           <div className="flex items-center space-x-2">
-                            {/* Info button before status — placeholder keeps alignment when absent */}
+                            {/* Info button — tap to open tooltip on mobile */}
                             {product.tooltip ? (
-                              <button className="text-gray-400 hover:text-gray-600 flex-shrink-0" title={product.tooltip}>
-                                <Info className="h-4 w-4" />
-                              </button>
+                              <div className="relative flex-shrink-0">
+                                <button
+                                  className="text-gray-400 flex-shrink-0"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    setOpenTooltip(openTooltip === product.name ? null : product.name)
+                                  }}
+                                >
+                                  <Info className="h-4 w-4" />
+                                </button>
+                                {openTooltip === product.name && (
+                                  <div className="absolute right-0 bottom-6 z-50 bg-gray-800 text-white text-xs rounded-xl p-3 w-52 shadow-xl leading-relaxed">
+                                    {product.tooltip}
+                                    <div className="absolute right-1.5 bottom-[-4px] w-2 h-2 bg-gray-800 rotate-45" />
+                                  </div>
+                                )}
+                              </div>
                             ) : (
                               <div className="w-4 flex-shrink-0" />
                             )}
@@ -721,11 +743,25 @@ export default function FoodListPage() {
                 </div>
 
                 <div className="flex items-center space-x-2">
-                  {/* Info button before status — placeholder keeps alignment when absent */}
+                  {/* Info button — tap to open tooltip on mobile */}
                   {product.tooltip ? (
-                    <button className="text-gray-400 hover:text-gray-600 flex-shrink-0" title={product.tooltip}>
-                      <Info className="h-4 w-4" />
-                    </button>
+                    <div className="relative flex-shrink-0">
+                      <button
+                        className="text-gray-400 flex-shrink-0"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setOpenTooltip(openTooltip === product.name ? null : product.name)
+                        }}
+                      >
+                        <Info className="h-4 w-4" />
+                      </button>
+                      {openTooltip === product.name && (
+                        <div className="absolute right-0 bottom-6 z-50 bg-gray-800 text-white text-xs rounded-xl p-3 w-52 shadow-xl leading-relaxed">
+                          {product.tooltip}
+                          <div className="absolute right-1.5 bottom-[-4px] w-2 h-2 bg-gray-800 rotate-45" />
+                        </div>
+                      )}
+                    </div>
                   ) : (
                     <div className="w-4 flex-shrink-0" />
                   )}
