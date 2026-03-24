@@ -776,7 +776,7 @@ export default function FoodListPage() {
       </main>
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 grid grid-cols-5 border-t border-pink-200/10 bg-white/90 backdrop-blur-sm z-10">
+      <nav className="bottom-nav grid grid-cols-5 border-t border-pink-200/10 bg-white/90 backdrop-blur-sm">
         <button className="flex flex-col items-center justify-center py-3 text-xs text-pink-400">
           <List className="h-5 w-5 mb-1 text-pink-400" />
           <span>Products</span>

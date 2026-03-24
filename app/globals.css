@@ -141,15 +141,15 @@ body {
       display: flex !important;
     }
 
-    /* Desktop: main content with sidebar offset on the right */
+    /* Desktop: main content with sidebar offset on the left */
     .desktop-main {
-      margin-right: 220px;
+      margin-left: 220px;
       max-width: 960px;
       padding: 2rem;
     }
 
     .app-shell.has-sidebar {
-      margin-right: 220px;
+      margin-left: 220px;
       max-width: calc(100% - 220px);
     }
   }
@@ -164,17 +164,17 @@ body {
   }
 }
 
-/* Desktop sidebar — right side */
+/* Desktop sidebar — left side */
 .desktop-sidebar {
   display: none;
   position: fixed;
   top: 0;
-  right: 0;
+  left: 0;
   width: 220px;
   height: 100vh;
   flex-direction: column;
   background: white;
-  border-left: 1px solid rgba(212, 165, 165, 0.2);
+  border-right: 1px solid rgba(212, 165, 165, 0.2);
   padding: 1.5rem 1rem;
   z-index: 40;
   gap: 0.5rem;
