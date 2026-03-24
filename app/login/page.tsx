@@ -22,7 +22,9 @@ export default function Login() {
     setIsLoading(true)
 
     try {
+      const wasWelcomed = localStorage.getItem("dashboardFirstLoad")
       localStorage.clear()
+      if (wasWelcomed) localStorage.setItem("dashboardFirstLoad", wasWelcomed)
       await signIn(email, password)
 
       // Load start_date from Supabase, not today's date

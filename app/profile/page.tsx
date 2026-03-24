@@ -379,7 +379,7 @@ export default function ProfilePage() {
                   locale === "en" ? "bg-pink-400 border-pink-400 text-white" : "border-pink-200 text-brand-dark"
                 }`}
               >
-                EN English
+                🇬🇧 EN
               </button>
               <button
                 onClick={() => setLocale("lt")}
@@ -387,7 +387,7 @@ export default function ProfilePage() {
                   locale === "lt" ? "bg-pink-400 border-pink-400 text-white" : "border-pink-200 text-brand-dark"
                 }`}
               >
-                LT Lietuvių
+                🇱🇹 LT
               </button>
             </div>
           </div>
