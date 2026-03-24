@@ -8,6 +8,7 @@ import { useLanguage } from "@/lib/i18n/context"
 import { useRouter } from "next/navigation"
 import { List, Home, Plus, BookOpen, UtensilsCrossed, ArrowLeft, Edit, Trash2, ChevronRight, Salad } from "lucide-react"
 import Logo from "@/app/components/logo"
+import BottomNav from "@/app/components/bottom-nav"
 import { deleteUser, signOut } from "@/lib/auth"
 import { createClient } from "@/lib/supabase/client"
 
@@ -473,46 +474,7 @@ export default function ProfilePage() {
         </div>
       )}
 
-      <nav className="bottom-nav grid grid-cols-5 border-t border-brand-dark/10 bg-white/80 backdrop-blur-sm">
-        <button
-          className="flex flex-col items-center justify-center py-3 text-xs"
-          onClick={() => router.push("/food-list")}
-        >
-          <List className="h-5 w-5 mb-1 text-brand-dark" />
-          <span className="text-brand-dark">Products</span>
-        </button>
-        <button
-          className="flex flex-col items-center justify-center py-3 text-xs"
-          onClick={() => router.push("/dashboard")}
-        >
-          <Home className="h-5 w-5 mb-1 text-brand-dark" />
-          <span className="text-brand-dark">Dashboard</span>
-        </button>
-        <button
-          className="flex items-center justify-center rounded-full gradient-button h-14 w-14 -mt-7 mx-auto shadow-lg"
-          onClick={() => router.push("/log-day")}
-        >
-          <Plus className="h-6 w-6" />
-        </button>
-        <button
-          className="flex flex-col items-center justify-center py-3 text-xs"
-          onClick={() => router.push("/nutrition")}
-        >
-          <BookOpen className="h-5 w-5 mb-1 text-brand-dark" />
-          <span className="text-brand-dark">Nutrition</span>
-        </button>
-        {!hiddenPages.includes("recipes") ? (
-          <button
-            className="flex flex-col items-center justify-center py-3 text-xs"
-            onClick={() => router.push("/recipes")}
-          >
-            <UtensilsCrossed className="h-5 w-5 mb-1 text-brand-dark" />
-            <span className="text-brand-dark">Recipes</span>
-          </button>
-        ) : (
-          <div />
-        )}
-      </nav>
+      <BottomNav />
     </div>
   )
 }

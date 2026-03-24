@@ -4,6 +4,7 @@ export const dynamic = "force-dynamic"
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import BottomNav from "@/app/components/bottom-nav"
 import {
   List,
   Home,
@@ -775,43 +776,7 @@ export default function FoodListPage() {
         )}
       </main>
 
-      {/* Bottom Navigation */}
-      <nav className="bottom-nav grid grid-cols-5 border-t border-pink-200/10 bg-white/90 backdrop-blur-sm">
-        <button className="flex flex-col items-center justify-center py-3 text-xs text-pink-400">
-          <List className="h-5 w-5 mb-1 text-pink-400" />
-          <span>Products</span>
-        </button>
-        <button
-          className="flex flex-col items-center justify-center py-3 text-xs"
-          onClick={() => handleNavigation("/dashboard")}
-        >
-          <Home className="h-5 w-5 mb-1 text-brand-dark" />
-          <span className="text-brand-dark">Dashboard</span>
-        </button>
-        <button
-          className="flex items-center justify-center rounded-full gradient-button h-14 w-14 -mt-7 mx-auto shadow-lg"
-          onClick={() => handleNavigation("/log-day")}
-        >
-          <Plus className="h-6 w-6" />
-        </button>
-        <button
-          className="flex flex-col items-center justify-center py-3 text-xs"
-          onClick={() => handleNavigation("/nutrition")}
-        >
-          <BookOpen className="h-5 w-5 mb-1 text-brand-brand" />
-          <span className="text-brand-dark">Nutrition</span>
-        </button>
-        {showRecipesNav && (
-          <button
-            className="flex flex-col items-center justify-center py-3 text-xs"
-            onClick={() => handleNavigation("/recipes")}
-          >
-            <UtensilsCrossed className="h-5 w-5 mb-1 text-brand-dark" />
-            <span className="text-brand-dark">Recipes</span>
-          </button>
-        )}
-        {!showRecipesNav && <div />}
-      </nav>
+      <BottomNav active="food-list" />
     </div>
   )
 }

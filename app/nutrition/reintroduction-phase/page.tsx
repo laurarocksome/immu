@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { List, Home, Plus, BookOpen, UtensilsCrossed, User, ArrowLeft, ChevronRight, PlusIcon } from "lucide-react"
 import Logo from "@/app/components/logo"
+import BottomNav from "@/app/components/bottom-nav"
 import Image from "next/image"
 import { createBrowserClient } from "@supabase/ssr"
 
@@ -205,43 +206,7 @@ export default function ReintroductionPhasePage() {
         </div>
       </main>
 
-      {/* Bottom Navigation */}
-      <nav className="bottom-nav grid grid-cols-5 border-t border-brand-dark/10 bg-white/80 backdrop-blur-sm">
-        <button
-          className="flex flex-col items-center justify-center py-3 text-xs"
-          onClick={() => router.push("/food-list")}
-        >
-          <List className="h-5 w-5 mb-1 text-brand-dark" />
-          <span className="text-brand-dark">Products</span>
-        </button>
-        <button
-          className="flex flex-col items-center justify-center py-3 text-xs"
-          onClick={() => router.push("/dashboard")}
-        >
-          <Home className="h-5 w-5 mb-1 text-brand-dark" />
-          <span className="text-brand-dark">Dashboard</span>
-        </button>
-        <button
-          className="flex items-center justify-center rounded-full gradient-button h-14 w-14 -mt-7 mx-auto shadow-lg"
-          onClick={() => router.push("/log-day")}
-        >
-          <Plus className="h-6 w-6" />
-        </button>
-        <button
-          className="flex flex-col items-center justify-center py-3 text-xs text-pink-400"
-          onClick={() => router.push("/nutrition")}
-        >
-          <BookOpen className="h-5 w-5 mb-1 text-pink-400" />
-          <span>Nutrition</span>
-        </button>
-        <button
-          className="flex flex-col items-center justify-center py-3 text-xs"
-          onClick={() => router.push("/recipes")}
-        >
-          <UtensilsCrossed className="h-5 w-5 mb-1 text-brand-dark" />
-          <span className="text-brand-dark">Recipes</span>
-        </button>
-      </nav>
+      <BottomNav active="nutrition" />
     </div>
   )
 }

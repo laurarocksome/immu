@@ -24,6 +24,7 @@ import {
 } from "lucide-react"
 import Logo from "@/app/components/logo"
 import ConfettiCelebration from "@/app/components/confetti-celebration"
+import BottomNav from "@/app/components/bottom-nav"
 import { getSession } from "@/lib/auth"
 import { saveUserProfile, saveUserConditions, saveUserSymptoms, saveDietInfo, saveUserName } from "@/lib/user-data"
 import { Button } from "@/components/ui/button" // Assuming Button component is available
@@ -2615,46 +2616,7 @@ export default function DashboardPage() {
       {/* Confetti celebration */}
       <ConfettiCelebration active={showConfetti} onComplete={() => setShowConfetti(false)} duration={4000} />
 
-      {/* Bottom Navigation */}
-      <nav className="bottom-nav grid grid-cols-5 border-t border-pink-200 bg-white/80 backdrop-blur-sm">
-        {!hiddenPages.includes("food-list") && (
-          <button
-            className="flex flex-col items-center justify-center py-3 text-xs"
-            onClick={() => router.push("/food-list")}
-          >
-            <List className="h-5 w-5 mb-1 text-primary-color" />
-            <span className="text-primary-color">Products</span>
-          </button>
-        )}
-        <button className="flex flex-col items-center justify-center py-3 text-xs text-accent-color">
-          <Home className="h-5 w-5 mb-1 text-accent-color" />
-          <span>Dashboard</span>
-        </button>
-        <button
-          className="flex items-center justify-center rounded-full gradient-button h-14 w-14 -mt-7 mx-auto shadow-lg"
-          onClick={() => router.push("/log-day")}
-        >
-          <Plus className="h-8 w-8" />
-        </button>
-        {!hiddenPages.includes("nutrition") && (
-          <button
-            className="flex flex-col items-center justify-center py-3 text-xs"
-            onClick={() => router.push("/nutrition")}
-          >
-            <BookOpen className="h-5 w-5 mb-1 text-primary-color" />
-            <span className="text-primary-color">Nutrition</span>
-          </button>
-        )}
-        {!hiddenPages.includes("recipes") && (
-          <button
-            className="flex flex-col items-center justify-center py-3 text-xs"
-            onClick={() => router.push("/recipes")}
-          >
-            <UtensilsCrossed className="h-5 w-5 mb-1 text-primary-color" />
-            <span className="text-primary-color">Recipes</span>
-          </button>
-        )}
-      </nav>
+      <BottomNav active="dashboard" />
 
       {showWeightModal && (
           <WeightLogModal
