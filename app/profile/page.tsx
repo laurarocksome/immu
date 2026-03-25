@@ -422,6 +422,13 @@ export default function ProfilePage() {
             </div>
           </div>
 
+          <a
+            href="mailto:laura@rocksome.com?subject=Immu%20Health%20Feedback"
+            className="w-full bg-white border-2 border-brand-primary/30 text-brand-primary hover:border-brand-primary/50 hover:shadow-soft py-4 rounded-full transition-all mb-3 font-medium flex items-center justify-center gap-2"
+          >
+            Contact Support
+          </a>
+
           <button
             onClick={async () => {
               try {

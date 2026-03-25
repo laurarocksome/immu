@@ -66,13 +66,13 @@ export default function FAQPage() {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-brand-lightest to-white text-brand-dark">
       {/* Header */}
-      <header className="p-4 flex justify-between items-center bg-brand-dark text-white">
-        <button onClick={handleBack} className="flex items-center text-white/80 hover:text-white">
-          <ArrowLeft className="h-5 w-5 mr-1" />
-          <span>Back</span>
+      <header className="p-4 border-b border-pink-200/30 flex justify-between items-center bg-gradient-to-r from-pink-300 to-peach-300">
+        <button onClick={handleBack} className="flex items-center gap-1 bg-white/20 rounded-full px-3 py-1.5">
+          <ArrowLeft className="h-4 w-4 text-white" />
+          <span className="text-sm font-medium text-white">Back</span>
         </button>
         <Logo variant="light" />
-        <div className="w-16" />
+        <div className="w-20" />
       </header>
 
       {/* Main Content */}
