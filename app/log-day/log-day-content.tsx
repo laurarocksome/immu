@@ -175,8 +175,8 @@ export default function LogDayContent() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <h2 className="text-xl font-bold text-brand-dark">Log Saved!</h2>
-        <p className="text-brand-dark/60">Redirecting to dashboard...</p>
+        <h2 className="text-xl font-bold text-brand-dark">{t("logDay.saved", "Log Saved!")}</h2>
+        <p className="text-brand-dark/60">{t("logDay.redirecting", "Redirecting to dashboard...")}</p>
       </div>
     </div>
   )
@@ -188,7 +188,7 @@ export default function LogDayContent() {
         <button onClick={() => router.back()}
           className="absolute left-4 text-white/80 hover:text-white transition-colors flex items-center">
           <ArrowLeft className="h-5 w-5 mr-1" />
-          <span>Back</span>
+          <span>{t("common.back", "Back")}</span>
         </button>
         <Logo variant="light" />
       </header>
@@ -196,35 +196,35 @@ export default function LogDayContent() {
       {/* Phase indicator */}
       <div className="text-center pt-4 pb-2">
         <p className="text-sm text-brand-dark/60">{currentPhase} – Day {currentDay}</p>
-        <h1 className="text-2xl font-bold text-brand-dark">Log Your Day</h1>
+        <h1 className="text-2xl font-bold text-brand-dark">{t("logDay.title", "Log Your Day")}</h1>
       </div>
 
       <main className="flex-1 px-4 pb-32 max-w-lg mx-auto w-full space-y-4 pt-4">
 
         {/* Wellness */}
         <div className="glass-card p-6 space-y-6">
-          <h2 className="text-lg font-semibold text-brand-dark">How are you feeling?</h2>
-          <ScoreRow label="Mood" icon={Sun} value={mood} onChange={setMood} lowLabel="Low" highLabel="Great" />
-          <ScoreRow label="Sleep Quality" icon={Moon} value={sleep} onChange={setSleep} lowLabel="Poor" highLabel="Great" />
-          <ScoreRow label="Stress Level" icon={Brain} value={stress} onChange={setStress} lowLabel="High" highLabel="Low" />
+          <h2 className="text-lg font-semibold text-brand-dark">{t("logDay.howFeeling", "How are you feeling?")}</h2>
+          <ScoreRow label={t("logDay.mood", "Mood")} icon={Sun} value={mood} onChange={setMood} lowLabel={t("logDay.moodLow", "Low")} highLabel={t("logDay.moodHigh", "Great")} />
+          <ScoreRow label={t("logDay.sleep", "Sleep Quality")} icon={Moon} value={sleep} onChange={setSleep} lowLabel={t("logDay.sleepLow", "Poor")} highLabel={t("logDay.sleepHigh", "Great")} />
+          <ScoreRow label={t("logDay.stress", "Stress Level")} icon={Brain} value={stress} onChange={setStress} lowLabel={t("logDay.stressLow", "High")} highLabel={t("logDay.stressHigh", "Low")} />
         </div>
 
         {/* AIP Compliance */}
         {currentPhase === "Elimination" && (
           <div className="glass-card p-6">
-            <h2 className="text-lg font-semibold text-brand-dark mb-4">AIP Compliance</h2>
+            <h2 className="text-lg font-semibold text-brand-dark mb-4">{t("logDay.aipCompliance", "AIP Compliance")}</h2>
             <div className="flex gap-3">
               <button onClick={() => setAipCompliant(true)}
                 className={`flex-1 py-3 rounded-full border-2 font-medium transition-all ${
                   aipCompliant ? "bg-green-50 border-green-400 text-green-700" : "border-pink-200 text-brand-dark/60"
                 }`}>
-                100% Compliant
+                {t("logDay.aipCompliant", "100% Compliant")}
               </button>
               <button onClick={() => { setAipCompliant(false); setShowRestartModal(true) }}
                 className={`flex-1 py-3 rounded-full border-2 font-medium transition-all ${
                   !aipCompliant ? "bg-orange-50 border-orange-400 text-orange-700" : "border-pink-200 text-brand-dark/60"
                 }`}>
-                Had exceptions
+                {t("logDay.hadExceptions", "Had exceptions")}
               </button>
             </div>
           </div>
@@ -233,24 +233,24 @@ export default function LogDayContent() {
         {/* Restart modal */}
         {currentPhase === "Elimination" && showRestartModal && (
           <div className="glass-card p-6 border-orange-200 bg-orange-50">
-            <h2 className="text-lg font-semibold text-orange-800 mb-2">Restart Your Diet?</h2>
+            <h2 className="text-lg font-semibold text-orange-800 mb-2">{t("logDay.restart.title", "Restart Your Diet?")}</h2>
             <p className="text-sm text-orange-700 mb-5">
-              AIP allows zero exceptions during elimination. To get accurate results, restart from Day 1.
+              {t("logDay.restart.description", "AIP allows zero exceptions during elimination. To get accurate results, restart from Day 1.")}
             </p>
             <div className="space-y-4">
               <div className="flex gap-3">
                 <button onClick={() => { setRestartPhase("elimination"); setRestartDays(90) }}
                   className={`flex-1 py-2 rounded-full border-2 text-sm font-medium transition-all ${
                     restartPhase === "elimination" ? "bg-pink-100 border-pink-400 text-pink-800" : "border-gray-200 text-brand-dark/60"
-                  }`}>Elimination</button>
+                  }`}>{t("logDay.restart.eliminationOnly", "Elimination")}</button>
                 <button onClick={() => { setRestartPhase("adaptation"); setRestartDays(118) }}
                   className={`flex-1 py-2 rounded-full border-2 text-sm font-medium transition-all ${
                     restartPhase === "adaptation" ? "bg-pink-100 border-pink-400 text-pink-800" : "border-gray-200 text-brand-dark/60"
-                  }`}>Adaptation + Elimination</button>
+                  }`}>{t("logDay.restart.adaptationElimination", "Adaptation + Elimination")}</button>
               </div>
               <div>
                 <label className="block text-sm text-brand-dark/70 mb-1">
-                  Elimination duration: {restartPhase === "adaptation" ? restartDays - 28 : restartDays} days
+                  {t("logDay.restart.eliminationDuration", "Elimination duration:")} {restartPhase === "adaptation" ? restartDays - 28 : restartDays} {t("common.days", "days")}
                 </label>
                 <input type="range"
                   min={restartPhase === "adaptation" ? 58 : 30}
@@ -269,9 +269,9 @@ export default function LogDayContent() {
                   localStorage.setItem("userAdaptationChoice", restartPhase === "adaptation" ? "Yes" : "No")
                   setShowRestartModal(false)
                   router.push("/dashboard")
-                }} className="flex-1 gradient-button text-center">Restart Diet</button>
+                }} className="flex-1 gradient-button text-center">{t("logDay.restart.confirm", "Restart Diet")}</button>
                 <button onClick={() => { setShowRestartModal(false); setAipCompliant(true) }}
-                  className="flex-1 secondary-button text-center">Cancel</button>
+                  className="flex-1 secondary-button text-center">{t("common.cancel", "Cancel")}</button>
               </div>
             </div>
           </div>
@@ -280,7 +280,7 @@ export default function LogDayContent() {
         {/* Period Tracking */}
         <div className="glass-card p-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-brand-dark">On Period?</h2>
+            <h2 className="text-lg font-semibold text-brand-dark">{t("logDay.onPeriod", "On Period?")}</h2>
             <button onClick={() => setOnPeriod(!onPeriod)}
               className={`w-14 h-8 rounded-full transition-all ${onPeriod ? "bg-pink-400" : "bg-gray-200"}`}>
               <div className={`w-6 h-6 rounded-full bg-white shadow-sm transition-transform mx-1 ${onPeriod ? "translate-x-6" : "translate-x-0"}`} />
@@ -290,7 +290,7 @@ export default function LogDayContent() {
 
         {/* Symptoms */}
         <div className="glass-card p-6">
-          <h2 className="text-lg font-semibold text-brand-dark mb-4">Symptoms</h2>
+          <h2 className="text-lg font-semibold text-brand-dark mb-4">{t("logDay.symptoms", "Symptoms")}</h2>
 
           {symptoms.length > 0 && (
             <div className="space-y-5 mb-5">
@@ -299,10 +299,10 @@ export default function LogDayContent() {
                   <div className="flex items-center justify-between mb-2">
                     <span className="font-medium text-brand-dark">{symptom.name}</span>
                     <button onClick={() => removeSymptom(symptom.id)}
-                      className="text-xs text-pink-400 hover:text-pink-600">Remove</button>
+                      className="text-xs text-pink-400 hover:text-pink-600">{t("logDay.remove", "Remove")}</button>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-brand-dark/50 w-10">None</span>
+                    <span className="text-xs text-brand-dark/50 w-10">{t("logDay.symptom.none", "None")}</span>
                     <div className="flex gap-2">
                       {[1,2,3,4,5].map(score => (
                         <button key={score} onClick={() => updateSymptomSeverity(symptom.id, score)}
@@ -313,7 +313,7 @@ export default function LogDayContent() {
                           }`}>{score}</button>
                       ))}
                     </div>
-                    <span className="text-xs text-brand-dark/50 w-10 text-right">Severe</span>
+                    <span className="text-xs text-brand-dark/50 w-10 text-right">{t("logDay.symptom.severe", "Severe")}</span>
                   </div>
                 </div>
               ))}
@@ -334,9 +334,9 @@ export default function LogDayContent() {
 
         {/* Notes */}
         <div className="glass-card p-6">
-          <h2 className="text-lg font-semibold text-brand-dark mb-4">Notes</h2>
+          <h2 className="text-lg font-semibold text-brand-dark mb-4">{t("logDay.notes", "Notes")}</h2>
           <textarea value={notes} onChange={e => setNotes(e.target.value)}
-            placeholder="Any additional notes about your day..."
+            placeholder={t("logDay.notes.placeholder", "Any additional notes about your day...")}
             className="w-full min-h-[100px] p-3 rounded-xl bg-white/80 border border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-400 text-brand-dark resize-none" />
         </div>
       </main>
@@ -346,7 +346,7 @@ export default function LogDayContent() {
         <div className="max-w-lg mx-auto">
           <button onClick={handleSave} disabled={isSaving}
             className="w-full gradient-button py-4 text-lg disabled:opacity-60">
-            {isSaving ? "Saving..." : "Save Log"}
+            {isSaving ? t("logDay.saving", "Saving...") : t("logDay.save", "Save Log")}
           </button>
         </div>
       </div>

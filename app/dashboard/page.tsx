@@ -33,6 +33,7 @@ import { WeightLogModal } from "@/components/weight-log-modal" // Imported Weigh
 import { createClient } from "@/lib/supabase/client" // Import createClient from supabase client
 import { getUserStreak, getSymptomHistory, getWellnessHistory } from "@/lib/user-data"
 import { getWeightLogs as fetchWeightLogs } from "@/lib/weight-data" // Renamed to avoid redeclaration
+import { useLanguage } from "@/lib/i18n/context"
 
 // import { getUserProfile, loadDietInfo, loadTrackedDates, calculateDietInfo } from "@/lib/dashboard-data" // Imported new functions
 
@@ -159,6 +160,7 @@ interface WeightChartData {
 export default function DashboardPage() {
   // Changed from Dashboard to DashboardPage
   const router = useRouter()
+  const { t } = useLanguage()
   const [conditions, setConditions] = useState<string[]>([])
   const [showWelcome, setShowWelcome] = useState(false)
   const [userName, setUserName] = useState("")
@@ -1707,11 +1709,11 @@ export default function DashboardPage() {
   // Function to get the phase display text
   const getPhaseDisplayText = () => {
     if (isAdaptationPhase) {
-      return `Adaptation Phase - Day ${adaptationDay}`
+      return `${t("dashboard.phase.adaptation", "Adaptation")} - Day ${adaptationDay}`
     } else if (currentPhase === "elimination") {
-      return `Elimination Phase - ${eliminationPhasePercentage}% complete`
+      return `${t("dashboard.phase.elimination", "Elimination")} - ${eliminationPhasePercentage}% complete`
     } else {
-      return `Reintroduction Phase - Day ${reintroductionDay}`
+      return `${t("dashboard.phase.reintroduction", "Reintroduction")} - Day ${reintroductionDay}`
     }
   }
 
@@ -1767,15 +1769,15 @@ export default function DashboardPage() {
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
           <div className="glass-card p-6 max-w-md w-full">
             <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold mb-2 text-primary-color">Welcome to IMMU!</h2>
+              <h2 className="text-2xl font-bold mb-2 text-primary-color">{t("dashboard.welcome.title", "Welcome to IMMU!")}</h2>
               <p className="text-secondary-color">
-                Your profile is complete and your personalized AIP journey is ready.
+                {t("dashboard.welcome.subtitle", "Your profile is complete and your personalized AIP journey is ready.")}
               </p>
             </div>
 
             {conditions.length > 0 && (
               <div className="mb-6">
-                <p className="font-medium mb-2 text-primary-color">Your Conditions:</p>
+                <p className="font-medium mb-2 text-primary-color">{t("dashboard.welcome.conditions", "Your Conditions:")}</p>
                 <div className="flex flex-wrap gap-2">
                   {conditions.map((condition, index) => (
                     <span key={index} className="bg-pink-100 text-primary-color px-3 py-1 rounded-full text-sm">
@@ -1793,7 +1795,7 @@ export default function DashboardPage() {
             </p>
 
             <button onClick={handleCloseWelcome} className="w-full gradient-button py-3 rounded-full">
-              Get Started
+              {t("dashboard.welcome.getStarted", "Get Started")}
             </button>
           </div>
         </div>
@@ -1822,7 +1824,7 @@ export default function DashboardPage() {
       <main className="flex-1 p-6 overflow-auto">
         {/* Date and Greeting */}
         <div className="mb-6">
-          <h2 className="text-2xl font-bold text-primary-color">Hello!</h2>
+          <h2 className="text-2xl font-bold text-primary-color">{t("dashboard.hello", "Hello!")}</h2>
           <p className="text-secondary-color">{currentDate}</p>
         </div>
 
@@ -1868,12 +1870,12 @@ export default function DashboardPage() {
           {/* Streak Card */}
           <div className="glass-card p-4 min-w-[120px]">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm text-secondary-color">Streak</h3>
-              <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full">Active</span>
+              <h3 className="text-sm text-secondary-color">{t("dashboard.streak", "Streak")}</h3>
+              <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full">{t("common.active", "Active")}</span>
             </div>
             <div className="flex items-end">
               <p className="text-2xl font-bold text-primary-color">{streakDays}</p>
-              <p className="ml-1 text-sm text-secondary-color">days</p>
+              <p className="ml-1 text-sm text-secondary-color">{t("common.days", "days")}</p>
             </div>
           </div>
         </div>
@@ -1881,9 +1883,9 @@ export default function DashboardPage() {
         {/* Calendar Section */}
         <div className="glass-card p-5 mb-6">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="font-medium text-primary-color">Calendar</h3>
+            <h3 className="font-medium text-primary-color">{t("calendar.title", "Calendar")}</h3>
             <button className="text-accent-color text-sm flex items-center" onClick={() => router.push("/calendar")}>
-              View Calendar
+              {t("dashboard.viewCalendar", "View Calendar")}
               <ArrowRight className="h-4 w-4 ml-1" />
             </button>
           </div>
@@ -1932,12 +1934,12 @@ export default function DashboardPage() {
                       <>
                         <p className="text-sm text-secondary-color">
                           {currentPhase === "adaptation"
-                            ? "Adaptation Phase"
+                            ? t("dashboard.phase.adaptation", "Adaptation") + " Phase"
                             : currentPhase === "elimination"
-                              ? "Elimination Phase"
-                              : "Reintroduction Phase"}
+                              ? t("dashboard.phase.elimination", "Elimination") + " Phase"
+                              : t("dashboard.phase.reintroduction", "Reintroduction") + " Phase"}
                         </p>
-                        <p className="font-bold text-primary-color">{daysRemaining} days left</p>
+                        <p className="font-bold text-primary-color">{daysRemaining} {t("dashboard.daysLeft", "days left")}</p>
                       </>
                     )
                   })()}
@@ -2003,7 +2005,7 @@ export default function DashboardPage() {
                   : "text-secondary-color hover:text-primary-color"
               }`}
             >
-              Symptom Improvement
+              {t("dashboard.tab.symptoms", "Symptom Improvement")}
             </button>
             <button
               onClick={() => setActiveTab("wellness")}
@@ -2013,7 +2015,7 @@ export default function DashboardPage() {
                   : "text-secondary-color hover:text-primary-color"
               }`}
             >
-              Wellness Score
+              {t("dashboard.tab.wellness", "Wellness Score")}
             </button>
             <button
               onClick={() => setActiveTab("weight")}
@@ -2023,14 +2025,14 @@ export default function DashboardPage() {
                   : "text-secondary-color hover:text-primary-color"
               }`}
             >
-              Weight
+              {t("dashboard.tab.weight", "Weight")}
             </button>
           </div>
 
           {/* Tab Content */}
           <div className="flex justify-between items-center mb-4">
             <button className="text-accent-color text-sm flex items-center" onClick={() => router.push("/log-day")}>
-              Log Day
+              {t("dashboard.logDay", "Log Day")}
               <ChevronRight className="h-4 w-4 ml-1" />
             </button>
           </div>
@@ -2054,8 +2056,7 @@ export default function DashboardPage() {
                 // Show empty state without chart when no data
                 <div className="text-center text-sm text-secondary-color p-6 bg-pink-50 rounded-lg min-h-[200px] flex items-center justify-center">
                   <p className="max-w-md">
-                    Log your first day to start tracking your symptoms. You can log your symptom severity daily and
-                    watch how they improve over time.
+                    {t("dashboard.symptoms.empty", "Log your first day to start tracking your symptoms. You can log your symptom severity daily and watch how they improve over time.")}
                   </p>
                 </div>
               ) : (
@@ -2063,11 +2064,11 @@ export default function DashboardPage() {
                   <div className="relative h-[300px]">
                     {/* Y-axis labels */}
                     <div className="absolute left-0 top-0 bottom-10 w-10 md:w-16 flex flex-col justify-between text-[10px] md:text-xs text-secondary-color py-2 pointer-events-none z-10">
-                      <span>Severe</span>
-                      <span>Moderate</span>
-                      <span>Mild</span>
-                      <span>Very mild</span>
-                      <span>None</span>
+                      <span>{t("dashboard.symptom.severe", "Severe")}</span>
+                      <span>{t("dashboard.symptom.moderate", "Moderate")}</span>
+                      <span>{t("dashboard.symptom.mild", "Mild")}</span>
+                      <span>{t("dashboard.symptom.veryMild", "Very mild")}</span>
+                      <span>{t("dashboard.symptom.none", "None")}</span>
                     </div>
 
                     {/* Vertical grid + date labels */}
@@ -2190,15 +2191,14 @@ export default function DashboardPage() {
                 // Show empty state without chart when no data
                 <div className="text-center text-sm text-secondary-color p-6 bg-peach-50 rounded-lg min-h-[200px] flex items-center justify-center">
                   <p className="max-w-md">
-                    Log your first day to start tracking your wellness. Your wellness score is calculated from sleep
-                    quality, stress levels, and overall mood.
+                  {t("dashboard.wellness.empty", "Log your first day to start tracking your wellness score over time. Your score is calculated from your mood, sleep quality, and stress levels.")}
                   </p>
                 </div>
               ) : (
                 <>
                   {/* Wellness score summary row */}
                   <div className="flex items-center justify-between mb-3 px-1">
-                    <span className="text-sm text-secondary-color">Wellness Score</span>
+                    <span className="text-sm text-secondary-color">{t("dashboard.tab.wellness", "Wellness Score")}</span>
                     <div className="flex items-center gap-2">
                       <div
                         className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md"
@@ -2343,8 +2343,7 @@ export default function DashboardPage() {
 
                   {!hasLoggedWellness && (
                     <div className="mt-3 text-center text-sm text-secondary-color p-2 bg-peach-50 rounded-lg">
-                      Log your first day to start tracking your wellness score over time. Your score is calculated from
-                      your mood, sleep quality, and stress levels.
+                      {t("dashboard.wellness.empty", "Log your first day to start tracking your wellness score over time. Your score is calculated from your mood, sleep quality, and stress levels.")}
                     </div>
                   )}
                 </>
@@ -2358,14 +2357,13 @@ export default function DashboardPage() {
                 <div className="text-center text-sm text-secondary-color p-6 bg-green-50 rounded-lg min-h-[200px] flex items-center justify-center">
                   <div>
                     <p className="max-w-md mb-4">
-                      Start tracking your weight to see how your body responds to the AIP diet. Log your weight
-                      regularly to see trends over time.
+                      {t("dashboard.weight.empty", "Start tracking your weight to see how your body responds to the AIP diet. Log your weight regularly to see trends over time.")}
                     </p>
                     <Button
                       onClick={() => setShowWeightModal(true)}
                       className="bg-green-400 hover:bg-green-500 text-white"
                     >
-                      Log First Weight
+                      {t("dashboard.weight.logFirst", "Log First Weight")}
                     </Button>
                   </div>
                 </div>
@@ -2458,14 +2456,14 @@ export default function DashboardPage() {
                       const diff = latestWeight !== null && firstWeight !== null ? latestWeight - firstWeight : null
                       return (
                         <div className="absolute top-3 right-2 z-20 text-right bg-white/80 rounded-xl px-2 py-1 backdrop-blur-sm">
-                          <p className="text-[10px] text-secondary-color">Current Weight</p>
+                          <p className="text-[10px] text-secondary-color">{t("dashboard.weight.current", "Current Weight")}</p>
                           <div className="text-xl font-bold text-green-600 leading-tight">
                             {latestWeight !== null ? latestWeight.toFixed(1) : "—"}{" "}
                             <span className="text-sm font-normal">{weightUnit}</span>
                           </div>
                           {diff !== null && weightData.length > 1 && (
                             <p className="text-[10px] text-secondary-color">
-                              {diff > 0 ? "+" : ""}{diff.toFixed(1)} {weightUnit} from start
+                              {diff > 0 ? "+" : ""}{diff.toFixed(1)} {weightUnit} {t("dashboard.weight.fromStart", "from start")}
                             </p>
                           )}
                         </div>
@@ -2479,7 +2477,7 @@ export default function DashboardPage() {
                       onClick={() => setShowWeightModal(true)}
                       className="bg-green-400 hover:bg-green-500 text-white"
                     >
-                      Update Weight
+                      {t("dashboard.weight.update", "Update Weight")}
                     </Button>
                   </div>
                 </div>
@@ -2493,16 +2491,16 @@ export default function DashboardPage() {
         <div className="glass-card p-6 mb-6">
           <div className="flex items-center mb-4">
             <LightbulbIcon className="h-5 w-5 mr-2 text-amber-500" />
-            <h3 className="font-medium text-xl text-primary-color">Daily Observations</h3>
+            <h3 className="font-medium text-xl text-primary-color">{t("dashboard.observations.title", "Daily Observations")}</h3>
           </div>
 
           {dailyObservations === null ? (
             <div className="text-center text-sm text-secondary-color p-4 bg-pink-50 rounded-lg">
-              Log your symptoms to see daily insights.
+              {t("dashboard.observations.logFirst", "Log your symptoms to see daily insights.")}
             </div>
           ) : dailyObservations.length === 0 ? (
             <div className="text-center text-sm text-secondary-color p-4 bg-pink-50 rounded-lg">
-              No insights for today. Try logging your symptoms and wellness data.
+              {t("dashboard.observations.noInsights", "No insights for today. Try logging your symptoms and wellness data.")}
             </div>
           ) : (
             <ul className="space-y-3">
@@ -2534,7 +2532,7 @@ export default function DashboardPage() {
           <div className="glass-card p-6 mb-6">
             <div className="flex items-center mb-4">
               <ListChecks className="h-5 w-5 mr-2 text-blue-500" />
-              <h3 className="font-medium text-xl text-primary-color">Daily To-Do List</h3>
+              <h3 className="font-medium text-xl text-primary-color">{t("dashboard.todo.title", "Daily To-Do List")}</h3>
             </div>
 
             <div className="mb-2">
@@ -2571,7 +2569,7 @@ export default function DashboardPage() {
             </ul>
 
             <div className="mt-4 text-center">
-              <p className="text-xs text-secondary-color">Check off items as you complete them throughout the day</p>
+              <p className="text-xs text-secondary-color">{t("dashboard.todo.subtitle", "Check off items as you complete them throughout the day")}</p>
             </div>
           </div>
         )}
