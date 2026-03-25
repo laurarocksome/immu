@@ -628,7 +628,7 @@ export default function FoodListPage() {
                 products.length > 0 && (
                   <div key={status} className="mb-6">
                     <h3 className={`inline-block px-3 py-1 rounded-full text-sm mb-3 ${getStatusClasses(status)}`}>
-                      {status} ({products.length})
+                      {status === "Can eat" ? "Can consume" : status === "Can't eat" ? "Can't consume" : status} ({products.length})
                     </h3>
 
                     <div className="space-y-2">
@@ -686,8 +686,8 @@ export default function FoodListPage() {
                                 onChange={(e) => updateProductStatus(product.name, e.target.value)}
                                 className={`px-2 py-1 rounded text-xs appearance-none pr-6 cursor-pointer ${getStatusClasses(getProductStatus(product))}`}
                               >
-                                <option value="Can eat">Can eat</option>
-                                <option value="Can't eat">Can't eat</option>
+                                <option value="Can eat">Can consume</option>
+                                <option value="Can't eat">Can't consume</option>
                                 <option value="Under evaluation">Under evaluation</option>
                               </select>
                               <ChevronDown className="absolute right-1 top-1/2 transform -translate-y-1/2 h-3 w-3 pointer-events-none" />
@@ -772,8 +772,8 @@ export default function FoodListPage() {
                       onChange={(e) => updateProductStatus(product.name, e.target.value)}
                       className={`px-2 py-1 rounded text-xs appearance-none pr-6 cursor-pointer ${getStatusClasses(getProductStatus(product))}`}
                     >
-                      <option value="Can eat">Can eat</option>
-                      <option value="Can't eat">Can't eat</option>
+                      <option value="Can eat">Can consume</option>
+                      <option value="Can't eat">Can't consume</option>
                       <option value="Under evaluation">Under evaluation</option>
                     </select>
                     <ChevronDown className="absolute right-1 top-1/2 transform -translate-y-1/2 h-3 w-3 pointer-events-none" />
