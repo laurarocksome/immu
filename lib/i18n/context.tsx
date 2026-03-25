@@ -33,12 +33,17 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       return
     }
     const supabase = createClient()
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("translations")
       .select("key, value")
       .eq("locale", loc)
 
-    if (data) {
+    if (error) {
+      console.error("[i18n] Failed to load translations for locale:", loc, error)
+    }
+    console.log("[i18n] Loaded", data?.length ?? 0, "translations for locale:", loc)
+
+    if (data && data.length > 0) {
       const map: Translations = {}
       data.forEach(({ key, value }) => { map[key] = value })
       cache[loc] = map
@@ -48,7 +53,8 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   useEffect(() => {
-    const saved = localStorage.getItem("immu_locale") || "en"
+    const storedLocale = localStorage.getItem("immu_locale")
+    const saved = storedLocale || "en"
     setLocaleState(saved)
     loadTranslations(saved)
 
@@ -62,7 +68,14 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
             .select("locale")
             .eq("user_id", user.id)
             .single()
-          if (data?.locale && data.locale !== saved) {
+
+          if (storedLocale) {
+            // User has an explicit local preference — sync DB to match if needed
+            if (data?.locale !== storedLocale) {
+              await supabase.from("user_profiles").update({ locale: storedLocale }).eq("user_id", user.id)
+            }
+          } else if (data?.locale && data.locale !== saved) {
+            // No local preference yet — load from DB (e.g. user logging in on a new device)
             setLocaleState(data.locale)
             localStorage.setItem("immu_locale", data.locale)
             loadTranslations(data.locale)
