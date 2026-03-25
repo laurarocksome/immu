@@ -294,11 +294,11 @@ export default function FoodListPage() {
       return userModifiedStatuses[product.name]
     }
 
-    const dbStatus = product.status || (product.is_aip ? "Can eat" : "Can't eat")
+    const dbStatus = product.status || (product.is_aip ? "Can consume" : "Can't consume")
 
     // 2. Reintroduction: non-AIP moves to "Under evaluation"
     if (currentPhase === "reintroduction") {
-      return dbStatus === "Can't eat" ? "Under evaluation" : "Can eat"
+      return dbStatus === "Can't consume" ? "Under evaluation" : "Can consume"
     }
 
     // 3. Elimination: use DB status directly
@@ -317,14 +317,14 @@ export default function FoodListPage() {
       const hasSugar = tags.includes("sugar") || containsSugar(product)
 
       // Week 1 (days 1-7): restrict caffeine
-      if (adaptationDay <= 7 && hasCaffeine) return "Can't eat"
+      if (adaptationDay <= 7 && hasCaffeine) return "Can't consume"
       // Week 2 (days 8-14): + alcohol
-      if (adaptationDay <= 14 && (hasCaffeine || hasAlcohol)) return "Can't eat"
+      if (adaptationDay <= 14 && (hasCaffeine || hasAlcohol)) return "Can't consume"
       // Week 3-4 (days 15-28): + sugar
-      if (adaptationDay <= 28 && (hasCaffeine || hasAlcohol || hasSugar)) return "Can't eat"
+      if (adaptationDay <= 28 && (hasCaffeine || hasAlcohol || hasSugar)) return "Can't consume"
 
       // Everything else is allowed during adaptation
-      return "Can eat"
+      return "Can consume"
     }
 
     return dbStatus
@@ -353,13 +353,13 @@ export default function FoodListPage() {
     .sort((a, b) => {
       // Update the status order in the sort function
       if (sortBy === "status") {
-        // Sort by status (Can eat, Can't eat, Under evaluation)
+        // Sort by status (Can consume, Can't consume, Under evaluation)
         const statusA = getProductStatus(a)
         const statusB = getProductStatus(b)
 
         const statusOrder = {
-          "Can eat": 0,
-          "Can't eat": 1,
+          "Can consume": 0,
+          "Can't consume": 1,
           "Under evaluation": 2,
         }
 
@@ -369,10 +369,10 @@ export default function FoodListPage() {
       return a.name.localeCompare(b.name)
     })
 
-  // Update the productsByStatus object to remove "Can't eat yet"
+  // Update the productsByStatus object to remove "Can't consume yet"
   const productsByStatus = {
-    "Can eat": filteredProducts.filter((p) => getProductStatus(p) === "Can eat"),
-    "Can't eat": filteredProducts.filter((p) => getProductStatus(p) === "Can't eat"),
+    "Can consume": filteredProducts.filter((p) => getProductStatus(p) === "Can consume"),
+    "Can't consume": filteredProducts.filter((p) => getProductStatus(p) === "Can't consume"),
     "Under evaluation": filteredProducts.filter((p) => getProductStatus(p) === "Under evaluation"),
   }
 
@@ -400,9 +400,9 @@ export default function FoodListPage() {
   // Get classes for status badge
   const getStatusClasses = (status: string) => {
     switch (status) {
-      case "Can eat":
+      case "Can consume":
         return "bg-green-100 text-green-800"
-      case "Can't eat":
+      case "Can't consume":
         return "bg-red-100 text-red-800"
       case "Under evaluation":
         return "bg-peach-100 text-peach-800"
@@ -650,8 +650,8 @@ export default function FoodListPage() {
                                 onChange={(e) => updateProductStatus(product.name, e.target.value)}
                                 className={`px-2 py-1 rounded text-xs appearance-none pr-6 cursor-pointer ${getStatusClasses(getProductStatus(product))}`}
                               >
-                                <option value="Can eat">Can eat</option>
-                                <option value="Can't eat">Can't eat</option>
+                                <option value="Can consume">Can consume</option>
+                                <option value="Can't consume">Can't consume</option>
                                 <option value="Under evaluation">Under evaluation</option>
                               </select>
                               <ChevronDown className="absolute right-1 top-1/2 transform -translate-y-1/2 h-3 w-3 pointer-events-none" />
@@ -720,8 +720,8 @@ export default function FoodListPage() {
                       onChange={(e) => updateProductStatus(product.name, e.target.value)}
                       className={`px-2 py-1 rounded text-xs appearance-none pr-6 cursor-pointer ${getStatusClasses(getProductStatus(product))}`}
                     >
-                      <option value="Can eat">Can eat</option>
-                      <option value="Can't eat">Can't eat</option>
+                      <option value="Can consume">Can consume</option>
+                      <option value="Can't consume">Can't consume</option>
                       <option value="Under evaluation">Under evaluation</option>
                     </select>
                     <ChevronDown className="absolute right-1 top-1/2 transform -translate-y-1/2 h-3 w-3 pointer-events-none" />
