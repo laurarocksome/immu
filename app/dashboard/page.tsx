@@ -523,7 +523,7 @@ export default function DashboardPage() {
           { id: "rest_day", text: "Rest day — no new food", isSpecial: true },
           ...commonItems,
           { id: "observe_symptoms", text: "Observe for any delayed symptoms" },
-          { id: "update_product_list", text: "Update the product list with 'Can eat' or 'Can't eat'" },
+          { id: "update_product_list", text: "Update the product list with 'Can consume' or 'Can't consume'" },
         ]
       case 3:
         return [
@@ -535,7 +535,7 @@ export default function DashboardPage() {
         return [
           { id: "eat_vegetables", text: "Eat a variety of vegetables today" },
           ...commonItems,
-          { id: "update_product_list", text: "Update the product list with 'Can eat' or 'Can't eat'" },
+          { id: "update_product_list", text: "Update the product list with 'Can consume' or 'Can't consume'" },
         ]
       case 5:
         return [
@@ -549,7 +549,7 @@ export default function DashboardPage() {
         return [
           { id: "stretching", text: "Do a stretching session" },
           ...commonItems,
-          { id: "update_product_list", text: "Update the product list with 'Can eat' or 'Can't eat'" },
+          { id: "update_product_list", text: "Update the product list with 'Can consume' or 'Can't consume'" },
         ]
       case 7:
         return [
@@ -566,7 +566,7 @@ export default function DashboardPage() {
         return [
           { id: "cook_dinner", text: "Cook a nourishing veggie-based dinner" },
           ...commonItems,
-          { id: "update_product_list", text: "Update the product list with 'Can eat' or 'Can't eat'" },
+          { id: "update_product_list", text: "Update the product list with 'Can consume' or 'Can't consume'" },
         ]
       case 9:
         return [
@@ -578,7 +578,7 @@ export default function DashboardPage() {
         return [
           { id: "mocktail", text: "Try a mocktail as a reward" },
           ...commonItems,
-          { id: "update_product_list", text: "Update the product list with 'Can eat' or 'Can't eat'" },
+          { id: "update_product_list", text: "Update the product list with 'Can consume' or 'Can't consume'" },
         ]
       case 11:
         return [
@@ -594,7 +594,7 @@ export default function DashboardPage() {
       case 12:
         return [
           ...commonItems,
-          { id: "update_product_list", text: "Update the product list with 'Can eat' or 'Can't eat'" },
+          { id: "update_product_list", text: "Update the product list with 'Can consume' or 'Can't consume'" },
         ]
       case 13:
         return [
@@ -607,7 +607,7 @@ export default function DashboardPage() {
         return [
           { id: "meditate_longer", text: "Meditate for 20 minutes" },
           ...commonItems,
-          { id: "update_product_list", text: "Update the product list with 'Can eat' or 'Can't eat'" },
+          { id: "update_product_list", text: "Update the product list with 'Can consume' or 'Can't consume'" },
         ]
       case 15:
         return [
@@ -687,7 +687,7 @@ export default function DashboardPage() {
         ]
       case 27:
         return [
-          { id: "review_list", text: "Review your personal 'Can eat' list" },
+          { id: "review_list", text: "Review your personal 'Can consume' list" },
           ...commonItems,
           { id: "calming_activity", text: "Plan a calming activity" },
         ]
