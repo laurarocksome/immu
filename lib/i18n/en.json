@@ -150,5 +150,6 @@
   "onboarding.adaptation.no": "No, start directly with elimination",
   "weightModal.title": "Log Weight",
   "weightModal.save": "Save Weight",
-  "weightModal.cancel": "Cancel"
+  "weightModal.cancel": "Cancel",
+  "common.notSet": "Not set"
 }

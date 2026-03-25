@@ -157,6 +157,7 @@
   ('en', 'weightModal.title', 'Log Weight'),
   ('en', 'weightModal.save', 'Save Weight'),
   ('en', 'weightModal.cancel', 'Cancel'),
+  ('en', 'common.notSet', 'Not set'),
   ('lt', 'common.back', 'Atgal'),
   ('lt', 'common.edit', 'Redaguoti'),
   ('lt', 'common.cancel', 'Atšaukti'),
@@ -308,4 +309,5 @@
   ('lt', 'onboarding.adaptation.no', 'Ne, pradėti tiesiogiai nuo eliminacijos'),
   ('lt', 'weightModal.title', 'Įrašyti svorį'),
   ('lt', 'weightModal.save', 'Išsaugoti svorį'),
-  ('lt', 'weightModal.cancel', 'Atšaukti');
+  ('lt', 'weightModal.cancel', 'Atšaukti'),
+  ('lt', 'common.notSet', 'Nenustatyta');

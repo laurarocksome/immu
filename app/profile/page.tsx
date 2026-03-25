@@ -235,7 +235,7 @@ export default function ProfilePage() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-brand-lightest to-white text-brand-dark">
-        <p>Loading profile...</p>
+        <p>{t("profile.loading", "Loading profile...")}</p>
       </div>
     )
   }
@@ -245,7 +245,7 @@ export default function ProfilePage() {
       <header className="p-4 border-b border-pink-200/30 flex justify-between items-center bg-gradient-to-r from-pink-300 to-peach-300">
         <button onClick={handleBackToDashboard} className="flex items-center gap-1 bg-white/20 rounded-full px-3 py-1.5">
           <ArrowLeft className="h-4 w-4 text-white" />
-          <span className="text-sm font-medium text-white">Back</span>
+          <span className="text-sm font-medium text-white">{t("common.back", "Back")}</span>
         </button>
         <Logo variant="light" />
         <div className="w-20"></div>
@@ -254,8 +254,8 @@ export default function ProfilePage() {
       <main className="flex-1 px-4 pb-8 overflow-auto">
         <div className="max-w-md mx-auto">
           <div className="my-8 text-center">
-            <h2 className="text-3xl font-bold mb-2 text-brand-dark">Your Profile</h2>
-            {userName && <p className="text-brand-dark/60 text-base">Welcome back, {userName}!</p>}
+            <h2 className="text-3xl font-bold mb-2 text-brand-dark">{t("profile.title", "Your Profile")}</h2>
+            {userName && <p className="text-brand-dark/60 text-base">{t("profile.welcomeBack", "Welcome back,")} {userName}!</p>}
           </div>
 
           {/* My Diet — top of page so it's always visible */}
@@ -268,8 +268,8 @@ export default function ProfilePage() {
                 <Salad className="h-5 w-5 text-pink-500" />
               </div>
               <div>
-                <p className="font-semibold text-brand-dark">My Diet</p>
-                <p className="text-brand-dark/50 text-xs mt-0.5">AIP — Active</p>
+                <p className="font-semibold text-brand-dark">{t("profile.myDiet", "My Diet")}</p>
+                <p className="text-brand-dark/50 text-xs mt-0.5">{t("profile.myDiet.status", "AIP — Active")}</p>
               </div>
             </div>
             <ChevronRight className="h-5 w-5 text-brand-dark/30" />
@@ -278,35 +278,37 @@ export default function ProfilePage() {
           {profile && (
             <div className="bg-white rounded-3xl p-6 mb-4 shadow-soft">
               <div className="flex justify-between items-center mb-5">
-                <h3 className="font-semibold text-xl text-brand-dark">Personal Information</h3>
+                <h3 className="font-semibold text-xl text-brand-dark">{t("profile.personalInfo", "Personal Information")}</h3>
                 <button
                   className="text-brand-primary flex items-center gap-1 hover:text-brand-primary/80 transition-colors"
                   onClick={() => router.push("/onboarding/user-profile?edit=true")}
                 >
                   <Edit className="h-4 w-4" />
-                  <span className="text-sm font-medium">Edit</span>
+                  <span className="text-sm font-medium">{t("common.edit", "Edit")}</span>
                 </button>
               </div>
 
               <div className="space-y-4">
                 <div>
-                  <p className="text-brand-dark/50 text-sm font-medium mb-1">Gender</p>
-                  <p className="text-brand-dark font-medium">{profile.gender || "Not set"}</p>
+                  <p className="text-brand-dark/50 text-sm font-medium mb-1">{t("profile.gender", "Gender")}</p>
+                  <p className="text-brand-dark font-medium">{profile.gender || t("common.notSet", "Not set")}</p>
                 </div>
                 <div>
-                  <p className="text-brand-dark/50 text-sm font-medium mb-1">Age</p>
-                  <p className="text-brand-dark font-medium">{profile.age ? `${profile.age} years` : "Not set"}</p>
-                </div>
-                <div>
-                  <p className="text-brand-dark/50 text-sm font-medium mb-1">Weight</p>
+                  <p className="text-brand-dark/50 text-sm font-medium mb-1">{t("profile.age", "Age")}</p>
                   <p className="text-brand-dark font-medium">
-                    {profile.weight ? `${profile.weight} ${profile.weightUnit}` : "Not set"}
+                    {profile.age ? `${profile.age} ${t("profile.age.years", "years")}` : t("common.notSet", "Not set")}
                   </p>
                 </div>
                 <div>
-                  <p className="text-brand-dark/50 text-sm font-medium mb-1">Height</p>
+                  <p className="text-brand-dark/50 text-sm font-medium mb-1">{t("profile.weight", "Weight")}</p>
                   <p className="text-brand-dark font-medium">
-                    {profile.height ? `${profile.height} ${profile.heightUnit}` : "Not set"}
+                    {profile.weight ? `${profile.weight} ${profile.weightUnit}` : t("common.notSet", "Not set")}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-brand-dark/50 text-sm font-medium mb-1">{t("profile.height", "Height")}</p>
+                  <p className="text-brand-dark font-medium">
+                    {profile.height ? `${profile.height} ${profile.heightUnit}` : t("common.notSet", "Not set")}
                   </p>
                 </div>
               </div>
@@ -315,39 +317,39 @@ export default function ProfilePage() {
 
           <div className="bg-white rounded-3xl p-6 mb-4 shadow-soft">
             <div className="flex justify-between items-center mb-5">
-              <h3 className="font-semibold text-xl text-brand-dark">Diet Information</h3>
+              <h3 className="font-semibold text-xl text-brand-dark">{t("profile.dietInfo", "Diet Information")}</h3>
               <button
                 className="text-brand-primary flex items-center gap-1 hover:text-brand-primary/80 transition-colors"
                 onClick={() => router.push("/onboarding/diet-timeline?edit=true")}
               >
                 <Edit className="h-4 w-4" />
-                <span className="text-sm font-medium">Edit</span>
+                <span className="text-sm font-medium">{t("common.edit", "Edit")}</span>
               </button>
             </div>
 
             <div className="space-y-4">
               <div>
-                <p className="text-brand-dark/50 text-sm font-medium mb-1">Diet Timeline</p>
+                <p className="text-brand-dark/50 text-sm font-medium mb-1">{t("profile.dietTimeline", "Diet Timeline")}</p>
                 <p className="text-brand-dark font-medium">
-                  {dietInfo?.timelineDays ? `${dietInfo.timelineDays} days` : "Not set"}
+                  {dietInfo?.timelineDays ? `${dietInfo.timelineDays} ${t("common.days", "days")}` : t("common.notSet", "Not set")}
                 </p>
               </div>
               <div>
-                <p className="text-brand-dark/50 text-sm font-medium mb-1">Adaptation Period</p>
-                <p className="text-brand-dark font-medium">{dietInfo?.adaptationPeriod ? "Yes" : "No"}</p>
+                <p className="text-brand-dark/50 text-sm font-medium mb-1">{t("profile.adaptationPeriod", "Adaptation Period")}</p>
+                <p className="text-brand-dark font-medium">{dietInfo?.adaptationPeriod ? t("common.yes", "Yes") : t("common.no", "No")}</p>
               </div>
             </div>
           </div>
 
           <div className="bg-white rounded-3xl p-6 mb-4 shadow-soft">
             <div className="flex justify-between items-center mb-5">
-              <h3 className="font-semibold text-xl text-brand-dark">Conditions</h3>
+              <h3 className="font-semibold text-xl text-brand-dark">{t("profile.conditions", "Conditions")}</h3>
               <button
                 className="text-brand-primary flex items-center gap-1 hover:text-brand-primary/80 transition-colors"
                 onClick={() => router.push("/onboarding/conditions?edit=true")}
               >
                 <Edit className="h-4 w-4" />
-                <span className="text-sm font-medium">Edit</span>
+                <span className="text-sm font-medium">{t("common.edit", "Edit")}</span>
               </button>
             </div>
 
@@ -364,20 +366,20 @@ export default function ProfilePage() {
                   ))}
                 </div>
               ) : (
-                <p className="text-brand-dark/50">No conditions selected</p>
+                <p className="text-brand-dark/50">{t("profile.conditions.empty", "No conditions selected")}</p>
               )}
             </div>
           </div>
 
           <div className="bg-white rounded-3xl p-6 mb-6 shadow-soft">
             <div className="flex justify-between items-center mb-5">
-              <h3 className="font-semibold text-xl text-brand-dark">Symptoms to Track</h3>
+              <h3 className="font-semibold text-xl text-brand-dark">{t("profile.symptoms", "Symptoms to Track")}</h3>
               <button
                 className="text-brand-primary flex items-center gap-1 hover:text-brand-primary/80 transition-colors"
                 onClick={() => router.push("/onboarding/symptoms?edit=true")}
               >
                 <Edit className="h-4 w-4" />
-                <span className="text-sm font-medium">Edit</span>
+                <span className="text-sm font-medium">{t("common.edit", "Edit")}</span>
               </button>
             </div>
 
@@ -394,7 +396,7 @@ export default function ProfilePage() {
                   ))}
                 </div>
               ) : (
-                <p className="text-brand-dark/50">No symptoms selected</p>
+                <p className="text-brand-dark/50">{t("profile.symptoms.empty", "No symptoms selected")}</p>
               )}
             </div>
           </div>
@@ -426,7 +428,7 @@ export default function ProfilePage() {
             href="mailto:laura@rocksome.com?subject=Immu%20Health%20Feedback"
             className="w-full bg-white border-2 border-brand-primary/30 text-brand-primary hover:border-brand-primary/50 hover:shadow-soft py-4 rounded-full transition-all mb-3 font-medium flex items-center justify-center gap-2"
           >
-            Contact Support
+            {t("profile.contact", "Contact Support")}
           </a>
 
           <button
@@ -439,7 +441,7 @@ export default function ProfilePage() {
             }}
             className="w-full bg-white border-2 border-brand-dark/20 text-brand-dark hover:border-brand-dark/40 hover:shadow-soft py-4 rounded-full transition-all mb-3 font-medium"
           >
-            Log Out
+            {t("profile.logout", "Log Out")}
           </button>
 
           <button
@@ -448,7 +450,7 @@ export default function ProfilePage() {
             className="w-full bg-white border-2 border-red-400/30 text-red-600 hover:border-red-400/50 hover:shadow-soft py-4 rounded-full transition-all flex items-center justify-center gap-2 font-medium"
           >
             <Trash2 className="h-4 w-4" />
-            Delete Account
+            {t("profile.deleteAccount", "Delete Account")}
           </button>
         </div>
       </main>
@@ -456,10 +458,9 @@ export default function ProfilePage() {
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-xl">
-            <h3 className="text-xl font-bold mb-2 text-brand-dark">Delete Account?</h3>
+            <h3 className="text-xl font-bold mb-2 text-brand-dark">{t("profile.delete.title", "Delete Account?")}</h3>
             <p className="text-brand-dark/60 mb-6 text-sm leading-relaxed">
-              This will permanently delete your account and all your data including logs, symptoms, and conditions. This
-              action cannot be undone.
+              {t("profile.delete.description", "This will permanently delete your account and all your data including logs, symptoms, and conditions. This action cannot be undone.")}
             </p>
             <div className="flex gap-3">
               <button
@@ -467,14 +468,14 @@ export default function ProfilePage() {
                 disabled={isDeleting}
                 className="flex-1 bg-white border-2 border-brand-dark/20 text-brand-dark hover:border-brand-dark/40 py-3 rounded-full transition-all disabled:opacity-50 font-medium"
               >
-                Cancel
+                {t("common.cancel", "Cancel")}
               </button>
               <button
                 onClick={handleDeleteAccount}
                 disabled={isDeleting}
                 className="flex-1 bg-red-600 text-white hover:bg-red-700 py-3 rounded-full transition-colors disabled:opacity-50 font-medium shadow-soft"
               >
-                {isDeleting ? "Deleting..." : "Delete"}
+                {isDeleting ? t("profile.delete.deleting", "Deleting...") : t("profile.delete.confirm", "Delete")}
               </button>
             </div>
           </div>

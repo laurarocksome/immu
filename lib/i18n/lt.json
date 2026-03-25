@@ -150,5 +150,6 @@
   "onboarding.adaptation.no": "Ne, pradėti tiesiogiai nuo eliminacijos",
   "weightModal.title": "Įrašyti svorį",
   "weightModal.save": "Išsaugoti svorį",
-  "weightModal.cancel": "Atšaukti"
+  "weightModal.cancel": "Atšaukti",
+  "common.notSet": "Nenustatyta"
 }
