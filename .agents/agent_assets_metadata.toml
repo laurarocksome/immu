@@ -1,0 +1,14 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "F0ebIpCIFxmtwWjt104mq"
+uri = "file://lib/i18n/en.json"
+type = "unspecified"
+title = "English strings (all 100+ keys)"
+
+[[outputs]]
+id = "t-SOuQ8OqNZkC11JlcS_R"
+uri = "file://lib/i18n/lt.json"
+type = "unspecified"
+title = "Lithuanian translations (review before importing)"
