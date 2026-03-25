@@ -1,8 +1,8 @@
--- Run this in the Supabase SQL editor to populate all translations.
--- If a row already exists with the same (locale, key), it updates the value.
+-- Translations seed: English + Lithuanian
+  -- Run in Supabase SQL Editor
+  -- ON CONFLICT requires a unique constraint on (locale, key)
 
-INSERT INTO translations (locale, key, value) VALUES
--- ===== COMMON =====
+  INSERT INTO translations (locale, key, value) VALUES
 ('en', 'common.back', 'Back'),
 ('en', 'common.edit', 'Edit'),
 ('en', 'common.cancel', 'Cancel'),
@@ -14,15 +14,11 @@ INSERT INTO translations (locale, key, value) VALUES
 ('en', 'common.active', 'Active'),
 ('en', 'common.days', 'days'),
 ('en', 'common.daysLeft', 'days left'),
-
--- ===== NAV =====
 ('en', 'nav.products', 'Products'),
 ('en', 'nav.dashboard', 'Dashboard'),
 ('en', 'nav.nutrition', 'Nutrition'),
 ('en', 'nav.recipes', 'Recipes'),
 ('en', 'nav.logDay', 'Log Day'),
-
--- ===== DASHBOARD =====
 ('en', 'dashboard.title', 'Dashboard'),
 ('en', 'dashboard.welcome.title', 'Welcome to IMMU!'),
 ('en', 'dashboard.welcome.subtitle', 'Your profile is complete and your personalized AIP journey is ready.'),
@@ -56,8 +52,6 @@ INSERT INTO translations (locale, key, value) VALUES
 ('en', 'dashboard.symptom.mild', 'Mild'),
 ('en', 'dashboard.symptom.moderate', 'Moderate'),
 ('en', 'dashboard.symptom.severe', 'Severe'),
-
--- ===== FOOD LIST =====
 ('en', 'foodList.title', 'Food List'),
 ('en', 'foodList.search', 'Search foods, categories...'),
 ('en', 'foodList.filterByCategory', 'Filter by category'),
@@ -76,8 +70,6 @@ INSERT INTO translations (locale, key, value) VALUES
 ('en', 'foodList.section.cantConsume', 'Can''t consume'),
 ('en', 'foodList.section.underEvaluation', 'Under evaluation'),
 ('en', 'foodList.reintroductionBanner', 'You''re in the Reintroduction Phase. All products are set to Under evaluation — use the dropdown on each item to mark what works for you.'),
-
--- ===== NUTRITION =====
 ('en', 'nutrition.title', 'Nutrition Guides'),
 ('en', 'nutrition.subtitle', 'Select your stage in the protocol to see the guidelines tailored to you. Learn the rules, explore your food options, and start your journey toward better health.'),
 ('en', 'nutrition.adaptation.title', 'Adaptation phase'),
@@ -92,8 +84,6 @@ INSERT INTO translations (locale, key, value) VALUES
 ('en', 'nutrition.adaptationPhase.heading', 'Adaptation Phase'),
 ('en', 'nutrition.eliminationPhase.heading', 'Elimination Phase'),
 ('en', 'nutrition.reintroductionPhase.heading', 'Reintroduction Phase'),
-
--- ===== LOG DAY =====
 ('en', 'logDay.title', 'Log Your Day'),
 ('en', 'logDay.howFeeling', 'How are you feeling?'),
 ('en', 'logDay.aipCompliance', 'AIP Compliance'),
@@ -113,16 +103,12 @@ INSERT INTO translations (locale, key, value) VALUES
 ('en', 'logDay.restart.confirm', 'Restart Diet'),
 ('en', 'logDay.restart.cancel', 'Cancel'),
 ('en', 'logDay.remove', 'Remove'),
-
--- ===== CALENDAR =====
 ('en', 'calendar.title', 'Calendar'),
 ('en', 'calendar.trackJourney', 'Track your AIP journey'),
 ('en', 'calendar.noEvents', 'No events for this date'),
 ('en', 'calendar.phase.adaptation', 'Adaptation'),
 ('en', 'calendar.phase.elimination', 'Elimination'),
 ('en', 'calendar.phase.reintroduction', 'Reintroduction'),
-
--- ===== PROFILE =====
 ('en', 'profile.title', 'Your Profile'),
 ('en', 'profile.welcomeBack', 'Welcome back,'),
 ('en', 'profile.myDiet', 'My Diet'),
@@ -149,12 +135,8 @@ INSERT INTO translations (locale, key, value) VALUES
 ('en', 'profile.delete.confirm', 'Delete'),
 ('en', 'profile.delete.deleting', 'Deleting...'),
 ('en', 'profile.loading', 'Loading profile...'),
-
--- ===== FAQ =====
 ('en', 'faq.title', 'Frequently Asked Questions'),
 ('en', 'faq.loading', 'Loading FAQs...'),
-
--- ===== ONBOARDING =====
 ('en', 'onboarding.about.title', 'About You'),
 ('en', 'onboarding.about.subtitle', 'Please enter some basic information to personalize your experience.'),
 ('en', 'onboarding.about.gender', 'Your gender at birth'),
@@ -170,14 +152,9 @@ INSERT INTO translations (locale, key, value) VALUES
 ('en', 'onboarding.adaptation.title', 'Adaptation Period'),
 ('en', 'onboarding.adaptation.yes', 'Yes, include adaptation period'),
 ('en', 'onboarding.adaptation.no', 'No, start directly with elimination'),
-
--- ===== WEIGHT MODAL =====
 ('en', 'weightModal.title', 'Log Weight'),
 ('en', 'weightModal.save', 'Save Weight'),
 ('en', 'weightModal.cancel', 'Cancel'),
-
--- ===== LITHUANIAN =====
--- ===== COMMON =====
 ('lt', 'common.back', 'Atgal'),
 ('lt', 'common.edit', 'Redaguoti'),
 ('lt', 'common.cancel', 'Atšaukti'),
@@ -189,34 +166,30 @@ INSERT INTO translations (locale, key, value) VALUES
 ('lt', 'common.active', 'Aktyvus'),
 ('lt', 'common.days', 'dienos'),
 ('lt', 'common.daysLeft', 'dienų liko'),
-
--- ===== NAV =====
 ('lt', 'nav.products', 'Produktai'),
 ('lt', 'nav.dashboard', 'Suvestinė'),
 ('lt', 'nav.nutrition', 'Mityba'),
 ('lt', 'nav.recipes', 'Receptai'),
-('lt', 'nav.logDay', 'Žurnalo įrašas'),
-
--- ===== DASHBOARD =====
+('lt', 'nav.logDay', 'Fiksuoti dieną'),
 ('lt', 'dashboard.title', 'Suvestinė'),
 ('lt', 'dashboard.welcome.title', 'Sveiki atvykę į IMMU!'),
-('lt', 'dashboard.welcome.subtitle', 'Jūsų profilis užpildytas ir asmeninė AIP kelionė paruošta.'),
-('lt', 'dashboard.welcome.conditions', 'Jūsų ligos:'),
+('lt', 'dashboard.welcome.subtitle', 'Jūsų profilis užpildytas ir AIP mitybos principai yra suasmeninti.'),
+('lt', 'dashboard.welcome.conditions', 'Jūsų diagnozuotos ligos:'),
 ('lt', 'dashboard.welcome.getStarted', 'Pradėti'),
 ('lt', 'dashboard.hello', 'Sveiki!'),
-('lt', 'dashboard.streak', 'Serija'),
+('lt', 'dashboard.streak', 'Dienos iš eilės'),
 ('lt', 'dashboard.viewCalendar', 'Žiūrėti kalendorių'),
 ('lt', 'dashboard.daysLeft', 'dienų liko'),
-('lt', 'dashboard.nextPhase', 'Kita fazė'),
-('lt', 'dashboard.progress', 'Pažanga'),
-('lt', 'dashboard.tab.symptoms', 'Simptomų gerinimas'),
-('lt', 'dashboard.tab.wellness', 'Savijautų balas'),
+('lt', 'dashboard.nextPhase', 'Kitas etapas'),
+('lt', 'dashboard.progress', 'Progresas'),
+('lt', 'dashboard.tab.symptoms', 'Simptomai'),
+('lt', 'dashboard.tab.wellness', 'Savijauta'),
 ('lt', 'dashboard.tab.weight', 'Svoris'),
-('lt', 'dashboard.logDay', 'Įrašyti dieną'),
-('lt', 'dashboard.symptoms.empty', 'Įrašykite pirmąją dieną, kad pradėtumėte stebėti savo simptomus. Galite kasdien fiksuoti simptomų intensyvumą ir stebėti, kaip jie gerėja laikui bėgant.'),
-('lt', 'dashboard.wellness.empty', 'Įrašykite pirmąją dieną, kad pradėtumėte stebėti savijautų balą. Balas skaičiuojamas pagal nuotaiką, miego kokybę ir streso lygį.'),
+('lt', 'dashboard.logDay', 'Fiksuoti dieną'),
+('lt', 'dashboard.symptoms.empty', 'Užfiksuokite pirmąją dieną, kad pradėtumėte stebėti savo simptomus. Galite kasdien fiksuoti simptomų intensyvumą ir stebėti, kaip jie gerėja laikui bėgant.'),
+('lt', 'dashboard.wellness.empty', 'Užfiksuokite pirmąją dieną, kad pradėtumėte stebėti bendrą savijautą. Balas skaičiuojamas pagal nuotaiką, miego kokybę ir streso lygį.'),
 ('lt', 'dashboard.weight.empty', 'Pradėkite fiksuoti svorį, kad matytumėte, kaip jūsų kūnas reaguoja į AIP dietą. Fiksuokite svorį reguliariai, kad matytumėte tendencijas.'),
-('lt', 'dashboard.weight.logFirst', 'Įrašyti pirmą svorį'),
+('lt', 'dashboard.weight.logFirst', 'Įrašyti pirminį svorį'),
 ('lt', 'dashboard.weight.update', 'Atnaujinti svorį'),
 ('lt', 'dashboard.weight.current', 'Dabartinis svoris'),
 ('lt', 'dashboard.weight.fromStart', 'nuo pradžios'),
@@ -231,8 +204,6 @@ INSERT INTO translations (locale, key, value) VALUES
 ('lt', 'dashboard.symptom.mild', 'Silpnas'),
 ('lt', 'dashboard.symptom.moderate', 'Vidutinis'),
 ('lt', 'dashboard.symptom.severe', 'Stiprus'),
-
--- ===== FOOD LIST =====
 ('lt', 'foodList.title', 'Maisto produktai'),
 ('lt', 'foodList.search', 'Ieškoti maisto produktų, kategorijų...'),
 ('lt', 'foodList.filterByCategory', 'Filtruoti pagal kategoriją'),
@@ -251,30 +222,26 @@ INSERT INTO translations (locale, key, value) VALUES
 ('lt', 'foodList.section.cantConsume', 'Negalima vartoti'),
 ('lt', 'foodList.section.underEvaluation', 'Vertinama'),
 ('lt', 'foodList.reintroductionBanner', 'Esate reintrodukcijos fazėje. Visi produktai nustatyti kaip „Vertinama" — naudokite išskleidžiamąjį meniu prie kiekvieno produkto, kad pažymėtumėte, kas jums tinka.'),
-
--- ===== NUTRITION =====
 ('lt', 'nutrition.title', 'Mitybos gidai'),
-('lt', 'nutrition.subtitle', 'Pasirinkite savo protokolo etapą, kad pamatytumėte jums pritaikytas gaires. Sužinokite taisykles, tyrinėkite maisto produktų galimybes ir pradėkite kelionę į geresnę sveikatą.'),
-('lt', 'nutrition.adaptation.title', 'Adaptacijos fazė'),
+('lt', 'nutrition.subtitle', 'Pasirinkite savo protokolo etapą, kad pamatytumėte jums pritaikytas gaires. Sužinokite taisykles, tyrinėkite maisto produktų galimybes ir pradėkite kelionę link geresnės savijautos.'),
+('lt', 'nutrition.adaptation.title', 'Adaptacijos etapas'),
 ('lt', 'nutrition.adaptation.subtitle', 'Švelnus 28 dienų atkūrimas, padėsiantis atsisveikinti su senais įpročiais ir priimti skaidulų turtingą maistą savo tempu.'),
-('lt', 'nutrition.elimination.title', 'Eliminacijos fazė'),
-('lt', 'nutrition.elimination.subtitle', 'Pašalinkite trigerius, kad sužinotumėte, kas jums tinka.'),
-('lt', 'nutrition.reintroduction.title', 'Reintrodukcijos fazė'),
-('lt', 'nutrition.reintroduction.subtitle', 'Palaipsniui grąžinkite maistą, kad išbandytumėte kūno reakciją.'),
-('lt', 'nutrition.currentPhase', 'Dabartinė dietos fazė'),
+('lt', 'nutrition.elimination.title', 'Eliminacijos etapas'),
+('lt', 'nutrition.elimination.subtitle', 'Pašalinkite uždegimą keliančius produktus, kad sužinotumėte, kas jums tinka.'),
+('lt', 'nutrition.reintroduction.title', 'Reintrodukcijos etapas'),
+('lt', 'nutrition.reintroduction.subtitle', 'Palaipsniui grąžinkite maistą, kad galėtumėte stebėsti kūno atsaką į maisto produktus.'),
+('lt', 'nutrition.currentPhase', 'Dabartinė dietos etapas'),
 ('lt', 'nutrition.relatedRecipes', 'Susiję receptai'),
 ('lt', 'nutrition.todoList', 'Užduočių sąrašas'),
-('lt', 'nutrition.adaptationPhase.heading', 'Adaptacijos fazė'),
-('lt', 'nutrition.eliminationPhase.heading', 'Eliminacijos fazė'),
-('lt', 'nutrition.reintroductionPhase.heading', 'Reintrodukcijos fazė'),
-
--- ===== LOG DAY =====
-('lt', 'logDay.title', 'Įrašyti dieną'),
+('lt', 'nutrition.adaptationPhase.heading', 'Adaptacijos etapas'),
+('lt', 'nutrition.eliminationPhase.heading', 'Eliminacijos etapas'),
+('lt', 'nutrition.reintroductionPhase.heading', 'Reintrodukcijos etapas'),
+('lt', 'logDay.title', 'Fiksuoti dieną'),
 ('lt', 'logDay.howFeeling', 'Kaip jaučiatės?'),
 ('lt', 'logDay.aipCompliance', 'AIP laikymasis'),
 ('lt', 'logDay.symptoms', 'Simptomai'),
 ('lt', 'logDay.notes', 'Pastabos'),
-('lt', 'logDay.onPeriod', 'Mėnesinės?'),
+('lt', 'logDay.onPeriod', 'Yra mėnesinės?'),
 ('lt', 'logDay.saved', 'Įrašas išsaugotas!'),
 ('lt', 'logDay.loading', 'Kraunama...'),
 ('lt', 'logDay.redirecting', 'Nukreipiama į suvestinę...'),
@@ -284,20 +251,16 @@ INSERT INTO translations (locale, key, value) VALUES
 ('lt', 'logDay.restart.description', 'AIP neleidžia jokių išimčių eliminacijos metu. Norint gauti tikslius rezultatus, pradėkite nuo 1 dienos.'),
 ('lt', 'logDay.restart.adaptationElimination', 'Adaptacija + Eliminacija'),
 ('lt', 'logDay.restart.eliminationOnly', 'Tik eliminacija'),
-('lt', 'logDay.restart.eliminationDuration', 'Eliminacijos trukmė:'),
+('lt', 'logDay.restart.eliminationDuration', 'Eliminacijos etapo trukmė:'),
 ('lt', 'logDay.restart.confirm', 'Pradėti iš naujo'),
 ('lt', 'logDay.restart.cancel', 'Atšaukti'),
 ('lt', 'logDay.remove', 'Pašalinti'),
-
--- ===== CALENDAR =====
 ('lt', 'calendar.title', 'Kalendorius'),
 ('lt', 'calendar.trackJourney', 'Stebėkite savo AIP kelionę'),
 ('lt', 'calendar.noEvents', 'Šiai datai įvykių nėra'),
 ('lt', 'calendar.phase.adaptation', 'Adaptacija'),
 ('lt', 'calendar.phase.elimination', 'Eliminacija'),
 ('lt', 'calendar.phase.reintroduction', 'Reintrodukcija'),
-
--- ===== PROFILE =====
 ('lt', 'profile.title', 'Jūsų profilis'),
 ('lt', 'profile.welcomeBack', 'Sveiki sugrįžę,'),
 ('lt', 'profile.myDiet', 'Mano dieta'),
@@ -320,16 +283,12 @@ INSERT INTO translations (locale, key, value) VALUES
 ('lt', 'profile.logout', 'Atsijungti'),
 ('lt', 'profile.deleteAccount', 'Ištrinti paskyrą'),
 ('lt', 'profile.delete.title', 'Ištrinti paskyrą?'),
-('lt', 'profile.delete.description', 'Tai negrįžtamai ištrins jūsų paskyrą ir visus duomenis, įskaitant žurnalus, simptomus ir ligas. Šio veiksmo negalima atšaukti.'),
+('lt', 'profile.delete.description', 'Tai negrįžtamai ištrins jūsų paskyrą ir visus duomenis, įskaitant įrašus, simptomus ir ligas. Šio veiksmo negalima atšaukti.'),
 ('lt', 'profile.delete.confirm', 'Ištrinti'),
 ('lt', 'profile.delete.deleting', 'Trinama...'),
 ('lt', 'profile.loading', 'Kraunamas profilis...'),
-
--- ===== FAQ =====
 ('lt', 'faq.title', 'Dažniausiai užduodami klausimai'),
 ('lt', 'faq.loading', 'Kraunami DUK...'),
-
--- ===== ONBOARDING =====
 ('lt', 'onboarding.about.title', 'Apie jus'),
 ('lt', 'onboarding.about.subtitle', 'Įveskite pagrindinę informaciją, kad galėtume pritaikyti jūsų patirtį.'),
 ('lt', 'onboarding.about.gender', 'Jūsų biologinė lytis'),
@@ -345,8 +304,6 @@ INSERT INTO translations (locale, key, value) VALUES
 ('lt', 'onboarding.adaptation.title', 'Adaptacijos laikotarpis'),
 ('lt', 'onboarding.adaptation.yes', 'Taip, įtraukti adaptacijos laikotarpį'),
 ('lt', 'onboarding.adaptation.no', 'Ne, pradėti tiesiogiai nuo eliminacijos'),
-
--- ===== WEIGHT MODAL =====
 ('lt', 'weightModal.title', 'Įrašyti svorį'),
 ('lt', 'weightModal.save', 'Išsaugoti svorį'),
 ('lt', 'weightModal.cancel', 'Atšaukti')

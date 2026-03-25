@@ -10,13 +10,11 @@
   "common.active": "Active",
   "common.days": "days",
   "common.daysLeft": "days left",
-
   "nav.products": "Products",
   "nav.dashboard": "Dashboard",
   "nav.nutrition": "Nutrition",
   "nav.recipes": "Recipes",
   "nav.logDay": "Log Day",
-
   "dashboard.title": "Dashboard",
   "dashboard.welcome.title": "Welcome to IMMU!",
   "dashboard.welcome.subtitle": "Your profile is complete and your personalized AIP journey is ready.",
@@ -50,7 +48,6 @@
   "dashboard.symptom.mild": "Mild",
   "dashboard.symptom.moderate": "Moderate",
   "dashboard.symptom.severe": "Severe",
-
   "foodList.title": "Food List",
   "foodList.search": "Search foods, categories...",
   "foodList.filterByCategory": "Filter by category",
@@ -69,7 +66,6 @@
   "foodList.section.cantConsume": "Can't consume",
   "foodList.section.underEvaluation": "Under evaluation",
   "foodList.reintroductionBanner": "You're in the Reintroduction Phase. All products are set to Under evaluation — use the dropdown on each item to mark what works for you.",
-
   "nutrition.title": "Nutrition Guides",
   "nutrition.subtitle": "Select your stage in the protocol to see the guidelines tailored to you. Learn the rules, explore your food options, and start your journey toward better health.",
   "nutrition.adaptation.title": "Adaptation phase",
@@ -84,7 +80,6 @@
   "nutrition.adaptationPhase.heading": "Adaptation Phase",
   "nutrition.eliminationPhase.heading": "Elimination Phase",
   "nutrition.reintroductionPhase.heading": "Reintroduction Phase",
-
   "logDay.title": "Log Your Day",
   "logDay.howFeeling": "How are you feeling?",
   "logDay.aipCompliance": "AIP Compliance",
@@ -104,14 +99,12 @@
   "logDay.restart.confirm": "Restart Diet",
   "logDay.restart.cancel": "Cancel",
   "logDay.remove": "Remove",
-
   "calendar.title": "Calendar",
   "calendar.trackJourney": "Track your AIP journey",
   "calendar.noEvents": "No events for this date",
   "calendar.phase.adaptation": "Adaptation",
   "calendar.phase.elimination": "Elimination",
   "calendar.phase.reintroduction": "Reintroduction",
-
   "profile.title": "Your Profile",
   "profile.welcomeBack": "Welcome back,",
   "profile.myDiet": "My Diet",
@@ -138,10 +131,8 @@
   "profile.delete.confirm": "Delete",
   "profile.delete.deleting": "Deleting...",
   "profile.loading": "Loading profile...",
-
   "faq.title": "Frequently Asked Questions",
   "faq.loading": "Loading FAQs...",
-
   "onboarding.about.title": "About You",
   "onboarding.about.subtitle": "Please enter some basic information to personalize your experience.",
   "onboarding.about.gender": "Your gender at birth",
@@ -157,7 +148,6 @@
   "onboarding.adaptation.title": "Adaptation Period",
   "onboarding.adaptation.yes": "Yes, include adaptation period",
   "onboarding.adaptation.no": "No, start directly with elimination",
-
   "weightModal.title": "Log Weight",
   "weightModal.save": "Save Weight",
   "weightModal.cancel": "Cancel"
