@@ -1717,48 +1717,29 @@ export default function DashboardPage() {
 
   const createWeightCurvePath = (data: WeightChartData[]) => {
     if (data.length === 0) return ""
-    if (data.length === 1) {
-      const y =
-        100 -
-        ((data[0].weight - Math.min(...data.map((d) => d.weight))) /
-          (Math.max(...data.map((d) => d.weight)) - Math.min(...data.map((d) => d.weight)) || 1)) *
-          100
-      return `M 0 ${y} L 100 ${y}`
-    }
-
     const minWeight = Math.min(...data.map((d) => d.weight))
     const maxWeight = Math.max(...data.map((d) => d.weight))
     const range = maxWeight - minWeight || 1
-
-    const points = data.map((item, i) => {
-      const x = (i / (data.length - 1)) * 100
-      const y = 100 - ((item.weight - minWeight) / range) * 100
-      return { x, y }
-    })
-
-    let path = `M ${points[0].x} ${points[0].y}`
-
-    for (let i = 0; i < points.length - 1; i++) {
-      const current = points[i]
-      const next = points[i + 1]
-      const controlX = (current.x + next.x) / 2
-
-      path += ` Q ${controlX} ${current.y}, ${controlX} ${(current.y + next.y) / 2}`
-      path += ` Q ${controlX} ${next.y}, ${next.x} ${next.y}`
+    const pts = data.map((item, i) => ({
+      x: data.length > 1 ? (i / (data.length - 1)) * 100 : 50,
+      y: 100 - ((item.weight - minWeight) / range) * 100,
+    }))
+    if (pts.length === 1) return `M ${pts[0].x},${pts[0].y}`
+    let path = `M ${pts[0].x},${pts[0].y}`
+    for (let i = 0; i < pts.length - 1; i++) {
+      const x1 = pts[i].x + (pts[i + 1].x - pts[i].x) / 3
+      const y1 = pts[i].y
+      const x2 = pts[i].x + (2 * (pts[i + 1].x - pts[i].x)) / 3
+      const y2 = pts[i + 1].y
+      path += ` C ${x1},${y1} ${x2},${y2} ${pts[i + 1].x},${pts[i + 1].y}`
     }
-
     return path
   }
 
   const createWeightAreaPath = (data: WeightChartData[]) => {
-    if (data.length === 0) return ""
-
-    // Fill under the actual data only
-    if (!data || data.length < 2) return ""
+    if (data.length < 2) return ""
     const curvePath = createWeightCurvePath(data)
-    const lastX = ((data.length - 1) / (data.length - 1)) * 100
-    const firstX = 0
-    return `${curvePath} L ${lastX},100 L ${firstX},100 Z`
+    return `${curvePath} L 100,100 L 0,100 Z`
   }
 
   const handleWeightSaved = async () => {
@@ -2405,19 +2386,27 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Vertical grid + date labels */}
-                    <div className="absolute left-10 md:left-16 right-0 top-0 bottom-10 flex z-0">
-                      {weightData.map((item, index) => (
-                        <div
-                          key={index}
-                          className="h-full border-r border-green-100/70 last:border-r-0 flex flex-col justify-end items-center"
-                          style={{ width: `${100 / weightData.length}%` }}
-                        >
-                          <span className="text-[10px] text-secondary-color pb-2 whitespace-nowrap">
-                            {item.date}
-                          </span>
+                    {(() => {
+                      const maxLabels = 6
+                      const step = Math.max(1, Math.ceil(weightData.length / maxLabels))
+                      return (
+                        <div className="absolute left-10 md:left-16 right-0 top-0 bottom-10 flex z-0">
+                          {weightData.map((item, index) => (
+                            <div
+                              key={index}
+                              className="h-full border-r border-green-100/70 last:border-r-0 flex flex-col justify-end items-center"
+                              style={{ width: `${100 / weightData.length}%` }}
+                            >
+                              {(index % step === 0 || index === weightData.length - 1) && (
+                                <span className="text-[10px] text-secondary-color pb-2 whitespace-nowrap">
+                                  {item.date}
+                                </span>
+                              )}
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
+                      )
+                    })()}
 
                     {/* Chart drawing area */}
                     <div className="absolute left-10 md:left-16 right-0 top-0 bottom-10 pointer-events-none">
