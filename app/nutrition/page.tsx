@@ -8,6 +8,7 @@ import { List, Home, Plus, BookOpen, UtensilsCrossed, User } from "lucide-react"
 import Logo from "@/app/components/logo"
 import { useState, useEffect } from "react"
 import { isPageVisible } from "@/lib/page-visibility"
+import { getDietPhase } from "@/lib/diet-phase"
 
 export default function NutritionPage() {
   const router = useRouter()
@@ -36,39 +37,7 @@ export default function NutritionPage() {
   }, [])
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      // Get diet data from localStorage
-      const adaptationChoice = localStorage.getItem("userAdaptationChoice")
-      const hasAdaptation = adaptationChoice === "Yes"
-      const startDate = localStorage.getItem("dietStartDate")
-      const dietStartDate = startDate ? new Date(startDate) : new Date()
-      const dietTimeline = localStorage.getItem("userDietTimeline")
-      const totalSelectedDays = dietTimeline ? Number.parseInt(dietTimeline) : 30
-
-      // Calculate days for each phase
-      const adaptationDays = hasAdaptation ? 28 : 0
-      const eliminationDays = hasAdaptation ? totalSelectedDays - adaptationDays : totalSelectedDays
-
-      // Calculate days elapsed since diet start
-      const today = new Date()
-      const daysElapsed = Math.floor((today.getTime() - dietStartDate.getTime()) / (1000 * 60 * 60 * 24))
-
-      // Determine current phase
-      let phase = "adaptation"
-
-      if (hasAdaptation && daysElapsed < adaptationDays) {
-        // In adaptation phase
-        phase = "adaptation"
-      } else if (daysElapsed < (hasAdaptation ? adaptationDays + eliminationDays : eliminationDays)) {
-        // In elimination phase
-        phase = "elimination"
-      } else {
-        // In reintroduction phase
-        phase = "reintroduction"
-      }
-
-      setCurrentPhase(phase)
-    }
+    getDietPhase().then(({ phase }) => setCurrentPhase(phase))
   }, [])
 
   const handleProfileClick = () => {

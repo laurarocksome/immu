@@ -22,45 +22,7 @@ import {
 import Logo from "@/app/components/logo"
 import { createBrowserClient } from "@supabase/ssr"
 import { isPageVisible } from "@/lib/page-visibility"
-
-// Function to determine the current diet phase and day
-const determineDietPhase = () => {
-  if (typeof window === "undefined") return { phase: "elimination", adaptationDay: 0 }
-
-  const adaptationChoice = localStorage.getItem("userAdaptationChoice")
-  const hasAdaptation = (adaptationChoice ?? "").toLowerCase() === "yes"
-  const startDate = localStorage.getItem("dietStartDate")
-
-  if (!startDate) {
-    return { phase: "elimination", adaptationDay: 0 }
-  }
-
-  const dietStartDate = new Date(startDate)
-  dietStartDate.setHours(0, 0, 0, 0)
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  const daysElapsed = Math.floor((today.getTime() - dietStartDate.getTime()) / (1000 * 60 * 60 * 24))
-
-  // Calculate adaptation days
-  const adaptationDays = hasAdaptation ? 28 : 0
-
-  // Get diet timeline
-  const dietTimeline = localStorage.getItem("userDietTimeline")
-  const totalSelectedDays = dietTimeline ? Number.parseInt(dietTimeline) : 30
-  const eliminationDays = hasAdaptation ? totalSelectedDays - adaptationDays : totalSelectedDays
-
-  // Determine current phase
-  if (hasAdaptation && daysElapsed < adaptationDays) {
-    // In adaptation phase
-    return { phase: "adaptation", adaptationDay: daysElapsed + 1 } // +1 because day 1 is the first day
-  } else if (daysElapsed < (hasAdaptation ? adaptationDays + eliminationDays : eliminationDays)) {
-    // In elimination phase
-    return { phase: "elimination", adaptationDay: 0 }
-  } else {
-    // In reintroduction phase
-    return { phase: "reintroduction", adaptationDay: 0 }
-  }
-}
+import { getDietPhase } from "@/lib/diet-phase"
 
 // Update the containsCaffeine function to better detect exact matches
 const containsCaffeine = (product) => {
@@ -256,10 +218,11 @@ export default function FoodListPage() {
 
     fetchFoods()
 
-    // Determine current diet phase
-    const { phase, adaptationDay: day } = determineDietPhase()
-    setCurrentPhase(phase)
-    setAdaptationDay(day)
+    // Determine current diet phase from Supabase (source of truth)
+    getDietPhase().then(({ phase, adaptationDay: day }) => {
+      setCurrentPhase(phase)
+      setAdaptationDay(day)
+    })
 
     // Load favorites from localStorage
     const savedFavorites = localStorage.getItem("aipFavorites")
@@ -310,9 +273,9 @@ export default function FoodListPage() {
 
     const dbStatus = product.status || (product.is_aip ? "Can eat" : "Can't eat")
 
-    // 2. Reintroduction: non-AIP moves to "Under evaluation"
+    // 2. Reintroduction: every product is "Under evaluation" until the user manually sets it
     if (currentPhase === "reintroduction") {
-      return dbStatus === "Can't eat" ? "Under evaluation" : "Can eat"
+      return "Under evaluation"
     }
 
     // 3. Elimination: use DB status directly
@@ -491,6 +454,12 @@ export default function FoodListPage() {
           <div className={`inline-block px-3 py-1 rounded-full text-sm ${getPhaseIndicatorClasses()}`}>
             {getPhaseIndicator()}
           </div>
+
+          {currentPhase === "reintroduction" && (
+            <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-xl text-sm text-green-800">
+              You're in the <strong>Reintroduction Phase</strong>. All products are set to <em>Under evaluation</em> — use the dropdown on each item to mark what works for you.
+            </div>
+          )}
         </div>
 
         {/* Search and Filters Bar */}
