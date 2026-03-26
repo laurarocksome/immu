@@ -235,7 +235,7 @@ const sampleEvents = [
 
 export default function CalendarPage() {
   const router = useRouter()
-  const { locale } = useLanguage()
+  const { locale, t } = useLanguage()
   const dateLocale = locale === "lt" ? "lt-LT" : "en-US"
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState(new Date())
@@ -311,8 +311,8 @@ export default function CalendarPage() {
       <main className="flex-1 p-4 overflow-auto">
         <div className="max-w-2xl mx-auto">
         <div className="mb-6">
-          <h2 className="text-2xl font-bold mb-2">Calendar</h2>
-          <p className="text-brand-dark/70">Track your AIP journey</p>
+          <h2 className="text-2xl font-bold mb-2">{t("calendar.title", "Calendar")}</h2>
+          <p className="text-brand-dark/70">{t("calendar.trackJourney", "Track your AIP journey")}</p>
         </div>
 
         {/* Month Navigation */}
