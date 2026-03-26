@@ -28,7 +28,7 @@ type DietInfo = {
 
 export default function ProfilePage() {
   const router = useRouter()
-  const { locale, setLocale, t } = useLanguage()
+  const { locale, setLocale, t, translations } = useLanguage()
   const [userName, setUserName] = useState<string>("")
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [dietInfo, setDietInfo] = useState<DietInfo | null>(null)
@@ -251,6 +251,11 @@ export default function ProfilePage() {
         <div className="w-20"></div>
       </header>
 
+      {/* DEBUG BANNER */}
+      <div style={{position:"fixed", top:0, left:0, right:0, zIndex:9999, background:"#0ff", color:"#000", padding:"6px 12px", fontSize:"13px", fontWeight:"bold"}}>
+        PROFILE: locale={locale} | keys={Object.keys(translations).length} | title=&quot;{t("profile.title","Your Profile")}&quot;
+      </div>
+      <div style={{height:"28px"}} />
       <main className="flex-1 px-4 pb-8 overflow-auto">
         <div className="max-w-md mx-auto">
           <div className="my-8 text-center">

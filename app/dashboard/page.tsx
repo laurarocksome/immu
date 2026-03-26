@@ -1823,9 +1823,10 @@ export default function DashboardPage() {
       {/* Main Content */}
       <main className="flex-1 p-6 overflow-auto">
         {/* DEBUG BANNER - remove after diagnosis */}
-        <div style={{background:"#f0f", color:"#000", padding:"4px 8px", fontSize:"11px", marginBottom:"8px", borderRadius:"4px"}}>
-          🌐 locale={locale} | hello={t("dashboard.hello","Hello!")} | keys={Object.keys(translations).length}
+        <div style={{position:"fixed", top:0, left:0, right:0, zIndex:9999, background:"#f0f", color:"#000", padding:"6px 12px", fontSize:"13px", fontWeight:"bold"}}>
+          DASHBOARD: locale={locale} | keys={Object.keys(translations).length} | hello=&quot;{t("dashboard.hello","Hello!")}&quot;
         </div>
+        <div style={{height:"28px"}} />
         {/* Date and Greeting */}
         <div className="mb-6">
           <h2 className="text-2xl font-bold text-primary-color">{t("dashboard.hello", "Hello!")}</h2>
