@@ -161,6 +161,7 @@ export default function DashboardPage() {
   // Changed from Dashboard to DashboardPage
   const router = useRouter()
   const { t, locale } = useLanguage()
+  const dateLocale = locale === "lt" ? "lt-LT" : "en-US"
   const [conditions, setConditions] = useState<string[]>([])
   const [showWelcome, setShowWelcome] = useState(false)
   const [userName, setUserName] = useState("")
@@ -1053,7 +1054,7 @@ export default function DashboardPage() {
     // Format current date
     const date = new Date()
     const options: Intl.DateTimeFormatOptions = { weekday: "long", month: "long", day: "numeric" }
-    setCurrentDate(date.toLocaleDateString("en-US", options))
+    setCurrentDate(date.toLocaleDateString(dateLocale, options))
 
     // Check if this is the first time loading the dashboard after onboarding
     const isFirstLoad = localStorage.getItem("dashboardFirstLoad") !== "false"
@@ -1129,7 +1130,7 @@ export default function DashboardPage() {
         // Set weight data from logs (authoritative source — NOT from profile)
         if (weightLogs && weightLogs.length > 0) {
           const formattedWeights = weightLogs.map((log) => ({
-            date: new Date(log.log_date).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+            date: new Date(log.log_date).toLocaleDateString(dateLocale, { month: "short", day: "numeric" }),
             weight: Number(log.weight),
           }))
           setWeightData(formattedWeights)
@@ -1252,7 +1253,7 @@ export default function DashboardPage() {
     const newChartDates = lastSeven.map(log => {
       if (!log) return "-"
       const d = new Date(log.log_date)
-      return d.toLocaleDateString("en-US", { month: "short", day: "numeric" })
+      return d.toLocaleDateString(dateLocale, { month: "short", day: "numeric" })
     })
     setChartDates(newChartDates)
 
@@ -1308,7 +1309,7 @@ export default function DashboardPage() {
     const wellnessDates = lastSevenW.map(log => {
       if (!log) return "-"
       const d = new Date(log.log_date)
-      return d.toLocaleDateString("en-US", { month: "short", day: "numeric" })
+      return d.toLocaleDateString(dateLocale, { month: "short", day: "numeric" })
     })
     setChartDates(wellnessDates)
 
@@ -1417,7 +1418,7 @@ export default function DashboardPage() {
 
       if (weights.length > 0) {
         const formattedWeights = weights.map((log) => ({
-          date: new Date(log.log_date).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+          date: new Date(log.log_date).toLocaleDateString(dateLocale, { month: "short", day: "numeric" }),
           weight: Number(log.weight),
         }))
         setWeightData(formattedWeights)
@@ -1440,7 +1441,7 @@ export default function DashboardPage() {
       } catch {}
     }
     loadHiddenPages()
-  }, [])
+  }, [locale])
 
   // Effect to generate to-do items when adaptation phase or day changes
   useEffect(() => {
@@ -1487,11 +1488,11 @@ export default function DashboardPage() {
   }
 
   const formatDate = (date: Date) => {
-    return date.toLocaleDateString("en-US", { month: "short", day: "numeric" })
+    return date.toLocaleDateString(dateLocale, { month: "short", day: "numeric" })
   }
 
   const getDayName = (date: Date) => {
-    return date.toLocaleDateString("en-US", { weekday: "short" })
+    return date.toLocaleDateString(dateLocale, { weekday: "short" })
   }
 
   // Function to create smooth curve path
@@ -1750,7 +1751,7 @@ export default function DashboardPage() {
       const weights = await fetchWeightLogs(userId, 30)
       if (weights && weights.length > 0) {
         const chartData = weights.map(w => ({
-          date: new Date(w.log_date).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+          date: new Date(w.log_date).toLocaleDateString(dateLocale, { month: "short", day: "numeric" }),
           weight: w.weight,
           unit: w.weight_unit,
         }))
@@ -1846,11 +1847,11 @@ export default function DashboardPage() {
 
             <div className="flex flex-col items-center">
               <span className="text-sm font-medium text-secondary-color">
-                {selectedDate.toLocaleDateString("en-US", { weekday: "short" })}
+                {selectedDate.toLocaleDateString(dateLocale, { weekday: "short" })}
               </span>
               <span className="text-2xl font-bold text-primary-color">{selectedDate.getDate()}</span>
               <span className="text-xs text-secondary-color">
-                {selectedDate.toLocaleDateString("en-US", { month: "short" })}
+                {selectedDate.toLocaleDateString(dateLocale, { month: "short" })}
               </span>
             </div>
 
@@ -1984,7 +1985,7 @@ export default function DashboardPage() {
                         )
                       }
 
-                      return nextPhaseDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })
+                      return nextPhaseDate.toLocaleDateString(dateLocale, { month: "short", day: "numeric" })
                     })()}
                   </p>
                 </div>

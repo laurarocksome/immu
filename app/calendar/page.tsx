@@ -7,10 +7,13 @@ import { useRouter } from "next/navigation"
 import { List, Home, Plus, BookOpen, UtensilsCrossed, ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react"
 import Logo from "@/app/components/logo"
 import BottomNav from "@/app/components/bottom-nav"
+import { useLanguage } from "@/lib/i18n/context"
 
 // Replace the ProgressBar component with this updated version that handles all three phases
 
 function ProgressBar() {
+  const { locale } = useLanguage()
+  const dateLocale = locale === "lt" ? "lt-LT" : "en-US"
   const [progressData, setProgressData] = useState({
     adaptationDays: 0,
     eliminationDays: 0,
@@ -117,10 +120,10 @@ function ProgressBar() {
         reintroductionDays,
         currentPhase,
         adaptationEndDate: hasAdaptation
-          ? adaptationEndDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })
+          ? adaptationEndDate.toLocaleDateString(dateLocale, { month: "short", day: "numeric" })
           : "",
-        eliminationEndDate: eliminationEndDate.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
-        reintroductionEndDate: reintroductionEndDate.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+        eliminationEndDate: eliminationEndDate.toLocaleDateString(dateLocale, { month: "short", day: "numeric" }),
+        reintroductionEndDate: reintroductionEndDate.toLocaleDateString(dateLocale, { month: "short", day: "numeric" }),
         progressPercentage,
         daysRemaining,
       })
@@ -129,7 +132,7 @@ function ProgressBar() {
       }
     }
     loadDietData()
-  }, [])
+  }, [locale])
 
   // Render different UI based on current phase
   const total = progressData.adaptationDays + progressData.eliminationDays + progressData.reintroductionDays
@@ -230,6 +233,8 @@ const sampleEvents = [
 
 export default function CalendarPage() {
   const router = useRouter()
+  const { locale } = useLanguage()
+  const dateLocale = locale === "lt" ? "lt-LT" : "en-US"
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState(new Date())
 
@@ -314,7 +319,7 @@ export default function CalendarPage() {
             <ChevronLeft className="h-5 w-5" />
           </button>
           <h3 className="font-bold text-lg">
-            {currentMonth.toLocaleDateString("en-US", { month: "long", year: "numeric" })}
+            {currentMonth.toLocaleDateString(dateLocale, { month: "long", year: "numeric" })}
           </h3>
           <button onClick={handleNextMonth} className="p-2">
             <ChevronRight className="h-5 w-5" />
@@ -376,7 +381,7 @@ export default function CalendarPage() {
         {/* Selected Date Events */}
         <div className="mb-4">
           <h3 className="font-bold text-lg mb-2">
-            {selectedDate.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
+            {selectedDate.toLocaleDateString(dateLocale, { weekday: "long", month: "long", day: "numeric" })}
           </h3>
         </div>
 
