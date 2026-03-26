@@ -10,6 +10,7 @@ interface LanguageContextType {
   setLocale: (locale: string) => void
   t: (key: string, fallback?: string) => string
   loading: boolean
+  translations: Record<string, string>
 }
 
 const LanguageContext = createContext<LanguageContextType>({
@@ -17,6 +18,7 @@ const LanguageContext = createContext<LanguageContextType>({
   setLocale: () => {},
   t: (key, fallback) => fallback || key,
   loading: true,
+  translations: {},
 })
 
 const cache: Record<string, Translations> = {}
@@ -109,7 +111,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   }, [translations])
 
   return (
-    <LanguageContext.Provider value={{ locale, setLocale, t, loading }}>
+    <LanguageContext.Provider value={{ locale, setLocale, t, loading, translations }}>
       {children}
     </LanguageContext.Provider>
   )
