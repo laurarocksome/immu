@@ -12,8 +12,12 @@ import { useLanguage } from "@/lib/i18n/context"
 // Replace the ProgressBar component with this updated version that handles all three phases
 
 function ProgressBar() {
-  const { locale } = useLanguage()
+  const { locale, t } = useLanguage()
   const dateLocale = locale === "lt" ? "lt-LT" : "en-US"
+  const ltMonths = ["saus.","vas.","kov.","bal.","geg.","bir.","lie.","rgp.","rgs.","spl.","lap.","grd."]
+  const fmtDate = (d: Date) => locale === "lt"
+    ? `${ltMonths[d.getMonth()]} ${d.getDate()}`
+    : d.toLocaleDateString("en-US", { month: "short", day: "numeric" })
   const [progressData, setProgressData] = useState({
     adaptationDays: 0,
     eliminationDays: 0,
@@ -119,11 +123,9 @@ function ProgressBar() {
         eliminationDays,
         reintroductionDays,
         currentPhase,
-        adaptationEndDate: hasAdaptation
-          ? adaptationEndDate.toLocaleDateString(dateLocale, { month: "short", day: "numeric" })
-          : "",
-        eliminationEndDate: eliminationEndDate.toLocaleDateString(dateLocale, { month: "short", day: "numeric" }),
-        reintroductionEndDate: reintroductionEndDate.toLocaleDateString(dateLocale, { month: "short", day: "numeric" }),
+        adaptationEndDate: hasAdaptation ? fmtDate(adaptationEndDate) : "",
+        eliminationEndDate: fmtDate(eliminationEndDate),
+        reintroductionEndDate: fmtDate(reintroductionEndDate),
         progressPercentage,
         daysRemaining,
       })
@@ -145,8 +147,8 @@ function ProgressBar() {
     ? "bg-pink-400" : "bg-green-400"
 
   const phaseLabel = progressData.currentPhase === "adaptation"
-    ? "Adaptation Phase" : progressData.currentPhase === "elimination"
-    ? "Elimination Phase" : "Reintroduction Phase"
+    ? t("calendar.adaptationPhase", "Adaptation Phase") : progressData.currentPhase === "elimination"
+    ? t("calendar.eliminationPhase", "Elimination Phase") : t("calendar.reintroductionPhase", "Reintroduction Phase")
 
   const nextDate = progressData.currentPhase === "adaptation"
     ? progressData.adaptationEndDate : progressData.currentPhase === "elimination"
@@ -167,9 +169,9 @@ function ProgressBar() {
             style={{ width: `${reintroPct}%` }} />
         </div>
         <div className="flex justify-between text-xs text-brand-dark/50">
-          {progressData.adaptationDays > 0 && <span className="text-yellow-600">Adaptation</span>}
-          <span className="text-pink-500">Elimination</span>
-          <span className="text-green-600">Reintroduction</span>
+          {progressData.adaptationDays > 0 && <span className="text-yellow-600">{t("calendar.adaptation", "Adaptation")}</span>}
+          <span className="text-pink-500">{t("calendar.elimination", "Elimination")}</span>
+          <span className="text-green-600">{t("calendar.reintroduction", "Reintroduction")}</span>
         </div>
       </div>
 
@@ -177,12 +179,12 @@ function ProgressBar() {
       <div className="flex items-center justify-between gap-4">
         <div>
           <p className="text-xs text-brand-dark/60">{phaseLabel}</p>
-          <p className="text-xl font-bold text-brand-dark">{progressData.daysRemaining} <span className="text-sm font-normal">days left</span></p>
+          <p className="text-xl font-bold text-brand-dark">{progressData.daysRemaining} <span className="text-sm font-normal">{t("calendar.daysLeft", "days left")}</span></p>
         </div>
 
         <div className="flex-1 max-w-[140px]">
           <div className="flex justify-between text-xs text-brand-dark/60 mb-1">
-            <span>Progress</span>
+            <span>{t("calendar.progress", "Progress")}</span>
             <span>{progressData.progressPercentage}%</span>
           </div>
           <div className="h-2 bg-gray-100 rounded-full">
@@ -193,7 +195,7 @@ function ProgressBar() {
 
         {nextDate && (
           <div className="text-right">
-            <p className="text-xs text-brand-dark/60">Next phase</p>
+            <p className="text-xs text-brand-dark/60">{t("calendar.nextPhase", "Next phase")}</p>
             <p className="font-bold text-brand-dark">{nextDate}</p>
           </div>
         )}
@@ -203,17 +205,17 @@ function ProgressBar() {
       <div className="flex gap-2 flex-wrap">
         {progressData.adaptationDays > 0 && (
           <div className={`flex-1 min-w-[80px] text-center py-2 px-3 rounded-xl text-xs ${progressData.currentPhase === "adaptation" ? "bg-yellow-100 text-yellow-800 font-semibold" : "bg-gray-50 text-brand-dark/50"}`}>
-            <p className="font-medium">Adaptation</p>
+            <p className="font-medium">{t("calendar.adaptation", "Adaptation")}</p>
             <p>{progressData.adaptationDays}d</p>
           </div>
         )}
         <div className={`flex-1 min-w-[80px] text-center py-2 px-3 rounded-xl text-xs ${progressData.currentPhase === "elimination" ? "bg-pink-100 text-pink-800 font-semibold" : "bg-gray-50 text-brand-dark/50"}`}>
-          <p className="font-medium">Elimination</p>
+          <p className="font-medium">{t("calendar.elimination", "Elimination")}</p>
           <p>{progressData.eliminationDays}d</p>
         </div>
         <div className={`flex-1 min-w-[80px] text-center py-2 px-3 rounded-xl text-xs ${progressData.currentPhase === "reintroduction" ? "bg-green-100 text-green-800 font-semibold" : "bg-gray-50 text-brand-dark/50"}`}>
-          <p className="font-medium">Reintroduction</p>
-          <p>~5 months</p>
+          <p className="font-medium">{t("calendar.reintroduction", "Reintroduction")}</p>
+          <p>{t("calendar.months5", "~5 months")}</p>
         </div>
       </div>
     </div>

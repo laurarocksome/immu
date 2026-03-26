@@ -162,6 +162,11 @@ export default function DashboardPage() {
   const router = useRouter()
   const { t, locale } = useLanguage()
   const dateLocale = locale === "lt" ? "lt-LT" : "en-US"
+  const ltMonths = ["saus.","vas.","kov.","bal.","geg.","bir.","lie.","rgp.","rgs.","spl.","lap.","grd."]
+  const formatChartDate = (d: Date): string => {
+    if (locale === "lt") return `${ltMonths[d.getMonth()]} ${d.getDate()}`
+    return d.toLocaleDateString("en-US", { month: "short", day: "numeric" })
+  }
   const [conditions, setConditions] = useState<string[]>([])
   const [showWelcome, setShowWelcome] = useState(false)
   const [userName, setUserName] = useState("")
@@ -518,9 +523,9 @@ export default function DashboardPage() {
 
     // Common items for all days
     const commonItems = [
-      { id: "water", text: "Drink 1.5–2L water" },
-      { id: "walk", text: "Walk 30 minutes" },
-      { id: "sleep", text: "Sleep 7–8 hours" },
+      { id: "water", text: t("dashboard.todo.water1_5_2", "Drink 1.5–2L water") },
+      { id: "walk", text: t("dashboard.todo.walk30", "Walk 30 minutes") },
+      { id: "sleep", text: t("dashboard.todo.sleep8", "Sleep 8 hours") },
     ]
 
     // Day-specific items
@@ -529,40 +534,40 @@ export default function DashboardPage() {
         return [
           { id: "reintroduce_egg_yolk", text: "Reintroduce egg yolk (boiled or poached)", isSpecial: true },
           ...commonItems,
-          { id: "log_feelings", text: "Log how you feel 2–3 times today (mood, digestion, energy)" },
+          { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
         ]
       case 2:
         return [
           { id: "rest_day", text: "Rest day — no new food", isSpecial: true },
           ...commonItems,
           { id: "observe_symptoms", text: "Observe for any delayed symptoms" },
-          { id: "update_product_list", text: "Update the product list with 'Can consume' or 'Can't consume'" },
+          { id: "update_product_list", text: t("dashboard.todo.updateProductList", "Update the product list") },
         ]
       case 3:
         return [
           { id: "reintroduce_peas", text: "Reintroduce green peas or sugar snap peas", isSpecial: true },
           ...commonItems,
-          { id: "log_feelings", text: "Log how you feel 2–3 times" },
+          { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
         ]
       case 4:
         return [
           { id: "eat_vegetables", text: "Eat a variety of vegetables today" },
           ...commonItems,
-          { id: "update_product_list", text: "Update the product list with 'Can consume' or 'Can't consume'" },
+          { id: "update_product_list", text: t("dashboard.todo.updateProductList", "Update the product list") },
         ]
       case 5:
         return [
           { id: "reintroduce_ghee", text: "Reintroduce ghee (1 tsp with a warm meal)", isSpecial: true },
           ...commonItems,
           { id: "lemon_water", text: "Drink lemon water in the morning" },
-          { id: "log_feelings", text: "Log how you feel 2–3 times" },
+          { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
           { id: "calming_music", text: "Play calming music in the evening" },
         ]
       case 6:
         return [
           { id: "stretching", text: "Do a stretching session" },
           ...commonItems,
-          { id: "update_product_list", text: "Update the product list with 'Can consume' or 'Can't consume'" },
+          { id: "update_product_list", text: t("dashboard.todo.updateProductList", "Update the product list") },
         ]
       case 7:
         return [
@@ -572,26 +577,26 @@ export default function DashboardPage() {
             isSpecial: true,
           },
           ...commonItems,
-          { id: "log_feelings", text: "Log how you feel 2–3 times" },
+          { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
           { id: "meditate", text: "Meditate for 10 minutes" },
         ]
       case 8:
         return [
           { id: "cook_dinner", text: "Cook a nourishing veggie-based dinner" },
           ...commonItems,
-          { id: "update_product_list", text: "Update the product list with 'Can consume' or 'Can't consume'" },
+          { id: "update_product_list", text: t("dashboard.todo.updateProductList", "Update the product list") },
         ]
       case 9:
         return [
           { id: "reintroduce_cocoa", text: "Reintroduce unsweetened cocoa (1 tsp max)", isSpecial: true },
           ...commonItems,
-          { id: "log_feelings", text: "Log how you feel 2–3 times" },
+          { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
         ]
       case 10:
         return [
           { id: "mocktail", text: "Try a mocktail as a reward" },
           ...commonItems,
-          { id: "update_product_list", text: "Update the product list with 'Can consume' or 'Can't consume'" },
+          { id: "update_product_list", text: t("dashboard.todo.updateProductList", "Update the product list") },
         ]
       case 11:
         return [
@@ -602,31 +607,31 @@ export default function DashboardPage() {
           },
           ...commonItems,
           { id: "extra_water", text: "Drink extra water" },
-          { id: "log_feelings", text: "Log how you feel 2–3 times" },
+          { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
         ]
       case 12:
         return [
           ...commonItems,
-          { id: "update_product_list", text: "Update the product list with 'Can consume' or 'Can't consume'" },
+          { id: "update_product_list", text: t("dashboard.todo.updateProductList", "Update the product list") },
         ]
       case 13:
         return [
           { id: "reintroduce_sprouts", text: "Reintroduce legume sprouts (e.g., pea shoots)", isSpecial: true },
           ...commonItems,
           { id: "new_vegetables", text: "Add three new vegetables to your plate" },
-          { id: "log_feelings", text: "Log how you feel 2–3 times" },
+          { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
         ]
       case 14:
         return [
           { id: "meditate_longer", text: "Meditate for 20 minutes" },
           ...commonItems,
-          { id: "update_product_list", text: "Update the product list with 'Can consume' or 'Can't consume'" },
+          { id: "update_product_list", text: t("dashboard.todo.updateProductList", "Update the product list") },
         ]
       case 15:
         return [
           { id: "reintroduce_almonds", text: "Reintroduce almonds (start small, preferably soaked)", isSpecial: true },
           ...commonItems,
-          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
+          { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
         ]
       case 16:
       case 17:
@@ -634,25 +639,25 @@ export default function DashboardPage() {
           { id: "eat_almonds", text: "Eat almonds (start small, preferably soaked)" },
           ...commonItems,
           { id: "almond_milk", text: "Use a splash of almond milk" },
-          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
+          { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
           ...(reintroductionDay === 17 ? [{ id: "update_product_list", text: "Update the product list" }] : []),
         ]
       case 18:
         return [
           { id: "reintroduce_seeds", text: "Reintroduce seeds (tahini or raw seeds, one type only)", isSpecial: true },
           ...commonItems,
-          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
+          { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
         ]
       case 19:
       case 20:
         return [
           { id: "eat_seeds", text: "Eat seeds (tahini or raw seeds, one type only)" },
           ...commonItems,
-          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
+          { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
           ...(reintroductionDay === 20
             ? [
                 { id: "avoid_mixing", text: "Avoid mixing seeds" },
-                { id: "update_product_list", text: "Update the product list" },
+                { id: "update_product_list", text: t("dashboard.todo.updateProductList", "Update the product list") },
               ]
             : []),
         ]
@@ -664,21 +669,21 @@ export default function DashboardPage() {
             isSpecial: true,
           },
           ...commonItems,
-          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
+          { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
         ]
       case 22:
         return [
           { id: "eat_egg_whites", text: "Eat egg whites (start small, gradually increase)" },
           ...commonItems,
           { id: "grounding", text: "Add grounding practices: journaling, stretching, slow walks" },
-          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
+          { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
         ]
       case 23:
         return [
           { id: "eat_whole_egg", text: "Eat a whole egg" },
           ...commonItems,
-          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
-          { id: "update_product_list", text: "Update the product list" },
+          { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
+          { id: "update_product_list", text: t("dashboard.todo.updateProductList", "Update the product list") },
         ]
       case 24:
         return [
@@ -688,14 +693,14 @@ export default function DashboardPage() {
             isSpecial: true,
           },
           ...commonItems,
-          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
+          { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
         ]
       case 25:
       case 26:
         return [
           { id: "eat_butter", text: "Eat grass-fed butter (do not combine with other dairy)" },
           ...commonItems,
-          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
+          { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
           ...(reintroductionDay === 26 ? [{ id: "update_product_list", text: "Update the product list" }] : []),
         ]
       case 27:
@@ -709,35 +714,35 @@ export default function DashboardPage() {
           { id: "reintroduce_cashews", text: "Reintroduce plain, unroasted cashews", isSpecial: true },
           ...commonItems,
           { id: "tea", text: "Add lemon or ginger tea to support digestion" },
-          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
+          { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
         ]
       case 29:
         return [
           { id: "eat_cashews", text: "Eat plain, unroasted cashews" },
           ...commonItems,
           { id: "tea", text: "Add lemon or ginger tea to support digestion" },
-          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
-          { id: "update_product_list", text: "Update the product list" },
+          { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
+          { id: "update_product_list", text: t("dashboard.todo.updateProductList", "Update the product list") },
         ]
       case 30:
         return [
           { id: "reintroduce_potato", text: "Reintroduce cooked potato (white, peeled)", isSpecial: true },
           ...commonItems,
-          { id: "log_feelings", text: "Log how you feel 2–3 times" },
-          { id: "update_product_list", text: "Update the product list" },
+          { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
+          { id: "update_product_list", text: t("dashboard.todo.updateProductList", "Update the product list") },
         ]
       case 31:
         return [
           { id: "reintroduce_pepper", text: "Reintroduce sweet red pepper (roasted or sautéed)", isSpecial: true },
           ...commonItems,
-          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
+          { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
         ]
       case 32:
       case 33:
         return [
           { id: "eat_pepper", text: "Eat sweet red pepper (roasted or sautéed)" },
           ...commonItems,
-          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
+          { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
           ...(reintroductionDay === 33 ? [{ id: "update_product_list", text: "Update the product list" }] : []),
         ]
       case 34:
@@ -745,7 +750,7 @@ export default function DashboardPage() {
           { id: "reintroduce_paprika", text: "Reintroduce paprika (use a small pinch in meals)", isSpecial: true },
           ...commonItems,
           { id: "no_new_food", text: "Do not introduce any other new food during this time" },
-          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
+          { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
         ]
       case 35:
       case 36:
@@ -753,22 +758,22 @@ export default function DashboardPage() {
           { id: "eat_paprika", text: "Eat paprika (use a small pinch in meals)" },
           ...commonItems,
           { id: "no_new_food", text: "Do not introduce any other new food during this time" },
-          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
+          { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
           ...(reintroductionDay === 36 ? [{ id: "update_product_list", text: "Update the product list" }] : []),
         ]
       case 37:
         return [
           { id: "reintroduce_eggplant", text: "Reintroduce cooked eggplant (start with 1/4 cup)", isSpecial: true },
           ...commonItems,
-          { id: "log_feelings", text: "Log how you feel 2–3 times" },
-          { id: "update_product_list", text: "Update the product list" },
+          { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
+          { id: "update_product_list", text: t("dashboard.todo.updateProductList", "Update the product list") },
         ]
       case 38:
         return [
           { id: "reintroduce_rice", text: "Reintroduce white rice (start with 2 tbsp cooked)", isSpecial: true },
           ...commonItems,
           { id: "deep_breathing", text: "Add deep breathing after meals" },
-          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
+          { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
           { id: "relaxing_ritual", text: "End day with a relaxing ritual (bath, walk, etc.)" },
         ]
       case 39:
@@ -777,11 +782,11 @@ export default function DashboardPage() {
           { id: "eat_rice", text: "Eat white rice" },
           ...commonItems,
           { id: "deep_breathing", text: "Add deep breathing after meals" },
-          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
+          { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
           ...(reintroductionDay === 40
             ? [
                 { id: "relaxing_ritual", text: "End day with a relaxing ritual (bath, walk, etc.)" },
-                { id: "update_product_list", text: "Update the product list" },
+                { id: "update_product_list", text: t("dashboard.todo.updateProductList", "Update the product list") },
               ]
             : []),
         ]
@@ -793,14 +798,14 @@ export default function DashboardPage() {
             isSpecial: true,
           },
           ...commonItems,
-          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
+          { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
         ]
       case 42:
       case 43:
         return [
           { id: "eat_yogurt", text: "Eat grass-fed yogurt or kefir (unsweetened, small portion)" },
           ...commonItems,
-          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
+          { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
           ...(reintroductionDay === 43 ? [{ id: "update_product_list", text: "Update the product list" }] : []),
         ]
       case 44:
@@ -811,20 +816,20 @@ export default function DashboardPage() {
             isSpecial: true,
           },
           ...commonItems,
-          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
+          { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
         ]
       case 45:
         return [
           { id: "eat_tomato", text: "Eat cooked and peeled tomato (start with 1 tbsp)" },
           ...commonItems,
-          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
-          { id: "update_product_list", text: "Update the product list" },
+          { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
+          { id: "update_product_list", text: t("dashboard.todo.updateProductList", "Update the product list") },
         ]
       default:
         // For days beyond 45, provide general maintenance tasks
         return [
           ...commonItems,
-          { id: "log_feelings", text: "Log how you feel 2–3 times per day" },
+          { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
           {
             id: "continue_reintroductions",
             text: "Continue with your personalized reintroduction schedule",
@@ -842,9 +847,9 @@ export default function DashboardPage() {
 
     // Common items for all percentage ranges
     const commonItems = [
-      { id: "track_symptoms", text: "Track your symptoms" },
-      { id: "sleep", text: "Maintain 7-8h of sleep" },
-      { id: "water", text: "Drink 1.5–2L water" },
+      { id: "track_symptoms", text: t("dashboard.todo.trackSymptoms", "Track your symptoms") },
+      { id: "sleep", text: t("dashboard.todo.sleep78", "Maintain 7–8h of sleep") },
+      { id: "water", text: t("dashboard.todo.water1_5_2", "Drink 1.5–2L water") },
     ]
 
     // Add percentage-specific items
@@ -852,30 +857,30 @@ export default function DashboardPage() {
       // 0-20% days of the elimination diet phase
       items = [
         ...commonItems,
-        { id: "protein", text: "Have protein with every meal" },
-        { id: "yoga", text: "Try a gentle yoga or breathwork session" },
+        { id: "protein", text: t("dashboard.todo.proteinMeal", "Have protein with every meal") },
+        { id: "yoga", text: t("dashboard.todo.yoga", "Try a gentle yoga or breathwork session") },
       ]
     } else if (eliminationPhasePercentage <= 40) {
       // 21-40% days of the elimination diet phase
       items = [
         ...commonItems,
-        { id: "new_aip", text: "Try one new AIP recipe" },
-        { id: "eft", text: "Research EFT tapping stress relief method" },
-        { id: "meditation", text: "Listen to a 10 minute calming playlist or guided meditation" },
+        { id: "new_aip", text: t("dashboard.todo.newAipRecipe", "Try one new AIP recipe") },
+        { id: "eft", text: t("dashboard.todo.eft", "Research EFT tapping stress relief method") },
+        { id: "meditation", text: t("dashboard.todo.meditation10", "Listen to a 10 minute calming playlist or guided meditation") },
       ]
     } else if (eliminationPhasePercentage <= 60) {
       // 41-60% days of the elimination diet phase
       items = [
         ...commonItems,
-        { id: "mindful_eating", text: "Try eating your meals more mindfully (no phone, chew slowly)" },
-        { id: "journal", text: "Journal about changes in mood, sleep, digestion" },
+        { id: "mindful_eating", text: t("dashboard.todo.mindfulEating", "Try eating your meals more mindfully (no phone, chew slowly)") },
+        { id: "journal", text: t("dashboard.todo.journalMoodSleep", "Journal about changes in mood, sleep, digestion") },
       ]
     } else if (eliminationPhasePercentage <= 80) {
       // 61-80% days of the elimination diet phase
       items = [
         ...commonItems,
-        { id: "new_veggies", text: "Explore new veggies or safe fruits you haven't tried yet" },
-        { id: "strength_training", text: "Start light strength training at home" },
+        { id: "new_veggies", text: t("dashboard.todo.newVeggies", "Explore new veggies or safe fruits you haven't tried yet") },
+        { id: "strength_training", text: t("dashboard.todo.strengthTraining", "Start light strength training at home") },
       ]
     } else {
       // 81-100% days of the elimination diet phase
@@ -883,10 +888,10 @@ export default function DashboardPage() {
         ...commonItems,
         {
           id: "journal_end",
-          text: "Journal your feelings now that Elimination phase is coming to an end",
+          text: t("dashboard.todo.journalEnd", "Journal your feelings now that Elimination phase is coming to an end"),
           isSpecial: true,
         },
-        { id: "review_logs", text: "Review your food and symptom logs — are any patterns clear?", isSpecial: true },
+        { id: "review_logs", text: t("dashboard.todo.reviewLogs", "Review your food and symptom logs — are any patterns clear?"), isSpecial: true },
       ]
     }
 
@@ -902,45 +907,45 @@ export default function DashboardPage() {
     // Base items for days 1-7
     if (adaptationDay >= 1) {
       items = [
-        { id: "water", text: "Drink water (1-1.5L)" },
-        { id: "walk", text: "Walk 30 minutes" },
-        { id: "caffeine", text: "No caffeine consumption" },
-        { id: "sleep", text: "Sleep 8 hours" },
+        { id: "water", text: t("dashboard.todo.water1_5", "Drink water (1–1.5L)") },
+        { id: "walk", text: t("dashboard.todo.walk30", "Walk 30 minutes") },
+        { id: "caffeine", text: t("dashboard.todo.noCaffeine", "No caffeine consumption") },
+        { id: "sleep", text: t("dashboard.todo.sleep8", "Sleep 8 hours") },
       ]
     }
 
     // Add items for days 8-14
     if (adaptationDay >= 8) {
-      items.push({ id: "alcohol", text: "No alcohol consumption" })
+      items.push({ id: "alcohol", text: t("dashboard.todo.noAlcohol", "No alcohol consumption") })
     }
 
     // Add items for days 15-21
     if (adaptationDay >= 15) {
-      items.push({ id: "sugar", text: "No sugar consumption" })
+      items.push({ id: "sugar", text: t("dashboard.todo.noSugar", "No sugar consumption") })
     }
 
     // Add items for days 22-28
     if (adaptationDay >= 22) {
-      items.push({ id: "vegetables", text: "Eat more vegetables (for snacks and with your main meal)" })
+      items.push({ id: "vegetables", text: t("dashboard.todo.moreVeg", "Eat more vegetables (for snacks and with your main meal)") })
     }
 
     // Special items for specific days
     if (adaptationDay === 10) {
       items.push({
         id: "journal",
-        text: "Try to write down your feelings and thoughts on a piece of paper",
+        text: t("dashboard.todo.journalFeelings", "Try to write down your feelings and thoughts on a piece of paper"),
         isSpecial: true,
       })
     } else if (adaptationDay === 18) {
       items.push({
         id: "meditation",
-        text: "Try meditation",
+        text: t("dashboard.todo.tryMeditation", "Try meditation"),
         isSpecial: true,
       })
     } else if (adaptationDay === 24) {
       items.push({
         id: "mocktail",
-        text: "Try a mocktail, celebrate, you almost finished one phase!",
+        text: t("dashboard.todo.mocktail", "Try a mocktail, celebrate, you almost finished one phase!"),
         isSpecial: true,
       })
     }
@@ -1253,7 +1258,7 @@ export default function DashboardPage() {
     const newChartDates = lastSeven.map(log => {
       if (!log) return "-"
       const d = new Date(log.log_date)
-      return d.toLocaleDateString(dateLocale, { month: "short", day: "numeric" })
+      return formatChartDate(d)
     })
     setChartDates(newChartDates)
 
@@ -1309,7 +1314,7 @@ export default function DashboardPage() {
     const wellnessDates = lastSevenW.map(log => {
       if (!log) return "-"
       const d = new Date(log.log_date)
-      return d.toLocaleDateString(dateLocale, { month: "short", day: "numeric" })
+      return formatChartDate(d)
     })
     setChartDates(wellnessDates)
 
@@ -1446,7 +1451,7 @@ export default function DashboardPage() {
   // Effect to generate to-do items when adaptation phase or day changes
   useEffect(() => {
     generateTodoItems()
-  }, [isAdaptationPhase, adaptationDay, eliminationPhasePercentage, reintroductionDay, currentPhase])
+  }, [isAdaptationPhase, adaptationDay, eliminationPhasePercentage, reintroductionDay, currentPhase, locale])
 
   // Effect to load completed to-dos when to-do items change
   useEffect(() => {
@@ -1649,9 +1654,9 @@ export default function DashboardPage() {
       if (isOnPeriod) {
         if (loggedPeriodSymptoms.length > 0) {
           const symptomNames = loggedPeriodSymptoms.map(getPeriodSymptomName).join(", ")
-          observations.push(`Your period symptoms (${symptomNames}) may affect your overall wellness score today.`)
+          observations.push(t("dashboard.obs.periodSymptoms", "Your period symptoms ({symptoms}) may affect your overall wellness score today.").replace("{symptoms}", symptomNames))
         } else {
-          observations.push("You're on your period today, which may affect your energy levels and comfort.")
+          observations.push(t("dashboard.obs.onPeriod", "You're on your period today, which may affect your energy levels and comfort."))
         }
       }
     }
@@ -1664,7 +1669,7 @@ export default function DashboardPage() {
       if (relevantSymptoms.length > 0) {
         // Add general observation about digestive symptoms
         const symptomNames = relevantSymptoms.map(getDigestiveSymptomName).join(", ")
-        observations.push(`Your digestive symptoms (${symptomNames}) may be related to recent dietary changes.`)
+        observations.push(t("dashboard.obs.digestiveSymptoms", "Your digestive symptoms ({symptoms}) may be related to recent dietary changes.").replace("{symptoms}", symptomNames))
 
         // Add specific tips for each digestive symptom
         relevantSymptoms.forEach((symptomId) => {
@@ -1673,7 +1678,7 @@ export default function DashboardPage() {
             observations.push({
               text: tipInfo.tip,
               link: tipInfo.link,
-              linkText: "Learn more",
+              linkText: t("dashboard.obs.learnMore", "Learn more"),
             })
           }
         })
@@ -1683,19 +1688,19 @@ export default function DashboardPage() {
     // Add a general observation about wellness if we have a score
     if (wellnessScore > 0) {
       if (wellnessScore >= 75) {
-        observations.push("Your wellness score is excellent today! Keep up the good habits.")
+        observations.push(t("dashboard.obs.wellnessExcellent", "Your wellness score is excellent today! Keep up the good habits."))
       } else if (wellnessScore >= 50) {
-        observations.push("Your wellness score is good. Consider focusing on sleep quality to improve further.")
+        observations.push(t("dashboard.obs.wellnessGood", "Your wellness score is good. Consider focusing on sleep quality to improve further."))
       } else {
-        observations.push("Your wellness score indicates you might benefit from stress reduction techniques today.")
+        observations.push(t("dashboard.obs.wellnessLow", "Your wellness score indicates you might benefit from stress reduction techniques today."))
       }
     }
 
     // Always add some default observations if we have no specific ones
     if (observations.length === 0) {
-      observations.push("Remember to stay hydrated throughout the day for optimal health.")
-      observations.push("Consider adding more leafy greens to your meals for additional nutrients.")
-      observations.push("Taking short breaks during the day can help reduce stress and improve focus.")
+      observations.push(t("dashboard.obs.hydrated", "Remember to stay hydrated throughout the day for optimal health."))
+      observations.push(t("dashboard.obs.leafyGreens", "Consider adding more leafy greens to your meals for additional nutrients."))
+      observations.push(t("dashboard.obs.takeBreaks", "Taking short breaks during the day can help reduce stress and improve focus."))
     }
 
     return observations
@@ -1710,11 +1715,11 @@ export default function DashboardPage() {
   // Function to get the phase display text
   const getPhaseDisplayText = () => {
     if (isAdaptationPhase) {
-      return `${t("dashboard.phase.adaptation", "Adaptation")} - Day ${adaptationDay}`
+      return `${t("dashboard.phase.adaptation", "Adaptation")} - ${t("dashboard.day", "Day")} ${adaptationDay}`
     } else if (currentPhase === "elimination") {
-      return `${t("dashboard.phase.elimination", "Elimination")} - ${eliminationPhasePercentage}% complete`
+      return `${t("dashboard.phase.elimination", "Elimination")} - ${eliminationPhasePercentage}% ${t("dashboard.phase.complete", "complete")}`
     } else {
-      return `${t("dashboard.phase.reintroduction", "Reintroduction")} - Day ${reintroductionDay}`
+      return `${t("dashboard.phase.reintroduction", "Reintroduction")} - ${t("dashboard.day", "Day")} ${reintroductionDay}`
     }
   }
 
@@ -1935,10 +1940,10 @@ export default function DashboardPage() {
                       <>
                         <p className="text-sm text-secondary-color">
                           {currentPhase === "adaptation"
-                            ? t("dashboard.phase.adaptation", "Adaptation") + " Phase"
+                            ? t("dashboard.phase.adaptation", "Adaptation") + " " + t("dashboard.phase.suffix", "Phase")
                             : currentPhase === "elimination"
-                              ? t("dashboard.phase.elimination", "Elimination") + " Phase"
-                              : t("dashboard.phase.reintroduction", "Reintroduction") + " Phase"}
+                              ? t("dashboard.phase.elimination", "Elimination") + " " + t("dashboard.phase.suffix", "Phase")
+                              : t("dashboard.phase.reintroduction", "Reintroduction") + " " + t("dashboard.phase.suffix", "Phase")}
                         </p>
                         <p className="font-bold text-primary-color">{daysRemaining} {t("dashboard.daysLeft", "days left")}</p>
                       </>
@@ -2252,11 +2257,11 @@ export default function DashboardPage() {
 
                       {(() => {
                         const metrics = [
-                          { label: "Mood",   key: "mood",   color: "#f4a6b8", gradId: "wg-mood"   },
-                          { label: "Sleep",  key: "sleep",  color: "#f6c1b0", gradId: "wg-sleep"  },
-                          { label: "Stress", key: "stress", color: "#f09f88", gradId: "wg-stress" },
+                          { id: "Mood",   label: t("dashboard.wellness.mood", "Mood"),   key: "mood",   color: "#f4a6b8", gradId: "wg-mood"   },
+                          { id: "Sleep",  label: t("dashboard.wellness.sleep", "Sleep"),  key: "sleep",  color: "#f6c1b0", gradId: "wg-sleep"  },
+                          { id: "Stress", label: t("dashboard.wellness.stress", "Stress"), key: "stress", color: "#f09f88", gradId: "wg-stress" },
                         ]
-                        const visible = metrics.filter(m => selectedWellness === null || selectedWellness === m.label)
+                        const visible = metrics.filter(m => selectedWellness === null || selectedWellness === m.id)
                         return (
                           <>
                             {/* SVG: gradient fills + lines */}
@@ -2272,7 +2277,7 @@ export default function DashboardPage() {
                               {visible.map(m => {
                                 const vals = wellnessData[m.key] as number[]
                                 return (
-                                  <React.Fragment key={m.label}>
+                                  <React.Fragment key={m.id}>
                                     <path d={createWellnessAreaFill(vals)} fill={`url(#${m.gradId})`} />
                                     <path
                                       d={createWellnessLinePath(vals)}
@@ -2298,7 +2303,7 @@ export default function DashboardPage() {
                                   const isIsolated = (i === 0 || vals[i-1] === 0) && (i === vals.length - 1 || vals[i+1] === 0)
                                   return (
                                     <div
-                                      key={`${m.label}-${i}`}
+                                      key={`${m.id}-${i}`}
                                       className="absolute rounded-full border-2 border-white pointer-events-none"
                                       style={{
                                         left: `calc(${x}% - ${isIsolated ? 5 : 4}px)`,
@@ -2322,17 +2327,17 @@ export default function DashboardPage() {
                   {/* Filter pills */}
                   <div className="mt-4 flex flex-wrap gap-2 justify-center">
                     {[
-                      { label: "Mood",   color: "#f4a6b8" },
-                      { label: "Sleep",  color: "#f6c1b0" },
-                      { label: "Stress", color: "#f09f88" },
-                    ].map(({ label, color }) => (
+                      { id: "Mood",   label: t("dashboard.wellness.mood", "Mood"),   color: "#f4a6b8" },
+                      { id: "Sleep",  label: t("dashboard.wellness.sleep", "Sleep"),  color: "#f6c1b0" },
+                      { id: "Stress", label: t("dashboard.wellness.stress", "Stress"), color: "#f09f88" },
+                    ].map(({ id, label, color }) => (
                       <button
-                        key={label}
-                        onClick={() => handleWellnessSelect(label)}
+                        key={id}
+                        onClick={() => handleWellnessSelect(id)}
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all hover:shadow-sm"
                         style={{
                           borderColor: color + "80",
-                          backgroundColor: selectedWellness === label ? color + "20" : "transparent",
+                          backgroundColor: selectedWellness === id ? color + "20" : "transparent",
                           color,
                         }}
                       >
