@@ -2,53 +2,40 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { List, Home, Plus, BookOpen, UtensilsCrossed, User, ArrowLeft, ChevronRight, PlusIcon } from "lucide-react"
+import { User, ArrowLeft, ChevronRight, PlusIcon } from "lucide-react"
 import Logo from "@/app/components/logo"
 import BottomNav from "@/app/components/bottom-nav"
 import Image from "next/image"
 import { createBrowserClient } from "@supabase/ssr"
+import { useLanguage } from "@/lib/i18n/context"
 
 export default function ReintroductionPhasePage() {
   const router = useRouter()
+  const { t } = useLanguage()
   const [expandedFaq, setExpandedFaq] = useState<string | null>(null)
   const [nutritionPlans, setNutritionPlans] = useState<any[]>([])
   const [recipes, setRecipes] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
-  const handleProfileClick = () => {
-    router.push("/profile")
-  }
-
-  const handleBackClick = () => {
-    router.push("/nutrition")
-  }
-
   const toggleFaq = (id: string) => {
-    if (expandedFaq === id) {
-      setExpandedFaq(null)
-    } else {
-      setExpandedFaq(id)
-    }
+    setExpandedFaq(expandedFaq === id ? null : id)
   }
 
   const faqs = [
     {
       id: "reintroduction-order",
-      question: "In what order should I reintroduce foods?",
-      answer:
-        "Start with foods that are least likely to cause reactions, such as egg yolks, seed-based spices, and certain nuts. Then gradually move to more potentially problematic foods like dairy, nightshades, and grains.",
+      question: t("nutrition.reintroductionPhase.faq1.q", "In what order should I reintroduce foods?"),
+      answer: t("nutrition.reintroductionPhase.faq1.a", "Start with foods that are least likely to cause reactions, such as egg yolks, seed-based spices, and certain nuts. Then gradually move to more potentially problematic foods like dairy, nightshades, and grains."),
     },
     {
       id: "reaction-signs",
-      question: "What signs indicate I'm reacting to a food?",
-      answer:
-        "Watch for digestive issues, skin problems, joint pain, headaches, fatigue, mood changes, or sleep disturbances. Any return of your original symptoms is a clear sign that the reintroduced food may be problematic for you.",
+      question: t("nutrition.reintroductionPhase.faq2.q", "What signs indicate I'm reacting to a food?"),
+      answer: t("nutrition.reintroductionPhase.faq2.a", "Watch for digestive issues, skin problems, joint pain, headaches, fatigue, mood changes, or sleep disturbances. Any return of your original symptoms is a clear sign that the reintroduced food may be problematic for you."),
     },
     {
       id: "reintroduction-process",
-      question: "How do I properly test a food?",
-      answer:
-        "Introduce one food at a time. Eat a small amount on day 1, a larger amount on day 2, and then avoid it completely for 3-5 days while monitoring for reactions. If no reactions occur, you can add that food to your safe list.",
+      question: t("nutrition.reintroductionPhase.faq3.q", "How do I properly test a food?"),
+      answer: t("nutrition.reintroductionPhase.faq3.a", "Introduce one food at a time. Eat a small amount on day 1, a larger amount on day 2, and then avoid it completely for 3-5 days while monitoring for reactions. If no reactions occur, you can add that food to your safe list."),
     },
   ]
 
@@ -59,16 +46,12 @@ export default function ReintroductionPhasePage() {
           process.env.NEXT_PUBLIC_SUPABASE_URL!,
           process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
         )
-
-        // Fetch nutrition plans
         const { data: plansData, error: plansError } = await supabase
           .from("nutrition_plans")
           .select("*")
           .eq("phase", "Reintroduction")
           .order("created_at")
-
         if (plansError) throw plansError
-
         setNutritionPlans(plansData || [])
 
         const { data: recipesData, error: recipesError } = await supabase
@@ -76,9 +59,7 @@ export default function ReintroductionPhasePage() {
           .select("*")
           .eq("phase", "Reintroduction")
           .limit(3)
-
         if (recipesError) throw recipesError
-
         setRecipes(recipesData || [])
       } catch (error) {
         console.error("Error fetching data:", error)
@@ -86,18 +67,16 @@ export default function ReintroductionPhasePage() {
         setLoading(false)
       }
     }
-
     fetchData()
   }, [])
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-brand-lightest to-white text-brand-dark">
-      {/* Header */}
       <header className="p-4 border-b border-pink-200/30 flex justify-between items-center bg-gradient-to-r from-pink-300 to-peach-300">
         <div className="flex items-center">
           <button
             className="mr-2 w-8 h-8 rounded-full flex items-center justify-center bg-white/20 hover:bg-white/30 transition-colors"
-            onClick={handleBackClick}
+            onClick={() => router.push("/nutrition")}
           >
             <ArrowLeft className="h-4 w-4 text-white" />
           </button>
@@ -105,28 +84,23 @@ export default function ReintroductionPhasePage() {
         </div>
         <button
           className="w-10 h-10 rounded-full flex items-center justify-center bg-white/20 hover:bg-white/30 transition-colors"
-          onClick={handleProfileClick}
+          onClick={() => router.push("/profile")}
         >
           <User className="h-5 w-5 text-white" />
         </button>
       </header>
 
-      {/* Main Content */}
       <main className="flex-1 p-4 overflow-auto">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold mb-4">Reintroduction Phase</h1>
-
+          <h1 className="text-3xl font-bold mb-4">{t("nutrition.reintroductionPhase.heading", "Reintroduction Phase")}</h1>
           <p className="text-brand-dark/90 mb-8">
-            This phase helps you systematically test eliminated foods to identify your personal triggers. By carefully
-            reintroducing one food at a time and monitoring your body's response, you'll create your personalized
-            sustainable diet.
+            {t("nutrition.reintroductionPhase.desc", "This phase helps you systematically test eliminated foods to identify your personal triggers. By carefully reintroducing one food at a time and monitoring your body response, you will create your personalized sustainable diet.")}
           </p>
         </div>
 
-        {/* Reintroduction Process */}
         <div className="glass-card rounded-2xl p-6 mb-8">
           {loading ? (
-            <div className="text-center py-4">Loading...</div>
+            <div className="text-center py-4">{t("nutrition.loading", "Loading...")}</div>
           ) : (
             nutritionPlans.map((plan) => (
               <div key={plan.id} className="mb-6 last:mb-0">
@@ -146,10 +120,9 @@ export default function ReintroductionPhasePage() {
           )}
         </div>
 
-        {/* Related Recipes */}
         {recipes.length > 0 && (
           <div className="mb-8">
-            <h2 className="text-2xl font-bold mb-4">Related Recipes</h2>
+            <h2 className="text-2xl font-bold mb-4">{t("nutrition.relatedRecipes", "Related Recipes")}</h2>
             <div className="flex space-x-4 overflow-x-auto pb-2">
               {recipes.map((recipe) => (
                 <div
@@ -176,12 +149,11 @@ export default function ReintroductionPhasePage() {
               onClick={() => router.push("/recipes")}
               className="mt-4 w-full py-3 rounded-xl border border-pink-500 text-pink-500 font-medium hover:bg-pink-50 transition-colors"
             >
-              View All Recipes
+              {t("nutrition.viewAllRecipes", "View All Recipes")}
             </button>
           </div>
         )}
 
-        {/* FAQ */}
         <div className="mb-8">
           <div className="rounded-xl overflow-hidden border border-gray-200">
             {faqs.map((faq, index) => (
@@ -201,7 +173,7 @@ export default function ReintroductionPhasePage() {
             onClick={() => router.push("/faq")}
             className="mt-4 w-full py-3 rounded-xl border border-pink-500 text-pink-500 font-medium hover:bg-pink-50 transition-colors"
           >
-            More FAQ
+            {t("nutrition.moreFaq", "More FAQ")}
           </button>
         </div>
       </main>

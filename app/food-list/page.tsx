@@ -23,6 +23,7 @@ import Logo from "@/app/components/logo"
 import { createBrowserClient } from "@supabase/ssr"
 import { isPageVisible } from "@/lib/page-visibility"
 import { getDietPhase } from "@/lib/diet-phase"
+import { useLanguage } from "@/lib/i18n/context"
 
 // Update the containsCaffeine function to better detect exact matches
 const containsCaffeine = (product) => {
@@ -163,6 +164,7 @@ const getAllTags = (products) => {
 }
 
 export default function FoodListPage() {
+  const { t } = useLanguage()
   const [allProducts, setAllProducts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -392,13 +394,13 @@ export default function FoodListPage() {
   const getPhaseIndicator = () => {
     switch (currentPhase) {
       case "adaptation":
-        return `Adaptation Phase - Day ${adaptationDay}`
+        return t("foodList.phaseAdaptationDay", "Adaptation Phase – Day {n}").replace("{n}", String(adaptationDay))
       case "elimination":
-        return "Elimination Phase"
+        return t("foodList.phaseElimination", "Elimination Phase")
       case "reintroduction":
-        return "Reintroduction Phase"
+        return t("foodList.phaseReintroduction", "Reintroduction Phase")
       default:
-        return "Unknown Phase"
+        return t("foodList.phaseUnknown", "Unknown Phase")
     }
   }
 
@@ -428,7 +430,7 @@ export default function FoodListPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto mb-4"></div>
-          <p>Loading foods...</p>
+          <p>{t("foodList.loading", "Loading foods...")}</p>
         </div>
       </div>
     )
@@ -449,7 +451,7 @@ export default function FoodListPage() {
       {/* Main Content */}
       <main className="flex-1 p-4 overflow-hidden">
         <div className="mb-6">
-          <h2 className="text-2xl font-bold mb-2">Food List</h2>
+          <h2 className="text-2xl font-bold mb-2">{t("foodList.title", "Food List")}</h2>
 
           <div className={`inline-block px-3 py-1 rounded-full text-sm ${getPhaseIndicatorClasses()}`}>
             {getPhaseIndicator()}
@@ -457,7 +459,7 @@ export default function FoodListPage() {
 
           {currentPhase === "reintroduction" && (
             <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-xl text-sm text-green-800">
-              You're in the <strong>Reintroduction Phase</strong>. All products are set to <em>Under evaluation</em> — use the dropdown on each item to mark what works for you.
+              {t("foodList.reintroductionBanner", "You're in the Reintroduction Phase. All products are set to Under evaluation — use the dropdown on each item to mark what works for you.")}
             </div>
           )}
         </div>
@@ -470,7 +472,7 @@ export default function FoodListPage() {
             </div>
             <input
               type="text"
-              placeholder="Search foods, categories..."
+              placeholder={t("foodList.search", "Search foods, categories...")}
               className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/80 border border-brand-dark/20 focus:outline-none focus:ring-2 focus:ring-pink-400"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -488,12 +490,12 @@ export default function FoodListPage() {
             {/* Category Filter */}
             <div>
               <div className="flex justify-between items-center mb-2">
-                <h3 className="font-medium">Filter by category</h3>
+                <h3 className="font-medium">{t("foodList.filterByCategory", "Filter by category")}</h3>
                 <button
                   onClick={() => setShowTagDropdown(!showTagDropdown)}
                   className="text-sm text-pink-500 flex items-center"
                 >
-                  {selectedTags.length > 0 ? `${selectedTags.length} selected` : "Select categories"}
+                  {selectedTags.length > 0 ? `${selectedTags.length} ${t("foodList.selected", "selected")}` : t("foodList.selectCategories", "Select categories")}
                   {showTagDropdown ? <ChevronUp className="ml-1 h-4 w-4" /> : <ChevronDown className="ml-1 h-4 w-4" />}
                 </button>
               </div>
@@ -535,7 +537,7 @@ export default function FoodListPage() {
                     onClick={() => setSelectedTags([])}
                     className="px-2 py-1 text-xs text-brand-dark/70 hover:text-brand-dark"
                   >
-                    Clear all
+                    {t("foodList.clearTagsAll", "Clear all")}
                   </button>
                 </div>
               )}
@@ -544,7 +546,7 @@ export default function FoodListPage() {
             {/* Sort and Favorites Options */}
             <div className="flex flex-wrap gap-3 justify-between">
               <div>
-                <label className="block text-sm mb-1">Sort by</label>
+                <label className="block text-sm mb-1">{t("foodList.sortBy", "Sort by")}</label>
                 <div className="flex gap-2">
                   <button
                     onClick={() => setSortBy("name")}
@@ -552,7 +554,7 @@ export default function FoodListPage() {
                       sortBy === "name" ? "bg-pink-400 text-white" : "bg-white border border-brand-dark/20"
                     }`}
                   >
-                    Name
+                    {t("foodList.sortName", "Name")}
                   </button>
                   <button
                     onClick={() => setSortBy("status")}
@@ -560,7 +562,7 @@ export default function FoodListPage() {
                       sortBy === "status" ? "bg-pink-400 text-white" : "bg-white border border-brand-dark/20"
                     }`}
                   >
-                    Status
+                    {t("foodList.sortStatus", "Status")}
                   </button>
                 </div>
               </div>
@@ -574,7 +576,7 @@ export default function FoodListPage() {
                   className="mr-2 h-4 w-4 rounded border-brand-dark/30 text-pink-400 focus:ring-pink-400"
                 />
                 <label htmlFor="favorites-only" className="text-sm">
-                  Show favorites only
+                  {t("foodList.showFavorites", "Show favorites only")}
                 </label>
               </div>
             </div>
@@ -584,7 +586,7 @@ export default function FoodListPage() {
               onClick={clearFilters}
               className="w-full text-center py-2 border border-pink-300 text-pink-500 rounded-lg hover:bg-pink-50"
             >
-              Clear All Filters
+              {t("foodList.clearFilters", "Clear All Filters")}
             </button>
           </div>
         </div>
@@ -597,7 +599,7 @@ export default function FoodListPage() {
                 products.length > 0 && (
                   <div key={status} className="mb-6">
                     <h3 className={`inline-block px-3 py-1 rounded-full text-sm mb-3 ${getStatusClasses(status)}`}>
-                      {status === "Can eat" ? "Can consume" : status === "Can't eat" ? "Can't consume" : status} ({products.length})
+                      {status === "Can eat" ? t("foodList.section.canConsume","Can consume") : status === "Can't eat" ? t("foodList.section.cantConsume","Can't consume") : t("foodList.section.underEvaluation","Under evaluation")} ({products.length})
                     </h3>
 
                     <div className="space-y-2">
@@ -608,7 +610,7 @@ export default function FoodListPage() {
                             <div className="flex flex-wrap gap-1 mt-1">
                               {!product.is_aip && (
                                 <span className="px-2 py-0.5 rounded text-xs bg-red-100 text-red-800">
-                                  Non-AIP
+                                  {t("foodList.nonAip","Non-AIP")}
                                 </span>
                               )}
 
@@ -655,9 +657,9 @@ export default function FoodListPage() {
                                 onChange={(e) => updateProductStatus(product.name, e.target.value)}
                                 className={`px-2 py-1 rounded text-xs appearance-none pr-6 cursor-pointer ${getStatusClasses(getProductStatus(product))}`}
                               >
-                                <option value="Can eat">Can consume</option>
-                                <option value="Can't eat">Can't consume</option>
-                                <option value="Under evaluation">Under evaluation</option>
+                                <option value="Can eat">{t("foodList.status.canConsume","Can consume")}</option>
+                                <option value="Can't eat">{t("foodList.status.cantConsume","Can't consume")}</option>
+                                <option value="Under evaluation">{t("foodList.status.underEvaluation","Under evaluation")}</option>
                               </select>
                               <ChevronDown className="absolute right-1 top-1/2 transform -translate-y-1/2 h-3 w-3 pointer-events-none" />
                             </div>
@@ -678,7 +680,7 @@ export default function FoodListPage() {
                           onClick={handleShowMore}
                           className="w-full py-3 mt-4 text-pink-500 border border-pink-300 rounded-lg hover:bg-pink-50"
                         >
-                          Show More ({products.length - itemsToShow} remaining)
+                          {t("foodList.showMore","Show More")} ({products.length - itemsToShow} {t("foodList.remaining","remaining")})
                         </button>
                       )}
                     </div>
@@ -696,7 +698,7 @@ export default function FoodListPage() {
                   <div className="flex flex-wrap gap-1 mt-1">
                     {!product.is_aip && (
                       <span className="px-2 py-0.5 rounded text-xs bg-red-100 text-red-800">
-                        Non-AIP
+                        {t("foodList.nonAip","Non-AIP")}
                       </span>
                     )}
 
@@ -741,9 +743,9 @@ export default function FoodListPage() {
                       onChange={(e) => updateProductStatus(product.name, e.target.value)}
                       className={`px-2 py-1 rounded text-xs appearance-none pr-6 cursor-pointer ${getStatusClasses(getProductStatus(product))}`}
                     >
-                      <option value="Can eat">Can consume</option>
-                      <option value="Can't eat">Can't consume</option>
-                      <option value="Under evaluation">Under evaluation</option>
+                      <option value="Can eat">{t("foodList.status.canConsume","Can consume")}</option>
+                      <option value="Can't eat">{t("foodList.status.cantConsume","Can't consume")}</option>
+                      <option value="Under evaluation">{t("foodList.status.underEvaluation","Under evaluation")}</option>
                     </select>
                     <ChevronDown className="absolute right-1 top-1/2 transform -translate-y-1/2 h-3 w-3 pointer-events-none" />
                   </div>
@@ -761,7 +763,7 @@ export default function FoodListPage() {
                 onClick={handleShowMore}
                 className="w-full py-3 mt-4 text-pink-500 border border-pink-300 rounded-lg hover:bg-pink-50"
               >
-                Show More ({filteredProducts.length - itemsToShow} remaining)
+                {t("foodList.showMore","Show More")} ({filteredProducts.length - itemsToShow} {t("foodList.remaining","remaining")})
               </button>
             )}
           </div>
@@ -770,12 +772,12 @@ export default function FoodListPage() {
         {/* No Results Message */}
         {filteredProducts.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-lg text-brand-dark/70 mb-4">No foods match your search</p>
+            <p className="text-lg text-brand-dark/70 mb-4">{t("foodList.noResults","No foods match your search")}</p>
             <button
               onClick={clearFilters}
               className="px-4 py-2 text-pink-500 border border-pink-300 rounded-lg hover:bg-pink-50"
             >
-              Clear Filters
+              {t("foodList.clearFilters","Clear All Filters")}
             </button>
           </div>
         )}

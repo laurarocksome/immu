@@ -2,53 +2,40 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { List, Home, Plus, BookOpen, UtensilsCrossed, User, ArrowLeft, ChevronRight, PlusIcon } from "lucide-react"
+import { User, ArrowLeft, ChevronRight, PlusIcon } from "lucide-react"
 import Logo from "@/app/components/logo"
 import BottomNav from "@/app/components/bottom-nav"
 import Image from "next/image"
 import { createBrowserClient } from "@supabase/ssr"
+import { useLanguage } from "@/lib/i18n/context"
 
 export default function AdaptationPhasePage() {
   const router = useRouter()
+  const { t } = useLanguage()
   const [expandedFaq, setExpandedFaq] = useState<string | null>(null)
   const [nutritionPlans, setNutritionPlans] = useState<any[]>([])
   const [recipes, setRecipes] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
-  const handleProfileClick = () => {
-    router.push("/profile")
-  }
-
-  const handleBackClick = () => {
-    router.push("/nutrition")
-  }
-
   const toggleFaq = (id: string) => {
-    if (expandedFaq === id) {
-      setExpandedFaq(null)
-    } else {
-      setExpandedFaq(id)
-    }
+    setExpandedFaq(expandedFaq === id ? null : id)
   }
 
   const faqs = [
     {
       id: "foods-to-avoid",
-      question: "What foods should be avoided?",
-      answer:
-        "During the adaptation phase, gradually reduce caffeine (coffee, black and green tea), alcohol, sugar, and processed foods. Focus on removing one category per week rather than all at once.",
+      question: t("nutrition.adaptationPhase.faq1.q", "What foods should be avoided?"),
+      answer: t("nutrition.adaptationPhase.faq1.a", "During the adaptation phase, gradually reduce caffeine (coffee, black and green tea), alcohol, sugar, and processed foods. Focus on removing one category per week rather than all at once."),
     },
     {
       id: "grains-legumes",
-      question: "Can I eat any grains or legumes?",
-      answer:
-        "Yes, you can include whole grains and legumes in moderation. These are good sources of fiber, but introduce them gradually to allow your digestive system to adapt.",
+      question: t("nutrition.adaptationPhase.faq2.q", "Can I eat any grains or legumes?"),
+      answer: t("nutrition.adaptationPhase.faq2.a", "Yes, you can include whole grains and legumes in moderation. These are good sources of fiber, but introduce them gradually to allow your digestive system to adapt."),
     },
     {
       id: "fiber-sources",
-      question: "What are some good sources of fiber?",
-      answer:
-        "Good sources of fiber include fruits (apples, berries, pears), vegetables (broccoli, carrots, leafy greens), legumes (beans, lentils), whole grains (oats, quinoa), and nuts and seeds.",
+      question: t("nutrition.adaptationPhase.faq3.q", "What are some good sources of fiber?"),
+      answer: t("nutrition.adaptationPhase.faq3.a", "Good sources of fiber include fruits (apples, berries, pears), vegetables (broccoli, carrots, leafy greens), legumes (beans, lentils), whole grains (oats, quinoa), and nuts and seeds."),
     },
   ]
 
@@ -59,15 +46,12 @@ export default function AdaptationPhasePage() {
           process.env.NEXT_PUBLIC_SUPABASE_URL!,
           process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
         )
-
         const { data: plansData, error: plansError } = await supabase
           .from("nutrition_plans")
           .select("*")
           .eq("phase", "Adaptation")
           .order("week_number")
-
         if (plansError) throw plansError
-
         setNutritionPlans(plansData || [])
 
         const { data: recipesData, error: recipesError } = await supabase
@@ -75,9 +59,7 @@ export default function AdaptationPhasePage() {
           .select("*")
           .eq("phase", "Adaptation")
           .limit(3)
-
         if (recipesError) throw recipesError
-
         setRecipes(recipesData || [])
       } catch (error) {
         console.error("Error fetching data:", error)
@@ -85,18 +67,16 @@ export default function AdaptationPhasePage() {
         setLoading(false)
       }
     }
-
     fetchData()
   }, [])
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-brand-lightest to-white text-brand-dark">
-      {/* Header */}
       <header className="p-4 border-b border-pink-200/30 flex justify-between items-center bg-gradient-to-r from-pink-300 to-peach-300">
         <div className="flex items-center">
           <button
             className="mr-2 w-8 h-8 rounded-full flex items-center justify-center bg-white/20 hover:bg-white/30 transition-colors"
-            onClick={handleBackClick}
+            onClick={() => router.push("/nutrition")}
           >
             <ArrowLeft className="h-4 w-4 text-white" />
           </button>
@@ -104,29 +84,24 @@ export default function AdaptationPhasePage() {
         </div>
         <button
           className="w-10 h-10 rounded-full flex items-center justify-center bg-white/20 hover:bg-white/30 transition-colors"
-          onClick={handleProfileClick}
+          onClick={() => router.push("/profile")}
         >
           <User className="h-5 w-5 text-white" />
         </button>
       </header>
 
-      {/* Main Content */}
       <main className="flex-1 p-4 overflow-auto">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold mb-4">Adaptation Phase</h1>
-
+          <h1 className="text-3xl font-bold mb-4">{t("nutrition.adaptationPhase.heading", "Adaptation Phase")}</h1>
           <p className="text-brand-dark/90 mb-8">
-            This 28-day phase helps you ease into the AIP diet without going cold turkey. You don't need to change
-            everything at once — instead, you'll build new habits week by week, making the transition smoother and more
-            sustainable.
+            {t("nutrition.adaptationPhase.desc", "This 28-day phase helps you ease into the AIP diet without going cold turkey. You don't need to change everything at once — instead, you'll build new habits week by week, making the transition smoother and more sustainable.")}
           </p>
         </div>
 
-        {/* To-Do List */}
         <div className="glass-card rounded-2xl p-6 mb-8">
-          <h2 className="text-2xl font-bold mb-4">To-Do List</h2>
+          <h2 className="text-2xl font-bold mb-4">{t("nutrition.todoList", "To-Do List")}</h2>
           {loading ? (
-            <div className="text-center py-4">Loading...</div>
+            <div className="text-center py-4">{t("nutrition.loading", "Loading...")}</div>
           ) : (
             <ul className="space-y-5">
               {nutritionPlans.map((plan) => (
@@ -138,9 +113,7 @@ export default function AdaptationPhasePage() {
                     {plan.content?.tasks && (
                       <ul className="mt-2 space-y-1">
                         {plan.content.tasks.map((task: string, idx: number) => (
-                          <li key={idx} className="text-sm text-brand-dark/80">
-                            • {task}
-                          </li>
+                          <li key={idx} className="text-sm text-brand-dark/80">• {task}</li>
                         ))}
                       </ul>
                     )}
@@ -151,10 +124,9 @@ export default function AdaptationPhasePage() {
           )}
         </div>
 
-        {/* Related Recipes */}
         {recipes.length > 0 && (
           <div className="mb-8">
-            <h2 className="text-2xl font-bold mb-4">Related Recipes</h2>
+            <h2 className="text-2xl font-bold mb-4">{t("nutrition.relatedRecipes", "Related Recipes")}</h2>
             <div className="flex space-x-4 overflow-x-auto pb-2">
               {recipes.map((recipe) => (
                 <div
@@ -181,12 +153,11 @@ export default function AdaptationPhasePage() {
               onClick={() => router.push("/recipes")}
               className="mt-4 w-full py-3 rounded-xl border border-pink-500 text-pink-500 font-medium hover:bg-pink-50 transition-colors"
             >
-              View All Recipes
+              {t("nutrition.viewAllRecipes", "View All Recipes")}
             </button>
           </div>
         )}
 
-        {/* FAQ */}
         <div className="mb-8">
           <div className="rounded-xl overflow-hidden border border-gray-200">
             {faqs.map((faq, index) => (
@@ -206,7 +177,7 @@ export default function AdaptationPhasePage() {
             onClick={() => router.push("/faq")}
             className="mt-4 w-full py-3 rounded-xl border border-pink-500 text-pink-500 font-medium hover:bg-pink-50 transition-colors"
           >
-            More FAQ
+            {t("nutrition.moreFaq", "More FAQ")}
           </button>
         </div>
       </main>

@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { List, Home, Plus, BookOpen, UtensilsCrossed, User, Search, Filter } from "lucide-react"
+import { User, Search, Filter } from "lucide-react"
 import BottomNav from "@/app/components/bottom-nav"
 import Logo from "@/app/components/logo"
 import { createBrowserClient } from "@supabase/ssr"
 import { isPageVisible } from "@/lib/page-visibility"
+import { useLanguage } from "@/lib/i18n/context"
 
 type Recipe = {
   id: string
@@ -18,11 +19,18 @@ type Recipe = {
   image_url?: string
 }
 
-// Categories for filtering
+const CATEGORY_KEYS: Record<string, string> = {
+  "All": "recipes.cat.all",
+  "Breakfast": "recipes.cat.breakfast",
+  "Lunch": "recipes.cat.lunch",
+  "Dinner": "recipes.cat.dinner",
+  "Snacks": "recipes.cat.snacks",
+}
 const categories = ["All", "Breakfast", "Lunch", "Dinner", "Snacks"]
 
 export default function RecipesPage() {
   const router = useRouter()
+  const { t } = useLanguage()
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("All")
   const [showFilters, setShowFilters] = useState(false)
@@ -60,16 +68,8 @@ export default function RecipesPage() {
     setLoading(false)
   }
 
-  const handleProfileClick = () => {
-    router.push("/profile")
-  }
-
   const handleRecipeClick = (id: string) => {
     router.push(`/recipes/${id}`)
-  }
-
-  const handleNavigation = (path: string) => {
-    router.push(path)
   }
 
   const filteredRecipes = recipes.filter((recipe) => {
@@ -77,7 +77,6 @@ export default function RecipesPage() {
       recipe.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       recipe.tags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase()))
     const matchesCategory = selectedCategory === "All" || recipe.category === selectedCategory
-
     return matchesSearch && matchesCategory
   })
 
@@ -87,27 +86,25 @@ export default function RecipesPage() {
         <Logo variant="light" />
         <button
           className="w-10 h-10 rounded-full flex items-center justify-center bg-white/20 hover:bg-white/30 transition-colors"
-          onClick={handleProfileClick}
+          onClick={() => router.push("/profile")}
         >
           <User className="h-5 w-5 text-white" />
         </button>
       </header>
 
-      {/* Main Content */}
       <main className="flex-1 p-4 overflow-auto">
         <div className="mb-6">
-          <h2 className="text-2xl font-bold mb-2">AIP Recipes</h2>
-          <p className="text-brand-dark/70">Discover delicious autoimmune-friendly recipes</p>
+          <h2 className="text-2xl font-bold mb-2">{t("recipes.title", "AIP Recipes")}</h2>
+          <p className="text-brand-dark/70">{t("recipes.subtitle", "Discover delicious autoimmune-friendly recipes")}</p>
         </div>
 
-        {/* Search Bar */}
         <div className="relative mb-6">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <Search className="h-5 w-5 text-brand-dark/50" />
           </div>
           <input
             type="text"
-            placeholder="Search recipes or ingredients"
+            placeholder={t("recipes.search", "Search recipes or ingredients")}
             className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/80 border border-brand-dark/20 focus:outline-none focus:ring-2 focus:ring-pink-400"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -120,10 +117,9 @@ export default function RecipesPage() {
           </button>
         </div>
 
-        {/* Filters */}
         {showFilters && (
           <div className="mb-6 glass-card rounded-xl p-4">
-            <h3 className="font-medium mb-3">Filter by category</h3>
+            <h3 className="font-medium mb-3">{t("recipes.filterByCategory", "Filter by category")}</h3>
             <div className="flex flex-wrap gap-2">
               {categories.map((category) => (
                 <button
@@ -135,17 +131,16 @@ export default function RecipesPage() {
                       : "bg-white/80 border border-brand-dark/20 hover:bg-white"
                   }`}
                 >
-                  {category}
+                  {t(CATEGORY_KEYS[category], category)}
                 </button>
               ))}
             </div>
           </div>
         )}
 
-        {/* Recipe Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           {loading ? (
-            <div className="col-span-full text-center py-8 text-brand-dark/60">Loading recipes...</div>
+            <div className="col-span-full text-center py-8 text-brand-dark/60">{t("recipes.loading", "Loading recipes...")}</div>
           ) : filteredRecipes.length > 0 ? (
             filteredRecipes.map((recipe) => (
               <div
@@ -166,8 +161,8 @@ export default function RecipesPage() {
                 <div className="p-4">
                   <h3 className="font-bold text-lg mb-2">{recipe.title}</h3>
                   <div className="flex justify-between text-sm text-brand-dark/70 mb-3">
-                    <span>Prep: {recipe.prep_time}</span>
-                    <span>Cook: {recipe.cook_time}</span>
+                    <span>{t("recipes.prep", "Prep:")} {recipe.prep_time}</span>
+                    <span>{t("recipes.cook", "Cook:")} {recipe.cook_time}</span>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {recipe.tags.map((tag, index) => (
@@ -181,7 +176,7 @@ export default function RecipesPage() {
             ))
           ) : (
             <div className="col-span-full text-center py-8">
-              <p className="text-brand-dark/70">No recipes found. Try adjusting your search.</p>
+              <p className="text-brand-dark/70">{t("recipes.notFound", "No recipes found. Try adjusting your search.")}</p>
             </div>
           )}
         </div>

@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { List, Home, Plus, BookOpen, UtensilsCrossed, ArrowLeft, Clock, Heart } from "lucide-react"
+import { ArrowLeft, Clock, Heart } from "lucide-react"
 import Logo from "@/app/components/logo"
 import BottomNav from "@/app/components/bottom-nav"
 import { createBrowserClient } from "@supabase/ssr"
+import { useLanguage } from "@/lib/i18n/context"
 
 type Recipe = {
   id: string
@@ -28,6 +29,7 @@ type Recipe = {
 
 export default function RecipeDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter()
+  const { t } = useLanguage()
   const [recipe, setRecipe] = useState<Recipe | null>(null)
   const [loading, setLoading] = useState(true)
   const [isFavorite, setIsFavorite] = useState(false)
@@ -64,17 +66,8 @@ export default function RecipeDetailPage({ params }: { params: { id: string } })
     setLoading(false)
   }
 
-  const handleBack = () => {
-    router.back()
-  }
-
-  const toggleFavorite = () => {
-    setIsFavorite(!isFavorite)
-  }
-
-  const handleNavigation = (path: string) => {
-    router.push(path)
-  }
+  const handleBack = () => { router.back() }
+  const toggleFavorite = () => { setIsFavorite(!isFavorite) }
 
   if (loading) {
     return (
@@ -82,13 +75,13 @@ export default function RecipeDetailPage({ params }: { params: { id: string } })
         <header className="p-4 flex justify-between items-center header-gradient text-white">
           <button onClick={handleBack} className="flex items-center text-white/80 hover:text-white">
             <ArrowLeft className="h-5 w-5 mr-1" />
-            <span>Back</span>
+            <span>{t("recipe.back", "Back")}</span>
           </button>
           <Logo variant="light" />
           <div className="w-20"></div>
         </header>
         <main className="flex-1 flex items-center justify-center">
-          <div className="text-brand-dark/60">Loading recipe...</div>
+          <div className="text-brand-dark/60">{t("recipe.loading", "Loading recipe...")}</div>
         </main>
       </div>
     )
@@ -100,16 +93,16 @@ export default function RecipeDetailPage({ params }: { params: { id: string } })
         <header className="p-4 flex justify-between items-center header-gradient text-white">
           <button onClick={handleBack} className="flex items-center text-white/80 hover:text-white">
             <ArrowLeft className="h-5 w-5 mr-1" />
-            <span>Back</span>
+            <span>{t("recipe.back", "Back")}</span>
           </button>
           <Logo variant="light" />
           <div className="w-20"></div>
         </header>
         <main className="flex-1 flex items-center justify-center">
           <div className="text-center">
-            <p className="text-brand-dark/70 mb-4">Recipe not found</p>
+            <p className="text-brand-dark/70 mb-4">{t("recipe.notFound", "Recipe not found")}</p>
             <button onClick={handleBack} className="gradient-button px-6 py-2 rounded-full">
-              Go Back
+              {t("recipe.goBack", "Go Back")}
             </button>
           </div>
         </main>
@@ -122,13 +115,12 @@ export default function RecipeDetailPage({ params }: { params: { id: string } })
       <header className="p-4 flex justify-between items-center header-gradient text-white">
         <button onClick={handleBack} className="flex items-center text-white/80 hover:text-white">
           <ArrowLeft className="h-5 w-5 mr-1" />
-          <span>Back</span>
+          <span>{t("recipe.back", "Back")}</span>
         </button>
         <Logo variant="light" />
         <div className="w-20"></div>
       </header>
 
-      {/* Recipe Image */}
       <div className="relative w-full h-48 md:h-64">
         <img
           src={recipe.image_url || "/placeholder.svg?height=300&width=600&query=recipe"}
@@ -147,9 +139,7 @@ export default function RecipeDetailPage({ params }: { params: { id: string } })
         </div>
       </div>
 
-      {/* Main Content */}
       <main className="flex-1 p-4 overflow-auto">
-        {/* Recipe Header */}
         <div className="mb-6">
           <div className="flex flex-wrap gap-2 mb-2">
             {recipe.tags.map((tag, index) => (
@@ -159,22 +149,20 @@ export default function RecipeDetailPage({ params }: { params: { id: string } })
             ))}
           </div>
           <h1 className="text-2xl font-bold mb-2">{recipe.title}</h1>
-
           <div className="flex flex-wrap gap-4 mb-2">
             <div className="flex items-center">
               <Clock className="h-4 w-4 mr-1 text-brand-dark/70" />
-              <span className="text-sm">Prep: {recipe.prep_time}</span>
+              <span className="text-sm">{t("recipes.prep", "Prep:")} {recipe.prep_time}</span>
             </div>
             <div className="flex items-center">
               <Clock className="h-4 w-4 mr-1 text-brand-dark/70" />
-              <span className="text-sm">Cook: {recipe.cook_time}</span>
+              <span className="text-sm">{t("recipes.cook", "Cook:")} {recipe.cook_time}</span>
             </div>
           </div>
         </div>
 
-        {/* Ingredients */}
         <div className="glass-card rounded-2xl p-6 mb-6">
-          <h2 className="text-xl font-bold mb-4">Ingredients</h2>
+          <h2 className="text-xl font-bold mb-4">{t("recipe.ingredients", "Ingredients")}</h2>
           <ul className="space-y-2">
             {recipe.ingredients.map((ingredient, index) => (
               <li key={index} className="flex items-start">
@@ -185,9 +173,8 @@ export default function RecipeDetailPage({ params }: { params: { id: string } })
           </ul>
         </div>
 
-        {/* Instructions */}
         <div className="glass-card rounded-2xl p-6 mb-6">
-          <h2 className="text-xl font-bold mb-4">Instructions</h2>
+          <h2 className="text-xl font-bold mb-4">{t("recipe.instructions", "Instructions")}</h2>
           <ol className="space-y-4">
             {recipe.instructions.map((instruction, index) => (
               <li key={index} className="flex">
@@ -202,36 +189,36 @@ export default function RecipeDetailPage({ params }: { params: { id: string } })
 
         {recipe.nutrition_info && (
           <div className="glass-card rounded-2xl p-6 mb-6">
-            <h2 className="text-xl font-bold mb-4">Nutrition Facts</h2>
+            <h2 className="text-xl font-bold mb-4">{t("recipe.nutritionFacts", "Nutrition Facts")}</h2>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               {recipe.nutrition_info.calories && (
                 <div className="text-center">
                   <div className="text-lg font-bold">{recipe.nutrition_info.calories}</div>
-                  <div className="text-sm text-brand-dark/70">Calories</div>
+                  <div className="text-sm text-brand-dark/70">{t("recipe.calories", "Calories")}</div>
                 </div>
               )}
               {recipe.nutrition_info.protein && (
                 <div className="text-center">
                   <div className="text-lg font-bold">{recipe.nutrition_info.protein}g</div>
-                  <div className="text-sm text-brand-dark/70">Protein</div>
+                  <div className="text-sm text-brand-dark/70">{t("recipe.protein", "Protein")}</div>
                 </div>
               )}
               {recipe.nutrition_info.carbs && (
                 <div className="text-center">
                   <div className="text-lg font-bold">{recipe.nutrition_info.carbs}g</div>
-                  <div className="text-sm text-brand-dark/70">Carbs</div>
+                  <div className="text-sm text-brand-dark/70">{t("recipe.carbs", "Carbs")}</div>
                 </div>
               )}
               {recipe.nutrition_info.fat && (
                 <div className="text-center">
                   <div className="text-lg font-bold">{recipe.nutrition_info.fat}g</div>
-                  <div className="text-sm text-brand-dark/70">Fat</div>
+                  <div className="text-sm text-brand-dark/70">{t("recipe.fat", "Fat")}</div>
                 </div>
               )}
               {recipe.nutrition_info.fiber && (
                 <div className="text-center">
                   <div className="text-lg font-bold">{recipe.nutrition_info.fiber}g</div>
-                  <div className="text-sm text-brand-dark/70">Fiber</div>
+                  <div className="text-sm text-brand-dark/70">{t("recipe.fiber", "Fiber")}</div>
                 </div>
               )}
             </div>
