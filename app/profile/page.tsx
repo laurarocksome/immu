@@ -1,8 +1,10 @@
 "use client"
 
+
 export const dynamic = "force-dynamic"
 
 import { useEffect, useState } from "react"
+import { useLanguage } from "@/lib/i18n/context"
 import { useRouter } from "next/navigation"
 import { List, Home, Plus, BookOpen, UtensilsCrossed, ArrowLeft, Edit, Trash2 } from "lucide-react"
 import Logo from "@/app/components/logo"
@@ -26,6 +28,7 @@ type DietInfo = {
 
 export default function ProfilePage() {
   const router = useRouter()
+  const { locale, setLocale, t } = useLanguage()
   const [userName, setUserName] = useState<string>("")
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [dietInfo, setDietInfo] = useState<DietInfo | null>(null)
@@ -366,6 +369,29 @@ export default function ProfilePage() {
             </div>
           </div>
 
+          {/* Language Selector */}
+          <div className="glass-card rounded-2xl p-6 mb-4">
+            <h2 className="text-xl font-semibold mb-4">{t("profile.language", "Language")}</h2>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setLocale("en")}
+                className={`flex-1 py-3 rounded-full border-2 font-medium transition-all ${
+                  locale === "en" ? "bg-pink-400 border-pink-400 text-white" : "border-pink-200 text-brand-dark"
+                }`}
+              >
+                🇬🇧 EN
+              </button>
+              <button
+                onClick={() => setLocale("lt")}
+                className={`flex-1 py-3 rounded-full border-2 font-medium transition-all ${
+                  locale === "lt" ? "bg-pink-400 border-pink-400 text-white" : "border-pink-200 text-brand-dark"
+                }`}
+              >
+                🇱🇹 LT
+              </button>
+            </div>
+          </div>
+
           <button
             onClick={() => {
               localStorage.clear()
@@ -415,7 +441,7 @@ export default function ProfilePage() {
         </div>
       )}
 
-      <nav className="grid grid-cols-5 border-t border-brand-dark/10 bg-white/80 backdrop-blur-sm">
+      <nav className="bottom-nav grid grid-cols-5 border-t border-brand-dark/10 bg-white/80 backdrop-blur-sm">
         <button
           className="flex flex-col items-center justify-center py-3 text-xs"
           onClick={() => router.push("/food-list")}

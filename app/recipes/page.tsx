@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { List, Home, Plus, BookOpen, UtensilsCrossed, User, Search, Filter } from "lucide-react"
 import Logo from "@/app/components/logo"
 import { createBrowserClient } from "@supabase/ssr"
+import { isPageVisible } from "@/lib/page-visibility"
 
 type Recipe = {
   id: string
@@ -32,8 +33,15 @@ export default function RecipesPage() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
   )
 
+  const [pageVisible, setPageVisible] = useState<boolean | null>(null)
+
   useEffect(() => {
-    loadRecipes()
+    async function init() {
+      const visible = await isPageVisible("recipes")
+      setPageVisible(visible)
+      if (visible) loadRecipes()
+    }
+    init()
   }, [])
 
   const loadRecipes = async () => {
@@ -179,7 +187,7 @@ export default function RecipesPage() {
       </main>
 
       {/* Bottom Navigation */}
-      <nav className="grid grid-cols-5 border-t border-brand-dark/10 bg-white/80 backdrop-blur-sm">
+      <nav className="bottom-nav grid grid-cols-5 border-t border-brand-dark/10 bg-white/80 backdrop-blur-sm">
         <button
           className="flex flex-col items-center justify-center py-3 text-xs"
           onClick={() => handleNavigation("/food-list")}

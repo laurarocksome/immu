@@ -20,6 +20,7 @@ import {
 } from "lucide-react"
 import Logo from "@/app/components/logo"
 import { createBrowserClient } from "@supabase/ssr"
+import { isPageVisible } from "@/lib/page-visibility"
 
 // Function to determine the current diet phase and day
 const determineDietPhase = () => {
@@ -219,6 +220,14 @@ export default function FoodListPage() {
 
   // Effect to load diet phase, favorites, and user statuses on component mount
   useEffect(() => {
+    async function checkVisibility() {
+      const visible = await isPageVisible("food-list")
+      if (!visible) { router.replace("/dashboard"); return }
+    }
+    checkVisibility()
+  }, [])
+
+  useEffect(() => {
     async function fetchFoods() {
       try {
         const supabase = createBrowserClient(
@@ -279,64 +288,46 @@ export default function FoodListPage() {
     localStorage.setItem("userModifiedStatuses", JSON.stringify(newStatuses))
   }
 
-  // Update the getProductStatus function to replace "Can't eat yet" with "Can't eat"
   const getProductStatus = (product: any) => {
-    // Check if the user has manually modified the status
+    // 1. User manual override takes priority
     if (userModifiedStatuses[product.name]) {
       return userModifiedStatuses[product.name]
     }
 
-    // If in elimination phase
-    if (currentPhase === "elimination") {
-      // Non-AIP items are "Can't eat"
-      if (!product.isAIP) {
-        return "Can't eat"
-      }
-      // AIP items are "Can eat"
-      return "Can eat"
-    }
+    const dbStatus = product.status || (product.is_aip ? "Can consume" : "Can't consume")
 
-    // If in adaptation phase, apply the progressive restrictions
-    if (currentPhase === "adaptation") {
-      // Days 1-7: Only caffeine is restricted
-      if (adaptationDay <= 7) {
-        if (containsCaffeine(product)) {
-          return "Can't eat"
-        }
-        // All other products (including non-AIP) are "Can eat" during adaptation
-        return "Can eat"
-      }
-
-      // Days 8-14: Caffeine and alcohol are restricted
-      if (adaptationDay <= 14) {
-        if (containsCaffeine(product) || containsAlcohol(product)) {
-          return "Can't eat"
-        }
-        // All other products (including non-AIP) are "Can eat"
-        return "Can eat"
-      }
-
-      // Days 15-28: Caffeine, alcohol, and sugar are restricted
-      if (adaptationDay <= 28) {
-        if (containsCaffeine(product) || containsAlcohol(product) || containsSugar(product)) {
-          return "Can't eat"
-        }
-        // All other products (including non-AIP) are "Can eat"
-        return "Can eat"
-      }
-    }
-
-    // If in reintroduction phase, non-AIP items are "Under evaluation" by default
+    // 2. Reintroduction: non-AIP moves to "Under evaluation"
     if (currentPhase === "reintroduction") {
-      if (!product.isAIP) {
-        return "Under evaluation"
-      }
-      // AIP items remain "Can eat"
-      return "Can eat"
+      return dbStatus === "Can't consume" ? "Under evaluation" : "Can consume"
     }
 
-    // Default fallback - should not reach here in normal flow
-    return product.isAIP ? "Can eat" : "Can't eat"
+    // 3. Elimination: use DB status directly
+    if (currentPhase === "elimination") {
+      return dbStatus
+    }
+
+    // 4. Adaptation: progressively restrict by tag week by week
+    // Only non-AIP products get restricted during adaptation
+    if (currentPhase === "adaptation") {
+      const tags = (product.tags || []).map((t: string) => t.toLowerCase())
+      const name = product.name.toLowerCase()
+
+      const hasCaffeine = tags.includes("caffeine") || containsCaffeine(product)
+      const hasAlcohol = tags.includes("alcohol") || containsAlcohol(product)
+      const hasSugar = tags.includes("sugar") || containsSugar(product)
+
+      // Week 1 (days 1-7): restrict caffeine
+      if (adaptationDay <= 7 && hasCaffeine) return "Can't consume"
+      // Week 2 (days 8-14): + alcohol
+      if (adaptationDay <= 14 && (hasCaffeine || hasAlcohol)) return "Can't consume"
+      // Week 3-4 (days 15-28): + sugar
+      if (adaptationDay <= 28 && (hasCaffeine || hasAlcohol || hasSugar)) return "Can't consume"
+
+      // Everything else is allowed during adaptation
+      return "Can consume"
+    }
+
+    return dbStatus
   }
 
   // Filter and sort products based on user selections
@@ -362,13 +353,13 @@ export default function FoodListPage() {
     .sort((a, b) => {
       // Update the status order in the sort function
       if (sortBy === "status") {
-        // Sort by status (Can eat, Can't eat, Under evaluation)
+        // Sort by status (Can consume, Can't consume, Under evaluation)
         const statusA = getProductStatus(a)
         const statusB = getProductStatus(b)
 
         const statusOrder = {
-          "Can eat": 0,
-          "Can't eat": 1,
+          "Can consume": 0,
+          "Can't consume": 1,
           "Under evaluation": 2,
         }
 
@@ -378,10 +369,10 @@ export default function FoodListPage() {
       return a.name.localeCompare(b.name)
     })
 
-  // Update the productsByStatus object to remove "Can't eat yet"
+  // Update the productsByStatus object to remove "Can't consume yet"
   const productsByStatus = {
-    "Can eat": filteredProducts.filter((p) => getProductStatus(p) === "Can eat"),
-    "Can't eat": filteredProducts.filter((p) => getProductStatus(p) === "Can't eat"),
+    "Can consume": filteredProducts.filter((p) => getProductStatus(p) === "Can consume"),
+    "Can't consume": filteredProducts.filter((p) => getProductStatus(p) === "Can't consume"),
     "Under evaluation": filteredProducts.filter((p) => getProductStatus(p) === "Under evaluation"),
   }
 
@@ -409,9 +400,9 @@ export default function FoodListPage() {
   // Get classes for status badge
   const getStatusClasses = (status: string) => {
     switch (status) {
-      case "Can eat":
+      case "Can consume":
         return "bg-green-100 text-green-800"
-      case "Can't eat":
+      case "Can't consume":
         return "bg-red-100 text-red-800"
       case "Under evaluation":
         return "bg-peach-100 text-peach-800"
@@ -632,12 +623,11 @@ export default function FoodListPage() {
                           <div>
                             <h4 className="font-medium">{product.name}</h4>
                             <div className="flex flex-wrap gap-1 mt-1">
-                              {/* AIP/Non-AIP Tag */}
-                              <span
-                                className={`px-2 py-0.5 rounded text-xs ${product.isAIP ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}
-                              >
-                                {product.isAIP ? "AIP" : "Non-AIP"}
-                              </span>
+                              {!product.is_aip && (
+                                <span className="px-2 py-0.5 rounded text-xs bg-red-100 text-red-800">
+                                  Non-AIP
+                                </span>
+                              )}
 
                               {product.tags.slice(0, 2).map((tag) => (
                                 <span key={tag} className="bg-brand-lightest px-2 py-0.5 rounded text-xs">
@@ -660,8 +650,8 @@ export default function FoodListPage() {
                                 onChange={(e) => updateProductStatus(product.name, e.target.value)}
                                 className={`px-2 py-1 rounded text-xs appearance-none pr-6 cursor-pointer ${getStatusClasses(getProductStatus(product))}`}
                               >
-                                <option value="Can eat">Can eat</option>
-                                <option value="Can't eat">Can't eat</option>
+                                <option value="Can consume">Can consume</option>
+                                <option value="Can't consume">Can't consume</option>
                                 <option value="Under evaluation">Under evaluation</option>
                               </select>
                               <ChevronDown className="absolute right-1 top-1/2 transform -translate-y-1/2 h-3 w-3 pointer-events-none" />
@@ -705,12 +695,11 @@ export default function FoodListPage() {
                 <div>
                   <h4 className="font-medium">{product.name}</h4>
                   <div className="flex flex-wrap gap-1 mt-1">
-                    {/* AIP/Non-AIP Tag */}
-                    <span
-                      className={`px-2 py-0.5 rounded text-xs ${product.isAIP ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}
-                    >
-                      {product.isAIP ? "AIP" : "Non-AIP"}
-                    </span>
+                    {!product.is_aip && (
+                      <span className="px-2 py-0.5 rounded text-xs bg-red-100 text-red-800">
+                        Non-AIP
+                      </span>
+                    )}
 
                     {product.tags.slice(0, 2).map((tag) => (
                       <span key={tag} className="bg-brand-lightest px-2 py-0.5 rounded text-xs">
@@ -731,8 +720,8 @@ export default function FoodListPage() {
                       onChange={(e) => updateProductStatus(product.name, e.target.value)}
                       className={`px-2 py-1 rounded text-xs appearance-none pr-6 cursor-pointer ${getStatusClasses(getProductStatus(product))}`}
                     >
-                      <option value="Can eat">Can eat</option>
-                      <option value="Can't eat">Can't eat</option>
+                      <option value="Can consume">Can consume</option>
+                      <option value="Can't consume">Can't consume</option>
                       <option value="Under evaluation">Under evaluation</option>
                     </select>
                     <ChevronDown className="absolute right-1 top-1/2 transform -translate-y-1/2 h-3 w-3 pointer-events-none" />

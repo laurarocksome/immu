@@ -27,9 +27,6 @@ export async function signUp(email: string, password: string, name: string) {
     throw new Error("An account with this email already exists. Please log in instead.")
   }
 
-  if (data.user && data.user.email_confirmed_at) {
-    throw new Error("An account with this email already exists. Please log in instead.")
-  }
 
   return data
 }

@@ -2,13 +2,15 @@ import type React from "react"
 import "./globals.css"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
+import DesktopSidebar from "./components/desktop-sidebar"
+import { LanguageProvider } from "@/lib/i18n/context"
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "IMMU - AIP Diet Tracking App",
   description: "Track your diet journey, monitor symptoms, and see your progress",
-    generator: 'v0.app'
+  generator: 'v0.app'
 }
 
 export default function RootLayout({
@@ -19,9 +21,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <div className="app-shell">
-          {children}
-        </div>
+        <LanguageProvider>
+          <DesktopSidebar />
+          <div className="app-shell">
+            {children}
+          </div>
+        </LanguageProvider>
       </body>
     </html>
   )

@@ -1,4 +1,5 @@
 "use client"
+import React from "react"
 
 export const dynamic = "force-dynamic"
 
@@ -88,18 +89,17 @@ async function loadTrackedDates(userId: string) {
 //   return data || []
 // }
 
-// Update the chart dates to show daily data
-const chartDates = ["Day 1", "Day 2", "Day 3", "Day 4", "Day 5", "Day 6", "Day 7"]
+// chartDates is now computed dynamically as state in DashboardPage
 
 // Sample symptom tracking data for the chart with more distinct colors
 const symptomHistoryData = {
-  dates: chartDates,
+  dates: ["Day 1", "Day 2", "Day 3", "Day 4", "Day 5", "Day 6", "Day 7"],
   symptoms: [], // Will be populated based on user's selected symptoms
 }
 
 // Sample wellness data structure
 const wellnessHistoryData = {
-  dates: chartDates,
+  dates: ["Day 1", "Day 2", "Day 3", "Day 4", "Day 5", "Day 6", "Day 7"],
   scores: [0, 0, 0, 0, 0, 0, 0], // Will be populated with wellness scores
   color: "#f4a6b8",
   gradient: ["#f4a6b8", "#f4a6b833"],
@@ -183,6 +183,7 @@ export default function DashboardPage() {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
   // </CHANGE> Removed isUpdatingWeight and weightUpdateSuccess states - using modal for all weight updates
   const [userId, setUserId] = useState<string>("")
+  const [hiddenPages, setHiddenPages] = useState<string[]>([])
   const [dietInfo, setDietInfo] = useState<any>(null) // State to store diet information
 
   // To-do list states
@@ -198,6 +199,7 @@ export default function DashboardPage() {
   // Add a new state for reintroduction phase day
   const [reintroductionDay, setReintroductionDay] = useState(0)
   const [currentPhase, setCurrentPhase] = useState<"adaptation" | "elimination" | "reintroduction">("elimination")
+  const [chartDates, setChartDates] = useState<string[]>(["Day 1", "Day 2", "Day 3", "Day 4", "Day 5", "Day 6", "Day 7"])
 
   // Add a state for wellness data
   const [wellnessData, setWellnessData] = useState<any>({ mood: [], sleep: [], stress: [] }) // Changed to object for structured data
@@ -521,7 +523,7 @@ export default function DashboardPage() {
           { id: "rest_day", text: "Rest day — no new food", isSpecial: true },
           ...commonItems,
           { id: "observe_symptoms", text: "Observe for any delayed symptoms" },
-          { id: "update_product_list", text: "Update the product list with 'Can eat' or 'Can't eat'" },
+          { id: "update_product_list", text: "Update the product list with 'Can consume' or 'Can't consume'" },
         ]
       case 3:
         return [
@@ -533,7 +535,7 @@ export default function DashboardPage() {
         return [
           { id: "eat_vegetables", text: "Eat a variety of vegetables today" },
           ...commonItems,
-          { id: "update_product_list", text: "Update the product list with 'Can eat' or 'Can't eat'" },
+          { id: "update_product_list", text: "Update the product list with 'Can consume' or 'Can't consume'" },
         ]
       case 5:
         return [
@@ -547,7 +549,7 @@ export default function DashboardPage() {
         return [
           { id: "stretching", text: "Do a stretching session" },
           ...commonItems,
-          { id: "update_product_list", text: "Update the product list with 'Can eat' or 'Can't eat'" },
+          { id: "update_product_list", text: "Update the product list with 'Can consume' or 'Can't consume'" },
         ]
       case 7:
         return [
@@ -564,7 +566,7 @@ export default function DashboardPage() {
         return [
           { id: "cook_dinner", text: "Cook a nourishing veggie-based dinner" },
           ...commonItems,
-          { id: "update_product_list", text: "Update the product list with 'Can eat' or 'Can't eat'" },
+          { id: "update_product_list", text: "Update the product list with 'Can consume' or 'Can't consume'" },
         ]
       case 9:
         return [
@@ -576,7 +578,7 @@ export default function DashboardPage() {
         return [
           { id: "mocktail", text: "Try a mocktail as a reward" },
           ...commonItems,
-          { id: "update_product_list", text: "Update the product list with 'Can eat' or 'Can't eat'" },
+          { id: "update_product_list", text: "Update the product list with 'Can consume' or 'Can't consume'" },
         ]
       case 11:
         return [
@@ -592,7 +594,7 @@ export default function DashboardPage() {
       case 12:
         return [
           ...commonItems,
-          { id: "update_product_list", text: "Update the product list with 'Can eat' or 'Can't eat'" },
+          { id: "update_product_list", text: "Update the product list with 'Can consume' or 'Can't consume'" },
         ]
       case 13:
         return [
@@ -605,7 +607,7 @@ export default function DashboardPage() {
         return [
           { id: "meditate_longer", text: "Meditate for 20 minutes" },
           ...commonItems,
-          { id: "update_product_list", text: "Update the product list with 'Can eat' or 'Can't eat'" },
+          { id: "update_product_list", text: "Update the product list with 'Can consume' or 'Can't consume'" },
         ]
       case 15:
         return [
@@ -685,7 +687,7 @@ export default function DashboardPage() {
         ]
       case 27:
         return [
-          { id: "review_list", text: "Review your personal 'Can eat' list" },
+          { id: "review_list", text: "Review your personal 'Can consume' list" },
           ...commonItems,
           { id: "calming_activity", text: "Plan a calming activity" },
         ]
@@ -1042,7 +1044,7 @@ export default function DashboardPage() {
     setCurrentDate(date.toLocaleDateString("en-US", options))
 
     // Check if this is the first time loading the dashboard after onboarding
-    const isFirstLoad = sessionStorage.getItem("dashboardFirstLoad") !== "false"
+    const isFirstLoad = localStorage.getItem("dashboardFirstLoad") !== "false"
 
     if (typeof window !== "undefined") {
       // Get session and redirect if not authenticated
@@ -1124,6 +1126,21 @@ export default function DashboardPage() {
       const dietTimeline = localStorage.getItem("userDietTimeline")
       const startDate = localStorage.getItem("dietStartDate")
 
+      // Compute dynamic chart labels based on diet start date
+      const computedDates = Array.from({ length: 7 }, (_, i) => {
+        const date = new Date()
+        date.setDate(date.getDate() - (6 - i))
+        if (startDate) {
+          const start = new Date(startDate)
+          start.setHours(0, 0, 0, 0)
+          date.setHours(0, 0, 0, 0)
+          const dayNum = Math.floor((date.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1
+          return dayNum > 0 ? `Day ${dayNum}` : "-"
+        }
+        return `Day ${i + 1}`
+      })
+      setChartDates(computedDates)
+
       if (!startDate) {
         const today = new Date().toISOString()
         localStorage.setItem("dietStartDate", today)
@@ -1147,15 +1164,17 @@ export default function DashboardPage() {
         setProgress(progressPercentage > 0 ? progressPercentage : 1)
       }
 
-      const isFirstEverLoad = sessionStorage.getItem("dashboardFirstLoad") === null
+      const isFirstEverLoad = localStorage.getItem("dashboardFirstLoad") === null
       if (isFirstEverLoad) {
-        setShowWelcome(true)
-        sessionStorage.setItem("dashboardFirstLoad", "false")
-
-        // Get user account info if available
-        const accountInfo = JSON.parse(localStorage.getItem("userAccount") || "{}")
-        if (accountInfo && accountInfo.name) {
-          setUserName(accountInfo.name)
+        localStorage.setItem("dashboardFirstLoad", "false")
+        // Only show welcome if user has no existing logs (truly new user)
+        if (user?.id) {
+          const { createClient: cc } = await import("@/lib/supabase/client")
+          const sb = cc()
+          const { count } = await sb.from("daily_logs").select("id", { count: "exact", head: true }).eq("user_id", user.id)
+          if ((count ?? 0) === 0) {
+            setShowWelcome(true)
+          }
         }
       }
 
@@ -1178,28 +1197,14 @@ export default function DashboardPage() {
         loadSymptomData()
       }
 
-      // Process wellness data (this should ideally use the data loaded from DB)
+      // Process wellness data from localStorage (period/digestive only - score comes from DB)
       const loggedDayStr = localStorage.getItem("loggedDay")
       const loggedSymptomsStr = localStorage.getItem("loggedSymptoms")
 
       if (loggedDayStr) {
         try {
           const loggedDay = JSON.parse(loggedDayStr)
-          setHasLoggedWellness(true)
-
-          // Get logged symptoms if available
-          const loggedSymptoms: LoggedSymptom[] = loggedSymptomsStr ? JSON.parse(loggedSymptomsStr) : []
-
-          // Calculate wellness score from the logged data
-          const score = calculateWellnessScore(loggedDay.mood, loggedDay.sleep, loggedDay.stress, loggedSymptoms)
-
-          setWellnessScore(score)
-
-          // Update the wellness history data
-          const updatedScores = [...wellnessHistoryData.scores]
-          updatedScores[0] = score
-          wellnessHistoryData.scores = updatedScores
-          setWellnessData(updatedScores) // Update the wellnessData state
+          // NOTE: Do NOT set wellnessScore from localStorage - DB data takes priority
 
           // Store period data
           if (loggedDay.onPeriod === true) {
@@ -1245,28 +1250,35 @@ export default function DashboardPage() {
 
     const today = new Date()
     const dateMap = new Map<string, number>()
-    for (let i = 0; i < 7; i++) {
-      const date = new Date(today)
-      date.setDate(date.getDate() - (6 - i)) // Go back 6 days from today for day 0
-      const dateStr = date.toISOString().split("T")[0]
-      dateMap.set(dateStr, i)
-    }
+    // Get last 7 days that have logs, sorted
+    const sortedLogs = [...symptomHistory].sort((a, b) => a.log_date.localeCompare(b.log_date))
+    const lastSeven = sortedLogs.slice(-7)
+    while (lastSeven.length < 7) lastSeven.unshift(null as any)
+
+    // Build chart date labels
+    const newChartDates = lastSeven.map(log => {
+      if (!log) return "-"
+      const d = new Date(log.log_date)
+      return d.toLocaleDateString("en-US", { month: "short", day: "numeric" })
+    })
+    setChartDates(newChartDates)
+
+    // Build index map
+    lastSeven.forEach((log, i) => {
+      if (log) dateMap.set(log.log_date, i)
+    })
 
     // Create chart data
     const colors = ["#f4a6b8", "#f6c1b0", "#f9cdd9", "#e87a97", "#f09f88"]
     const chartData = symptomNames.map((symptomName, index) => {
-      // Create values array for 7 days, initialized with 0
-      const values = [0, 0, 0, 0, 0, 0, 0]
+      const values = new Array(7).fill(0)
 
-      // Fill in actual data from database
       symptomHistory.forEach((dayLog) => {
-        const logDate = dayLog.log_date
-        const dayIndex = dateMap.get(logDate)
-
-        if (dayIndex !== undefined && dayLog.symptom_logs) {
+        const slotIndex = dateMap.get(dayLog.log_date)
+        if (slotIndex !== undefined && dayLog.symptom_logs) {
           const symptomLog = dayLog.symptom_logs.find((log: any) => log.symptom === symptomName)
           if (symptomLog) {
-            values[dayIndex] = symptomLog.severity
+            values[slotIndex] = symptomLog.severity
           }
         }
       })
@@ -1295,14 +1307,12 @@ export default function DashboardPage() {
 
     setHasLoggedWellness(true)
 
-    const today = new Date()
-    const dateMap = new Map<string, number>()
-    for (let i = 0; i < 7; i++) {
-      const date = new Date(today)
-      date.setDate(date.getDate() - (6 - i)) // Go back 6 days from today for day 0
-      const dateStr = date.toISOString().split("T")[0]
-      dateMap.set(dateStr, i)
-    }
+    const sortedWellness = [...wellnessHistory].sort((a, b) => a.log_date.localeCompare(b.log_date))
+    const lastSevenW = sortedWellness.slice(-7)
+    while (lastSevenW.length < 7) lastSevenW.unshift(null as any)
+
+    const wellnessDateMap = new Map<string, number>()
+    lastSevenW.forEach((log, i) => { if (log) wellnessDateMap.set(log.log_date, i) })
 
     // Create chart data for all 7 days, initialized with 0
     const moodData: number[] = [0, 0, 0, 0, 0, 0, 0]
@@ -1311,14 +1321,10 @@ export default function DashboardPage() {
 
     // Fill in actual data from database
     wellnessHistory.forEach((log) => {
-      const logDate = log.log_date
-      const dayIndex = dateMap.get(logDate)
-
+      const dayIndex = wellnessDateMap.get(log.log_date)
       if (dayIndex !== undefined) {
-        // Convert 1-5 scale to 0-100 percentage for display
         moodData[dayIndex] = log.mood ? ((log.mood - 1) / 4) * 100 : 0
         sleepData[dayIndex] = log.sleep ? ((log.sleep - 1) / 4) * 100 : 0
-        // Invert stress: 1 (no stress) = 100, 5 (high stress) = 0
         stressData[dayIndex] = log.stress ? ((5 - log.stress) / 4) * 100 : 0
       }
     })
@@ -1341,9 +1347,13 @@ export default function DashboardPage() {
     }
 
     if (latestDayIndex >= 0) {
-      const avgScore = Math.round(
-        (moodData[latestDayIndex] + sleepData[latestDayIndex] + stressData[latestDayIndex]) / 3,
-      )
+      const m = moodData[latestDayIndex]
+      const s = sleepData[latestDayIndex]
+      const st = stressData[latestDayIndex]
+      const count = [m, s, st].filter(v => v > 0).length
+      const avgScore = count > 0
+        ? Math.round((m + s + st) / count)
+        : 0
       setWellnessScore(avgScore)
     }
   }
@@ -1417,6 +1427,15 @@ export default function DashboardPage() {
 
   useEffect(() => {
     loadUserData()
+    async function loadHiddenPages() {
+      try {
+        const { createClient } = await import("@/lib/supabase/client")
+        const sb = createClient()
+        const { data } = await sb.from("app_settings").select("value").eq("key", "hidden_pages").single()
+        if (data) setHiddenPages(data.value || [])
+      } catch {}
+    }
+    loadHiddenPages()
   }, [])
 
   // Effect to generate to-do items when adaptation phase or day changes
@@ -1473,56 +1492,110 @@ export default function DashboardPage() {
   const createSmoothCurvePath = (values: number[]) => {
     const points = values.map((value, i) => {
       const x = (i / (values.length - 1)) * 100
-      // Invert the y value since SVG 0,0 is top-left
       const y = 100 - (value / 5) * 100
-      return { x, y }
+      return { x, y, value }
     })
 
-    let path = `M ${points[0].x},${points[0].y}`
-
-    for (let i = 0; i < points.length - 1; i++) {
-      const x1 = points[i].x + (points[i + 1].x - points[i].x) / 3
-      const y1 = points[i].y
-      const x2 = points[i].x + (2 * (points[i + 1].x - points[i].x)) / 3
-      const y2 = points[i + 1].y
-      path += ` C ${x1},${y1} ${x2},${y2} ${points[i + 1].x},${points[i + 1].y}`
+    // Build segments of consecutive non-zero values
+    const segments: typeof points[] = []
+    let current: typeof points = []
+    for (const pt of points) {
+      if (pt.value > 0) {
+        current.push(pt)
+      } else {
+        if (current.length > 0) { segments.push(current); current = [] }
+      }
     }
+    if (current.length > 0) segments.push(current)
 
-    return path
+    if (segments.length === 0) return ""
+
+    let path = ""
+    for (const seg of segments) {
+      if (seg.length === 1) {
+        path += ` M ${seg[0].x},${seg[0].y}`
+        continue
+      }
+      path += ` M ${seg[0].x},${seg[0].y}`
+      for (let i = 0; i < seg.length - 1; i++) {
+        const x1 = seg[i].x + (seg[i+1].x - seg[i].x) / 3
+        const y1 = seg[i].y
+        const x2 = seg[i].x + (2 * (seg[i+1].x - seg[i].x)) / 3
+        const y2 = seg[i+1].y
+        path += ` C ${x1},${y1} ${x2},${y2} ${seg[i+1].x},${seg[i+1].y}`
+      }
+    }
+    return path.trim()
   }
 
   // Function to create wellness curve path (scaled for 0-100)
   const createWellnessCurvePath = (values: number[]) => {
     const points = values.map((value, i) => {
       const x = (i / (values.length - 1)) * 100
-      // Invert the y value since SVG 0,0 is top-left
-      // Scale from 0-100 to 0-100% of chart height
       const y = 100 - value
-      return { x, y }
+      return { x, y, value }
     })
 
-    let path = `M ${points[0].x},${points[0].y}`
-
-    for (let i = 0; i < points.length - 1; i++) {
-      const x1 = points[i].x + (points[i + 1].x - points[i].x) / 3
-      const y1 = points[i].y
-      const x2 = points[i].x + (2 * (points[i + 1].x - points[i].x)) / 3
-      const y2 = points[i + 1].y
-      path += ` C ${x1},${y1} ${x2},${y2} ${points[i + 1].x},${points[i + 1].y}`
+    const segments: typeof points[] = []
+    let current: typeof points = []
+    for (const pt of points) {
+      if (pt.value > 0) {
+        current.push(pt)
+      } else {
+        if (current.length > 0) { segments.push(current); current = [] }
+      }
     }
+    if (current.length > 0) segments.push(current)
+    if (segments.length === 0) return ""
 
-    return path
+    let path = ""
+    for (const seg of segments) {
+      if (seg.length === 1) { path += ` M ${seg[0].x},${seg[0].y}`; continue }
+      path += ` M ${seg[0].x},${seg[0].y}`
+      for (let i = 0; i < seg.length - 1; i++) {
+        const x1 = seg[i].x + (seg[i+1].x - seg[i].x) / 3
+        const y1 = seg[i].y
+        const x2 = seg[i].x + (2 * (seg[i+1].x - seg[i].x)) / 3
+        const y2 = seg[i+1].y
+        path += ` C ${x1},${y1} ${x2},${y2} ${seg[i+1].x},${seg[i+1].y}`
+      }
+    }
+    return path.trim()
   }
 
-  // Function to create wellness area path (for filled area below the line)
+  // Function to create wellness area path - fills only under actual data segments
   const createWellnessAreaPath = (values: number[]) => {
-    const linePath = createWellnessCurvePath(values)
-    const lastPoint = values.length - 1
-    const lastX = 100 // 100% width
-    const firstX = 0 // 0% width
+    const points = values.map((value, i) => ({
+      x: (i / (values.length - 1)) * 100,
+      y: 100 - value,
+      value
+    }))
 
-    // Add line to bottom right, then to bottom left, then close path
-    return `${linePath} L ${lastX},100 L ${firstX},100 Z`
+    const segments: typeof points[] = []
+    let current: typeof points = []
+    for (const pt of points) {
+      if (pt.value > 0) { current.push(pt) }
+      else { if (current.length > 0) { segments.push(current); current = [] } }
+    }
+    if (current.length > 0) segments.push(current)
+    if (segments.length === 0) return ""
+
+    let path = ""
+    for (const seg of segments) {
+      if (seg.length < 2) continue
+      // Draw the line
+      path += ` M ${seg[0].x},${seg[0].y}`
+      for (let i = 0; i < seg.length - 1; i++) {
+        const x1 = seg[i].x + (seg[i+1].x - seg[i].x) / 3
+        const y1 = seg[i].y
+        const x2 = seg[i].x + (2 * (seg[i+1].x - seg[i].x)) / 3
+        const y2 = seg[i+1].y
+        path += ` C ${x1},${y1} ${x2},${y2} ${seg[i+1].x},${seg[i+1].y}`
+      }
+      // Close to bottom
+      path += ` L ${seg[seg.length-1].x},100 L ${seg[0].x},100 Z`
+    }
+    return path.trim()
   }
 
   // Find the getDigestiveSymptomTip function and ensure it's properly implemented
@@ -1680,14 +1753,30 @@ export default function DashboardPage() {
   const createWeightAreaPath = (data: WeightChartData[]) => {
     if (data.length === 0) return ""
 
+    // Fill under the actual data only
+    if (!data || data.length < 2) return ""
     const curvePath = createWeightCurvePath(data)
-    return `${curvePath} L 100 100 L 0 100 Z`
+    const lastX = ((data.length - 1) / (data.length - 1)) * 100
+    const firstX = 0
+    return `${curvePath} L ${lastX},100 L ${firstX},100 Z`
   }
 
   const handleWeightSaved = async () => {
-    // Reload user data to update the chart and current weight
-    await loadUserData()
-    setShowWeightModal(false) // Close the modal after saving
+    // Reload just weight data after save
+    if (userId) {
+      const weights = await fetchWeightLogs(userId, 30)
+      if (weights && weights.length > 0) {
+        const chartData = weights.map(w => ({
+          date: new Date(w.log_date).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+          weight: w.weight,
+          unit: w.weight_unit,
+        }))
+        setWeightData(chartData)
+        setCurrentWeight(weights[weights.length - 1].weight)
+        setWeightUnit(weights[weights.length - 1].weight_unit)
+      }
+    }
+    setShowWeightModal(false)
   }
 
   return (
@@ -1730,7 +1819,7 @@ export default function DashboardPage() {
       )}
       {/* Header */}
       <header className="p-4 flex justify-between items-center header-gradient text-white">
-        <Logo />
+        <Logo variant="light" />
         <div className="flex items-center">
           <button
             className="w-10 h-10 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 transition-colors mr-2"
@@ -1986,11 +2075,11 @@ export default function DashboardPage() {
 
                     {/* Vertical grid lines */}
                     <div className="absolute left-10 md:left-16 right-0 top-0 bottom-8 flex justify-between">
-                      {symptomHistoryData.dates.map((date, index) => (
+                      {chartDates.map((date, index) => (
                         <div
                           key={index}
                           className="h-full border-r border-pink-100 flex flex-col justify-end items-center"
-                          style={{ width: `${100 / symptomHistoryData.dates.length}%` }}
+                          style={{ width: `${100 / chartDates.length}%` }}
                         >
                           <span className="text-[10px] md:text-xs text-secondary-color mb-2 whitespace-nowrap">
                             {date}
@@ -2017,42 +2106,43 @@ export default function DashboardPage() {
                         }
 
                         return (
-                          <svg
-                            key={index}
-                            className="absolute inset-0 h-full w-full transition-opacity duration-300"
-                            viewBox="0 0 100 100"
-                            preserveAspectRatio="none"
-                          >
-                            {/* Line */}
-                            <path
-                              d={createSmoothCurvePath(symptom.values)}
-                              fill="none"
-                              stroke={symptom.color}
-                              strokeWidth="0.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-
-                            {/* Add dots for data points */}
+                          <React.Fragment key={index}>
+                            <svg
+                              className="absolute inset-0 h-full w-full transition-opacity duration-300"
+                              viewBox="0 0 100 100"
+                              preserveAspectRatio="none"
+                            >
+                              <path
+                                d={createSmoothCurvePath(symptom.values)}
+                                fill="none"
+                                stroke={symptom.color}
+                                strokeWidth="1"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
                             {symptom.values.map((value, i) => {
-                              if (value === 0) return null // Don't show dots for zero values
-
-                              const x = (i / (symptom.values.length - 1)) * 100
-                              const y = 100 - (value / 5) * 100
-
+                              if (value === 0) return null
+                              const xPct = (i / (symptom.values.length - 1)) * 100
+                              const yPct = 100 - (value / 5) * 100
+                              const isIsolated = (i === 0 || symptom.values[i-1] === 0) &&
+                                                 (i === symptom.values.length-1 || symptom.values[i+1] === 0)
                               return (
-                                <circle
-                                  key={`${i}-${symptom.name}`}
-                                  cx={x}
-                                  cy={y}
-                                  r="0.8"
-                                  fill={symptom.color}
-                                  stroke="white"
-                                  strokeWidth="0.5"
+                                <div key={`dot-${index}-${i}`}
+                                  className="absolute rounded-full pointer-events-none"
+                                  style={{
+                                    left: `calc(${xPct}% - ${isIsolated ? 4 : 3}px)`,
+                                    top: `calc(${yPct}% - ${isIsolated ? 4 : 3}px)`,
+                                    width: isIsolated ? 8 : 6,
+                                    height: isIsolated ? 8 : 6,
+                                    backgroundColor: symptom.color,
+                                    border: "1.5px solid white",
+                                    boxShadow: isIsolated ? `0 0 0 2px ${symptom.color}40` : "none"
+                                  }}
                                 />
                               )
                             })}
-                          </svg>
+                          </React.Fragment>
                         )
                       })}
                     </div>
@@ -2112,11 +2202,11 @@ export default function DashboardPage() {
 
                   {/* Vertical grid lines */}
                   <div className="absolute left-10 md:left-16 right-0 top-0 bottom-8 flex justify-between z-0">
-                    {wellnessHistoryData.dates.map((date, index) => (
+                    {chartDates.map((date, index) => (
                       <div
                         key={index}
                         className="h-full border-r border-peach-100 flex flex-col justify-end items-center"
-                        style={{ width: `${100 / wellnessHistoryData.dates.length}%` }}
+                        style={{ width: `${100 / chartDates.length}%` }}
                       >
                         <span className="text-[10px] md:text-xs text-secondary-color mb-2 whitespace-nowrap">
                           {date}
@@ -2136,7 +2226,7 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Wellness curve */}
-                    <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                    <svg className="absolute inset-0 h-full w-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
                       {/* Filled area */}
                       <defs>
                         <linearGradient id="wellness-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -2156,8 +2246,8 @@ export default function DashboardPage() {
                       <path
                         d={createWellnessCurvePath(wellnessData.mood)}
                         fill="none"
-                        stroke="#f4a6b8" // Mood color
-                        strokeWidth="0.5"
+                        stroke="#f4a6b8"
+                        strokeWidth="1"
                         strokeLinecap="round"
                         strokeLinejoin="round"
                       />
@@ -2166,8 +2256,8 @@ export default function DashboardPage() {
                       <path
                         d={createWellnessCurvePath(wellnessData.sleep)}
                         fill="none"
-                        stroke="#f6c1b0" // Sleep color
-                        strokeWidth="0.5"
+                        stroke="#f6c1b0"
+                        strokeWidth="1"
                         strokeLinecap="round"
                         strokeLinejoin="round"
                       />
@@ -2176,36 +2266,36 @@ export default function DashboardPage() {
                       <path
                         d={createWellnessCurvePath(wellnessData.stress)}
                         fill="none"
-                        stroke="#f09f88" // Stress color
-                        strokeWidth="0.5"
+                        stroke="#f09f88"
+                        strokeWidth="1"
                         strokeLinecap="round"
                         strokeLinejoin="round"
                       />
 
-                      {/* Add dots for data points */}
-                      {wellnessData.mood.map((value: number, i: number) => {
-                        if (value === 0 && wellnessData.sleep[i] === 0 && wellnessData.stress[i] === 0) return null
-
-                        const x = (i / (wellnessData.mood.length - 1)) * 100
-                        const yMood = 100 - value
-                        const ySleep = 100 - wellnessData.sleep[i]
-                        const yStress = 100 - wellnessData.stress[i]
-
-                        return (
-                          <g key={`wellness-dots-${i}`}>
-                            {value > 0 && (
-                              <circle cx={x} cy={yMood} r="0.8" fill="white" stroke="#f4a6b8" strokeWidth="0.8" />
-                            )}
-                            {wellnessData.sleep[i] > 0 && (
-                              <circle cx={x} cy={ySleep} r="0.8" fill="white" stroke="#f6c1b0" strokeWidth="0.8" />
-                            )}
-                            {wellnessData.stress[i] > 0 && (
-                              <circle cx={x} cy={yStress} r="0.8" fill="white" stroke="#f09f88" strokeWidth="0.8" />
-                            )}
-                          </g>
-                        )
-                      })}
                     </svg>
+                  </div>
+                  {/* Wellness dots - absolute positioned to avoid SVG stretch */}
+                  <div className="absolute left-10 md:left-16 right-0 top-0 bottom-8 px-2 md:px-4 pt-4 pointer-events-none">
+                    {wellnessData.mood.map((value: number, i: number) => {
+                      if (value === 0 && wellnessData.sleep[i] === 0 && wellnessData.stress[i] === 0) return null
+                      const x = (i / (wellnessData.mood.length - 1)) * 100
+                      return (
+                        <div key={`wdots-${i}`}>
+                          {value > 0 && (
+                            <div className="absolute w-2 h-2 rounded-full bg-pink-300 border border-white"
+                              style={{ left: `calc(${x}% - 4px)`, top: `calc(${100 - value}% - 4px)` }} />
+                          )}
+                          {wellnessData.sleep[i] > 0 && (
+                            <div className="absolute w-2 h-2 rounded-full bg-peach-200 border border-white"
+                              style={{ left: `calc(${x}% - 4px)`, top: `calc(${100 - wellnessData.sleep[i]}% - 4px)`, backgroundColor: "#f6c1b0" }} />
+                          )}
+                          {wellnessData.stress[i] > 0 && (
+                            <div className="absolute w-2 h-2 rounded-full border border-white"
+                              style={{ left: `calc(${x}% - 4px)`, top: `calc(${100 - wellnessData.stress[i]}% - 4px)`, backgroundColor: "#f09f88" }} />
+                          )}
+                        </div>
+                      )
+                    })}
                   </div>
 
                   {/* Wellness Score Display */}
@@ -2278,7 +2368,7 @@ export default function DashboardPage() {
               ) : (
                 <div className="relative min-h-[280px] md:min-h-[320px]">
                   {/* Y-axis labels */}
-                  <div className="absolute left-0 top-0 bottom-8 w-10 md:w-16 flex flex-col justify-between text-[10px] md:text-xs text-secondary-color py-4">
+                  <div className="absolute left-0 top-0 bottom-8 w-10 md:w-16 flex flex-col justify-between text-[10px] md:text-xs text-secondary-color py-4 pointer-events-none">
                     <span className="leading-tight">{Math.max(...weightData.map((d) => d.weight)).toFixed(1)}</span>
                     <span className="leading-tight">
                       {(
@@ -2290,7 +2380,7 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Vertical grid lines */}
-                  <div className="absolute left-10 md:left-16 right-0 top-0 bottom-8 flex justify-between">
+                  <div className="absolute left-10 md:left-16 right-0 top-0 bottom-8 flex justify-between pointer-events-none">
                     {weightData.map((item, index) => (
                       <div
                         key={index}
@@ -2305,7 +2395,7 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Chart area */}
-                  <div className="absolute left-10 md:left-16 right-0 top-0 bottom-8 px-2 md:px-4 pt-4">
+                  <div className="absolute left-10 md:left-16 right-0 top-0 bottom-8 px-2 md:px-4 pt-4 pointer-events-none">
                     {/* Grid lines */}
                     <div className="absolute inset-0">
                       <div className="border-b border-green-100 absolute top-[25%] left-0 right-0"></div>
@@ -2314,7 +2404,7 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Weight curve */}
-                    <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                    <svg className="absolute inset-0 h-full w-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
                       {/* Filled area */}
                       <defs>
                         <linearGradient id="weight-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -2336,29 +2426,25 @@ export default function DashboardPage() {
                         strokeLinejoin="round"
                       />
 
-                      {/* Add dots for data points */}
-                      {weightData.map((item, i) => {
-                        const minWeight = Math.min(...weightData.map((d) => d.weight))
-                        const maxWeight = Math.max(...weightData.map((d) => d.weight))
-                        const range = maxWeight - minWeight || 1
-
-                        const x = (i / (weightData.length - 1)) * 100
-                        const y = 100 - ((item.weight - minWeight) / range) * 100
-
-                        return (
-                          <circle
-                            key={`${i}-${item.date}`}
-                            cx={x}
-                            cy={y}
-                            r="0.8"
-                            fill="white"
-                            stroke="#22c55e"
-                            strokeWidth="0.8"
-                          />
-                        )
-                      })}
+                      {/* No dots in SVG - rendered separately to avoid stretch */}
                     </svg>
                   </div>
+                  {/* Weight dots - absolute positioned */}
+                  {weightData.length > 0 && (
+                    <div className="absolute left-10 md:left-16 right-0 top-0 bottom-8 px-2 md:px-4 pt-4 pointer-events-none">
+                      {weightData.map((item, i) => {
+                        const minWeight = Math.min(...weightData.map(d => d.weight))
+                        const maxWeight = Math.max(...weightData.map(d => d.weight))
+                        const range = maxWeight - minWeight || 1
+                        const x = weightData.length > 1 ? (i / (weightData.length - 1)) * 100 : 50
+                        const y = 100 - ((item.weight - minWeight) / range) * 100
+                        return (
+                          <div key={`wt-${i}`} className="absolute w-2 h-2 rounded-full bg-green-400 border-2 border-white"
+                            style={{ left: `calc(${x}% - 4px)`, top: `calc(${y}% - 4px)` }} />
+                        )
+                      })}
+                    </div>
+                  )}
 
                   {/* Current Weight Display */}
                   <div className="flex items-center justify-center mt-12">
@@ -2485,14 +2571,16 @@ export default function DashboardPage() {
       <ConfettiCelebration active={showConfetti} onComplete={() => setShowConfetti(false)} duration={4000} />
 
       {/* Bottom Navigation */}
-      <nav className="grid grid-cols-5 border-t border-pink-200 bg-white/80 backdrop-blur-sm">
-        <button
-          className="flex flex-col items-center justify-center py-3 text-xs"
-          onClick={() => router.push("/food-list")}
-        >
-          <List className="h-5 w-5 mb-1 text-primary-color" />
-          <span className="text-primary-color">Products</span>
-        </button>
+      <nav className="bottom-nav grid grid-cols-5 border-t border-pink-200 bg-white/80 backdrop-blur-sm">
+        {!hiddenPages.includes("food-list") && (
+          <button
+            className="flex flex-col items-center justify-center py-3 text-xs"
+            onClick={() => router.push("/food-list")}
+          >
+            <List className="h-5 w-5 mb-1 text-primary-color" />
+            <span className="text-primary-color">Products</span>
+          </button>
+        )}
         <button className="flex flex-col items-center justify-center py-3 text-xs text-accent-color">
           <Home className="h-5 w-5 mb-1 text-accent-color" />
           <span>Dashboard</span>
@@ -2501,26 +2589,29 @@ export default function DashboardPage() {
           className="flex items-center justify-center rounded-full gradient-button h-14 w-14 -mt-7 mx-auto shadow-lg"
           onClick={() => router.push("/log-day")}
         >
-          <Plus className="h-6 w-6" />
+          <Plus className="h-8 w-8" />
         </button>
-        <button
-          className="flex flex-col items-center justify-center py-3 text-xs"
-          onClick={() => router.push("/nutrition")}
-        >
-          <BookOpen className="h-5 w-5 mb-1 text-primary-color" />
-          <span className="text-primary-color">Nutrition</span>
-        </button>
-        <button
-          className="flex flex-col items-center justify-center py-3 text-xs"
-          onClick={() => router.push("/recipes")}
-        >
-          <UtensilsCrossed className="h-5 w-5 mb-1 text-primary-color" />
-          <span className="text-primary-color">Recipes</span>
-        </button>
+        {!hiddenPages.includes("nutrition") && (
+          <button
+            className="flex flex-col items-center justify-center py-3 text-xs"
+            onClick={() => router.push("/nutrition")}
+          >
+            <BookOpen className="h-5 w-5 mb-1 text-primary-color" />
+            <span className="text-primary-color">Nutrition</span>
+          </button>
+        )}
+        {!hiddenPages.includes("recipes") && (
+          <button
+            className="flex flex-col items-center justify-center py-3 text-xs"
+            onClick={() => router.push("/recipes")}
+          >
+            <UtensilsCrossed className="h-5 w-5 mb-1 text-primary-color" />
+            <span className="text-primary-color">Recipes</span>
+          </button>
+        )}
       </nav>
 
-      {showWeightModal &&
-        userId && ( // Only show modal when userId is available
+      {showWeightModal && (
           <WeightLogModal
             userId={userId} // Pass userId from state
             currentWeight={currentWeight}

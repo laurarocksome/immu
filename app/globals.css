@@ -92,7 +92,6 @@ body {
 }
 
 /* ── Responsive app shell ───────────────────────────────────────────────── */
-/* On desktop the app renders as a centred phone-sized panel               */
 @layer base {
   .app-shell {
     display: flex;
@@ -102,20 +101,118 @@ body {
     background: linear-gradient(to bottom, #ffffff, #fce6ec 50%, #fff5f8);
   }
 
-  /* Desktop: show a soft background and centre the app panel */
-  @media (min-width: 640px) {
+  /* Desktop: full-width layout */
+  @media (min-width: 1024px) {
     body {
       background: linear-gradient(135deg, #fce6ec 0%, #fff5f8 50%, #f6c1b0 100%);
     }
 
     .app-shell {
-      max-width: 480px;
-      margin: 0 auto;
+      max-width: 100%;
+      margin: 0;
       min-height: 100vh;
-      box-shadow: 0 0 60px rgba(244, 166, 184, 0.25), 0 0 0 1px rgba(244, 166, 184, 0.1);
+      box-shadow: none;
       background: linear-gradient(to bottom, #ffffff, #fce6ec 50%, #fff5f8);
     }
+
+    /* Desktop: hide bottom nav, show sidebar */
+    .bottom-nav {
+      display: none !important;
+    }
+
+    .desktop-sidebar {
+      display: flex !important;
+    }
+
+    /* Desktop: main content with sidebar offset */
+    .desktop-main {
+      margin-left: 220px;
+      max-width: 960px;
+      padding: 2rem;
+    }
+
+    .app-shell.has-sidebar {
+      margin-left: 220px;
+      max-width: calc(100% - 220px);
+    }
   }
+
+  /* Tablet: centered narrow layout */
+  @media (min-width: 640px) and (max-width: 1023px) {
+    .app-shell {
+      max-width: 520px;
+      margin: 0 auto;
+      box-shadow: 0 0 60px rgba(244, 166, 184, 0.25), 0 0 0 1px rgba(244, 166, 184, 0.1);
+    }
+  }
+}
+
+/* Desktop sidebar */
+.desktop-sidebar {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 220px;
+  height: 100vh;
+  flex-direction: column;
+  background: white;
+  border-right: 1px solid rgba(212, 165, 165, 0.2);
+  padding: 1.5rem 1rem;
+  z-index: 40;
+  gap: 0.5rem;
+}
+
+.desktop-sidebar .sidebar-logo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary-color, #d4a5a5);
+  margin-bottom: 2rem;
+  padding-left: 0.5rem;
+}
+
+.desktop-sidebar .sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  color: #666;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  text-decoration: none;
+}
+
+.desktop-sidebar .sidebar-link:hover {
+  background: #fce6ec;
+  color: #c47a7a;
+}
+
+.desktop-sidebar .sidebar-link.active {
+  background: #fce6ec;
+  color: #c47a7a;
+  font-weight: 600;
+}
+
+.desktop-sidebar .sidebar-log-btn {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #f4a6b8, #e87a97);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  font-size: 0.9rem;
+  transition: opacity 0.15s;
+}
+
+.desktop-sidebar .sidebar-log-btn:hover {
+  opacity: 0.9;
 }
 
 /* ── Chart tab overflow fix ──────────────────────────────────────────────── */

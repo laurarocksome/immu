@@ -33,6 +33,14 @@ export default function FAQPage() {
   }
 
   useEffect(() => {
+    async function checkVisibility() {
+      const visible = await isPageVisible("faq")
+      if (!visible) { router.replace("/dashboard"); return }
+    }
+    checkVisibility()
+  }, [])
+
+  useEffect(() => {
     async function fetchFAQs() {
       try {
         const supabase = createBrowserClient(

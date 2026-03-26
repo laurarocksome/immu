@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import { List, Home, Plus, BookOpen, UtensilsCrossed, User } from "lucide-react"
 import Logo from "@/app/components/logo"
 import { useState, useEffect } from "react"
+import { isPageVisible } from "@/lib/page-visibility"
 
 export default function NutritionPage() {
   const router = useRouter()
@@ -25,6 +26,14 @@ export default function NutritionPage() {
   const [currentPhase, setCurrentPhase] = useState<string | null>(null)
 
   // Add useEffect to determine the current phase when the component mounts
+  useEffect(() => {
+    async function checkVisibility() {
+      const visible = await isPageVisible("nutrition")
+      if (!visible) { router.replace("/dashboard"); return }
+    }
+    checkVisibility()
+  }, [])
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       // Get diet data from localStorage
@@ -109,7 +118,7 @@ export default function NutritionPage() {
               </div>
               <div className="w-24 h-24 rounded-xl overflow-hidden bg-pink-100 flex items-center justify-center">
                 <img
-                  src="/placeholder.svg?height=96&width=96"
+                  src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=200&h=200&fit=crop"
                   alt="Adaptation phase"
                   className="object-cover w-full h-full"
                 />
@@ -134,7 +143,7 @@ export default function NutritionPage() {
               </div>
               <div className="w-24 h-24 rounded-xl overflow-hidden bg-pink-200 flex items-center justify-center">
                 <img
-                  src="/placeholder.svg?height=96&width=96"
+                  src="https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=200&h=200&fit=crop"
                   alt="Elimination phase"
                   className="object-cover w-full h-full"
                 />
@@ -159,7 +168,7 @@ export default function NutritionPage() {
               </div>
               <div className="w-24 h-24 rounded-xl overflow-hidden bg-pink-300 flex items-center justify-center">
                 <img
-                  src="/placeholder.svg?height=96&width=96"
+                  src="https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=200&h=200&fit=crop"
                   alt="Reintroduction phase"
                   className="object-cover w-full h-full"
                 />
@@ -170,7 +179,7 @@ export default function NutritionPage() {
       </main>
 
       {/* Bottom Navigation */}
-      <nav className="grid grid-cols-5 border-t border-brand-dark/10 bg-white/80 backdrop-blur-sm">
+      <nav className="bottom-nav grid grid-cols-5 border-t border-brand-dark/10 bg-white/80 backdrop-blur-sm">
         <button
           className="flex flex-col items-center justify-center py-3 text-xs"
           onClick={() => router.push("/food-list")}

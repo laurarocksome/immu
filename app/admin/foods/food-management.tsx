@@ -35,7 +35,7 @@ export default function FoodManagement() {
   const [formData, setFormData] = useState({
     name: "",
     is_aip: false,
-    status: "Can eat",
+    status: "Can consume",
     tags: "",
     tooltip: "",
     category: "",
@@ -126,7 +126,7 @@ export default function FoodManagement() {
     setFormData({
       name: "",
       is_aip: false,
-      status: "Can eat",
+      status: "Can consume",
       tags: "",
       tooltip: "",
       category: "",
@@ -209,9 +209,9 @@ export default function FoodManagement() {
                         <td className="p-4">
                           <span
                             className={`inline-block px-3 py-1 rounded-full text-xs ${
-                              food.status === "Can eat"
+                              food.status === "Can consume"
                                 ? "bg-green-100 text-calm-green"
-                                : food.status === "Can't eat"
+                                : food.status === "Can't consume"
                                   ? "bg-red-100 text-red-600"
                                   : "bg-yellow-100 text-yellow-600"
                             }`}
@@ -289,8 +289,8 @@ export default function FoodManagement() {
                     onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                     className="w-full px-4 py-2 rounded-lg border border-brand-dark/20 focus:outline-none focus:ring-2 focus:ring-pink-400"
                   >
-                    <option value="Can eat">Can eat</option>
-                    <option value="Can't eat">Can't eat</option>
+                    <option value="Can consume">Can consume</option>
+                    <option value="Can't consume">Can't consume</option>
                     <option value="Moderate">Moderate</option>
                     <option value="Reintroduction">Reintroduction</option>
                   </select>
