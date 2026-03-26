@@ -160,7 +160,7 @@ interface WeightChartData {
 export default function DashboardPage() {
   // Changed from Dashboard to DashboardPage
   const router = useRouter()
-  const { t, locale, translations } = useLanguage()
+  const { t, locale } = useLanguage()
   const [conditions, setConditions] = useState<string[]>([])
   const [showWelcome, setShowWelcome] = useState(false)
   const [userName, setUserName] = useState("")
@@ -1822,11 +1822,6 @@ export default function DashboardPage() {
       </header>
       {/* Main Content */}
       <main className="flex-1 p-6 overflow-auto">
-        {/* DEBUG BANNER - remove after diagnosis */}
-        <div style={{position:"fixed", top:0, left:0, right:0, zIndex:9999, background:"#f0f", color:"#000", padding:"6px 12px", fontSize:"13px", fontWeight:"bold"}}>
-          DASHBOARD: locale={locale} | keys={Object.keys(translations).length} | hello=&quot;{t("dashboard.hello","Hello!")}&quot;
-        </div>
-        <div style={{height:"28px"}} />
         {/* Date and Greeting */}
         <div className="mb-6">
           <h2 className="text-2xl font-bold text-primary-color">{t("dashboard.hello", "Hello!")}</h2>
