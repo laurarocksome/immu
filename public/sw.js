@@ -1,8 +1,6 @@
-const CACHE_NAME = "immu-v1"
+const CACHE_NAME = "immu-v3"
 
 const STATIC_ASSETS = [
-  "/",
-  "/dashboard",
   "/manifest.json",
   "/pwa-icon.svg",
 ]
@@ -28,13 +26,23 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url)
   if (url.origin !== location.origin) return
 
+  // Never cache HTML pages or JS/CSS chunks — always fetch fresh from network
+  const isPage = !url.pathname.includes(".")
+  const isNextChunk = url.pathname.startsWith("/_next/")
+  if (isPage || isNextChunk) {
+    event.respondWith(fetch(event.request))
+    return
+  }
+
+  // For static assets (icons, manifest), use cache-first
   event.respondWith(
-    fetch(event.request)
-      .then((response) => {
+    caches.match(event.request).then((cached) => {
+      if (cached) return cached
+      return fetch(event.request).then((response) => {
         const clone = response.clone()
         caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone))
         return response
       })
-      .catch(() => caches.match(event.request))
+    })
   )
 })
