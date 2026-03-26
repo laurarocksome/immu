@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { List, Home, Plus, BookOpen, UtensilsCrossed } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
+import { useLanguage } from "@/lib/i18n/context"
 
 const CACHE_KEY = "immu_hidden_pages"
 
@@ -15,6 +16,7 @@ interface BottomNavProps {
 
 export default function BottomNav({ active = "other" }: BottomNavProps) {
   const router = useRouter()
+  const { t } = useLanguage()
 
   const [hiddenPages, setHiddenPages] = useState<string[]>(() => {
     if (typeof window === "undefined") return []
@@ -57,7 +59,7 @@ export default function BottomNav({ active = "other" }: BottomNavProps) {
         <div />
         <button className={btn("dashboard")} onClick={() => router.push("/dashboard")}>
           <Home className={icon("dashboard")} />
-          <span>Dashboard</span>
+          <span>{t("nav.dashboard", "Dashboard")}</span>
         </button>
         <button
           className="flex items-center justify-center rounded-full gradient-button h-14 w-14 -mt-7 mx-auto shadow-lg"
@@ -76,13 +78,13 @@ export default function BottomNav({ active = "other" }: BottomNavProps) {
       {!hiddenPages.includes("food-list") ? (
         <button className={btn("food-list")} onClick={() => router.push("/food-list")}>
           <List className={icon("food-list")} />
-          <span>Products</span>
+          <span>{t("nav.products", "Products")}</span>
         </button>
       ) : <div />}
 
       <button className={btn("dashboard")} onClick={() => router.push("/dashboard")}>
         <Home className={icon("dashboard")} />
-        <span>Dashboard</span>
+        <span>{t("nav.dashboard", "Dashboard")}</span>
       </button>
 
       <button
@@ -95,14 +97,14 @@ export default function BottomNav({ active = "other" }: BottomNavProps) {
       {!hiddenPages.includes("nutrition") ? (
         <button className={btn("nutrition")} onClick={() => router.push("/nutrition")}>
           <BookOpen className={icon("nutrition")} />
-          <span>Nutrition</span>
+          <span>{t("nav.nutrition", "Nutrition")}</span>
         </button>
       ) : <div />}
 
       {!hiddenPages.includes("recipes") ? (
         <button className={btn("recipes")} onClick={() => router.push("/recipes")}>
           <UtensilsCrossed className={icon("recipes")} />
-          <span>Recipes</span>
+          <span>{t("nav.recipes", "Recipes")}</span>
         </button>
       ) : <div />}
     </nav>

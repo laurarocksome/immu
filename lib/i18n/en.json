@@ -167,5 +167,10 @@
   "weightModal.title": "Log Weight",
   "weightModal.save": "Save Weight",
   "weightModal.cancel": "Cancel",
-  "common.notSet": "Not set"
+  "common.notSet": "Not set",
+  "nav.dashboard": "Dashboard",
+  "nav.products": "Products",
+  "nav.nutrition": "Nutrition",
+  "nav.recipes": "Recipes",
+  "nav.logDay": "Log Day"
 }

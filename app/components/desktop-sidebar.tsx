@@ -47,7 +47,7 @@ export default function DesktopSidebar() {
           onClick={() => router.push("/food-list")}
         >
           <List size={20} />
-          Products
+          {t("nav.products", "Products")}
         </button>
       )}
 
@@ -56,7 +56,7 @@ export default function DesktopSidebar() {
         onClick={() => router.push("/dashboard")}
       >
         <Home size={20} />
-        Dashboard
+        {t("nav.dashboard", "Dashboard")}
       </button>
 
       {!hiddenPages.includes("nutrition") && (
@@ -65,7 +65,7 @@ export default function DesktopSidebar() {
           onClick={() => router.push("/nutrition")}
         >
           <BookOpen size={20} />
-          Nutrition
+          {t("nav.nutrition", "Nutrition")}
         </button>
       )}
 
@@ -75,7 +75,7 @@ export default function DesktopSidebar() {
           onClick={() => router.push("/recipes")}
         >
           <UtensilsCrossed size={20} />
-          Recipes
+          {t("nav.recipes", "Recipes")}
         </button>
       )}
 
@@ -84,7 +84,7 @@ export default function DesktopSidebar() {
         onClick={() => router.push("/log-day")}
       >
         <Plus size={20} />
-        Log Day
+        {t("nav.logDay", "Log Day")}
       </button>
     </nav>
   )
