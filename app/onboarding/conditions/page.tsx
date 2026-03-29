@@ -10,6 +10,10 @@ import { saveUserConditions } from "@/lib/user-data"
 import { getSession } from "@/lib/auth"
 import { useLanguage } from "@/lib/i18n/context"
 
+function conditionKey(value: string) {
+  return "condition." + value.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/, "")
+}
+
 export default function ConditionsPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -128,9 +132,13 @@ export default function ConditionsPage() {
     "Joint Pain",
   ].sort()
 
-  const filteredConditions = conditionsList.filter((condition) =>
-    condition.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
+  const filteredConditions = conditionsList.filter((condition) => {
+    const translated = t(conditionKey(condition), condition)
+    return (
+      condition.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      translated.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  })
 
   const displayedConditions = searchTerm
     ? filteredConditions
@@ -250,7 +258,7 @@ export default function ConditionsPage() {
                   onClick={() => handleConditionClick(condition)}
                 >
                   <div className="flex items-center">
-                    <span className="flex-1">{condition}</span>
+                    <span className="flex-1">{t(conditionKey(condition), condition)}</span>
                     {selectedConditions.includes(condition) && <span>✓</span>}
                   </div>
                 </div>

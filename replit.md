@@ -75,9 +75,9 @@ Supported locales: `en`, `lt`. Language toggle is on the dashboard header.
 - `t(key, fallback)` for simple strings
 - `t(key, template).replace("{n}", value)` for interpolation
 - `optKey(prefix, value)` helper — `prefix + "." + value.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/, "")` — used for options that are also stored in localStorage (stress, activity, habits). Stored English values are never changed; only displayed labels are translated.
-- Medical conditions kept in English (internationally recognized terms).
+- Medical conditions fully translated to Lithuanian via `condition.*` keys; `conditionKey()` helper used in both the onboarding conditions page and the profile page. Search on the conditions page matches both English and translated names.
 - `category: 'general'` required on all rows.
-- Total DB rows: ~1,600+
+- Total DB rows: ~1,750+ (76 condition keys × 2 locales = 152 added in latest session)
 
 ## Dev Command
 

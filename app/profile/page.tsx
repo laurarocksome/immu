@@ -26,6 +26,10 @@ type DietInfo = {
   adaptationPeriod: boolean
 }
 
+function conditionKey(value: string) {
+  return "condition." + value.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/, "")
+}
+
 export default function ProfilePage() {
   const router = useRouter()
   const { locale, setLocale, t } = useLanguage()
@@ -361,7 +365,7 @@ export default function ProfilePage() {
                       key={index}
                       className="bg-gradient-to-r from-pink-100 to-peach-100 text-brand-dark px-4 py-2 rounded-full text-sm font-medium"
                     >
-                      {condition}
+                      {t(conditionKey(condition), condition)}
                     </span>
                   ))}
                 </div>
