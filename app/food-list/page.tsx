@@ -167,6 +167,10 @@ function foodNameKey(name: string) {
   return "food.name." + name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/, "")
 }
 
+function foodTagKey(tag: string) {
+  return "food.tag." + tag.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/, "")
+}
+
 export default function FoodListPage() {
   const { t } = useLanguage()
   const [allProducts, setAllProducts] = useState<any[]>([])
@@ -518,7 +522,7 @@ export default function FoodListPage() {
                         className="mr-2 h-4 w-4 rounded border-brand-dark/30 text-pink-400 focus:ring-pink-400"
                       />
                       <label htmlFor={`tag-${tag}`} className="text-sm">
-                        {tag}
+                        {t(foodTagKey(tag), tag)}
                       </label>
                     </div>
                   ))}
@@ -533,7 +537,7 @@ export default function FoodListPage() {
                       key={tag}
                       className="px-2 py-1 rounded-full bg-pink-100 text-pink-800 text-xs flex items-center"
                     >
-                      {tag}
+                      {t(foodTagKey(tag), tag)}
                       <button onClick={() => toggleTag(tag)} className="ml-1 text-pink-800 hover:text-pink-900">
                         ×
                       </button>
@@ -622,7 +626,7 @@ export default function FoodListPage() {
 
                               {product.tags.slice(0, 2).map((tag) => (
                                 <span key={tag} className="bg-brand-lightest px-2 py-0.5 rounded text-xs">
-                                  {tag}
+                                  {t(foodTagKey(tag), tag)}
                                 </span>
                               ))}
                               {product.tags.length > 2 && (
@@ -710,7 +714,7 @@ export default function FoodListPage() {
 
                     {product.tags.slice(0, 2).map((tag) => (
                       <span key={tag} className="bg-brand-lightest px-2 py-0.5 rounded text-xs">
-                        {tag}
+                        {t(foodTagKey(tag), tag)}
                       </span>
                     ))}
                     {product.tags.length > 2 && (
