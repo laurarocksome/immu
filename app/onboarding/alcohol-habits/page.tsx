@@ -6,8 +6,12 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Logo from "@/app/components/logo"
 import { ArrowLeft } from "lucide-react"
+import { useLanguage } from "@/lib/i18n/context"
 
-// Alcohol consumption options
+function optKey(prefix: string, value: string) {
+  return prefix + "." + value.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/, "")
+}
+
 const alcoholOptions = [
   "Never",
   "Occasionally (1-2 times a month)",
@@ -17,6 +21,7 @@ const alcoholOptions = [
 
 export default function AlcoholPage() {
   const router = useRouter()
+  const { t } = useLanguage()
   const [selectedOption, setSelectedOption] = useState<string | null>(null)
   const [error, setError] = useState("")
 
@@ -27,14 +32,12 @@ export default function AlcoholPage() {
 
   const handleContinue = () => {
     if (!selectedOption) {
-      setError("Please select an option to continue")
+      setError(t("onboarding.habits.error", "Please select an option to continue"))
       return
     }
 
-    // Save to local storage
     localStorage.setItem("userAlcoholHabits", selectedOption)
 
-    // Continue to the sugar habits page
     router.push("/onboarding/sugar-habits")
   }
 
@@ -44,7 +47,6 @@ export default function AlcoholPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-brand-lightest to-white text-brand-dark">
-      {/* Header */}
       <header className="p-4 flex justify-center items-center bg-brand-dark text-white relative">
         <button
           onClick={handleBack}
@@ -52,27 +54,24 @@ export default function AlcoholPage() {
           aria-label="Go back to previous page"
         >
           <ArrowLeft className="h-5 w-5 mr-1" />
-          <span>Back</span>
+          <span>{t("common.back", "Back")}</span>
         </button>
         <Logo variant="light" />
       </header>
 
-      {/* Main Content */}
       <main className="flex-1 px-4 pb-8 overflow-auto">
         <div className="max-w-md mx-auto">
           <div className="mb-6 text-center">
-            <h2 className="text-2xl font-bold mb-2">Your Habits</h2>
-            <p className="text-brand-dark/70">How often do you drink alcohol?</p>
+            <h2 className="text-2xl font-bold mb-2">{t("onboarding.habits.title", "Your Habits")}</h2>
+            <p className="text-brand-dark/70">{t("onboarding.habits.alcoholSubtitle", "How often do you drink alcohol?")}</p>
           </div>
 
-          {/* Error message */}
           {error && (
             <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-xl text-center text-red-700">
               {error}
             </div>
           )}
 
-          {/* Alcohol options */}
           <div className="flex flex-col gap-3 mb-8">
             {alcoholOptions.map((option) => (
               <button
@@ -82,19 +81,17 @@ export default function AlcoholPage() {
                   selectedOption === option ? "bg-pink-400 text-white" : "glass-card hover:bg-white"
                 }`}
               >
-                {option}
+                {t(optKey("habits.alcohol", option), option)}
               </button>
             ))}
           </div>
 
-          {/* Next button */}
           <button onClick={handleContinue} className="w-full gradient-button py-4 rounded-full">
-            Next
+            {t("common.next", "Next")}
           </button>
         </div>
       </main>
 
-      {/* Progress indicator */}
       <div className="p-4 flex justify-center">
         <div className="flex space-x-2">
           <div className="w-2 h-2 rounded-full bg-pink-400"></div>

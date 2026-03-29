@@ -8,17 +8,18 @@ import { ArrowLeft } from "lucide-react"
 import Logo from "@/app/components/logo"
 import { saveUserConditions } from "@/lib/user-data"
 import { getSession } from "@/lib/auth"
+import { useLanguage } from "@/lib/i18n/context"
 
 export default function ConditionsPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { t } = useLanguage()
   const [selectedConditions, setSelectedConditions] = useState<string[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [error, setError] = useState("")
   const [showAllConditions, setShowAllConditions] = useState(false)
   const isEditMode = searchParams.get("edit") === "true"
 
-  // Load saved conditions from localStorage if available
   useEffect(() => {
     const loadExistingData = async () => {
       try {
@@ -36,7 +37,6 @@ export default function ConditionsPage() {
           }
         }
 
-        // Fall back to localStorage
         const savedConditions = localStorage.getItem("selectedConditions")
         if (savedConditions) {
           setSelectedConditions(JSON.parse(savedConditions))
@@ -49,7 +49,6 @@ export default function ConditionsPage() {
     loadExistingData()
   }, [])
 
-  // Alphabetically sorted list of conditions
   const conditionsList = [
     "Multiple sclerosis (MS)",
     "Chronic migraines",
@@ -133,7 +132,6 @@ export default function ConditionsPage() {
     condition.toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
-  // Determine which conditions to display
   const displayedConditions = searchTerm
     ? filteredConditions
     : showAllConditions
@@ -149,16 +147,13 @@ export default function ConditionsPage() {
         setSelectedConditions([...selectedConditions, condition])
         setError("")
       } else {
-        setError("You can select up to 3 conditions")
+        setError(t("onboarding.conditions.max", "You can select up to 3 conditions"))
       }
     }
   }
 
   const handleContinue = async () => {
-    // Save selected conditions even if empty
     localStorage.setItem("selectedConditions", JSON.stringify(selectedConditions))
-
-    // Also save to userConditions for profile page compatibility
     localStorage.setItem("userConditions", JSON.stringify(selectedConditions))
 
     try {
@@ -168,7 +163,6 @@ export default function ConditionsPage() {
       }
     } catch (error) {
       console.error("Error saving to database:", error)
-      // Continue anyway - data is in localStorage
     }
 
     if (isEditMode) {
@@ -196,7 +190,6 @@ export default function ConditionsPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-brand-lightest to-white text-brand-dark">
-      {/* Header */}
       <header className="p-4 flex justify-center items-center bg-brand-dark text-white relative">
         <button
           onClick={handleBack}
@@ -204,7 +197,7 @@ export default function ConditionsPage() {
           aria-label="Go back"
         >
           <ArrowLeft className="h-5 w-5 mr-1" />
-          <span>Back</span>
+          <span>{t("common.back", "Back")}</span>
         </button>
         <Logo variant="light" />
       </header>
@@ -212,18 +205,16 @@ export default function ConditionsPage() {
       <main className="flex-1 px-4 pb-8 overflow-auto">
         <div className="max-w-md mx-auto">
           <div className="mb-6 text-center">
-            <h2 className="text-2xl font-bold mb-2">What conditions are you managing?</h2>
+            <h2 className="text-2xl font-bold mb-2">{t("onboarding.conditions.title", "What conditions are you managing?")}</h2>
             <p className="text-brand-dark/70 mb-4">
-              Select up to 3 conditions (optional). You can continue without selecting any, or choose 1-3 conditions
-              that you're currently experiencing.
+              {t("onboarding.conditions.subtitle", "Select up to 3 conditions (optional). You can continue without selecting any, or choose 1-3 conditions that you're currently experiencing.")}
             </p>
           </div>
 
-          {/* Search */}
           <div className="relative mb-4">
             <input
               type="text"
-              placeholder="Search conditions..."
+              placeholder={t("onboarding.conditions.search", "Search conditions...")}
               className="w-full p-3 rounded-xl bg-white/80 border border-brand-dark/20 focus:outline-none focus:ring-2 focus:ring-pink-400"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -235,19 +226,17 @@ export default function ConditionsPage() {
             )}
           </div>
 
-          {/* Error message */}
           {error && (
             <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-xl text-center text-red-700">
               {error}
             </div>
           )}
 
-          {/* Selected count */}
           <p className="text-sm text-brand-dark/70 mb-2">
-            Selected: {selectedConditions.length}/3 {selectedConditions.length === 0 && "(optional)"}
+            {t("onboarding.conditions.selected", "Selected:")} {selectedConditions.length}/3{" "}
+            {selectedConditions.length === 0 && t("onboarding.conditions.optional", "(optional)")}
           </p>
 
-          {/* Conditions list */}
           <div className="glass-card rounded-2xl p-4 mb-8 overflow-hidden">
             <div className="max-h-64 overflow-y-auto">
               {displayedConditions.map((condition) => (
@@ -267,28 +256,27 @@ export default function ConditionsPage() {
                 </div>
               ))}
               {filteredConditions.length === 0 && (
-                <p className="text-center p-4 text-brand-dark/70">No conditions found</p>
+                <p className="text-center p-4 text-brand-dark/70">{t("onboarding.conditions.none", "No conditions found")}</p>
               )}
             </div>
 
-            {/* Show more/less button */}
             {!searchTerm && filteredConditions.length > 5 && (
               <button
                 className="w-full mt-2 py-2 text-pink-400 font-medium bg-white/80 rounded-xl hover:bg-white border border-pink-400/20"
                 onClick={toggleShowAllConditions}
               >
-                {showAllConditions ? "Show less" : `Show more (${filteredConditions.length - 5} more)`}
+                {showAllConditions
+                  ? t("onboarding.conditions.showLess", "Show less")
+                  : t("onboarding.conditions.showMore", "Show more")}
               </button>
             )}
           </div>
 
-          {/* Navigation buttons */}
           <button className="w-full gradient-button py-4 rounded-full" onClick={handleContinue}>
-            {isEditMode ? "Save" : "Continue"}
+            {isEditMode ? t("common.save", "Save") : t("common.continue", "Continue")}
           </button>
         </div>
 
-        {/* Progress dots - only show in onboarding mode */}
         {!isEditMode && (
           <div className="p-4 flex justify-center mt-6">
             <div className="flex space-x-2">

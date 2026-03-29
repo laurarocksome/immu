@@ -11,22 +11,22 @@ import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 import { saveDietInfo } from "@/lib/user-data"
 import { getSession } from "@/lib/auth"
+import { useLanguage } from "@/lib/i18n/context"
 
 export default function DietTimelinePage() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { t } = useLanguage()
   const [needsAdaptation, setNeedsAdaptation] = useState(false)
   const [selectedDays, setSelectedDays] = useState(30)
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(true)
   const isEditMode = searchParams.get("edit") === "true"
 
-  // Min and max days based on adaptation period
   const minDays = needsAdaptation ? 58 : 30
   const maxDays = needsAdaptation ? 132 : 90
 
   useEffect(() => {
-    // Check if user selected adaptation period
     const adaptationChoice = localStorage.getItem("userAdaptationChoice") || ""
     const needsAdapt = adaptationChoice === "Yes"
     setNeedsAdaptation(needsAdapt)
@@ -35,7 +35,6 @@ export default function DietTimelinePage() {
     if (existingTimeline && existingTimeline !== "not-set") {
       setSelectedDays(Number.parseInt(existingTimeline))
     } else {
-      // Set initial selected days based on adaptation period
       setSelectedDays(needsAdapt ? 58 : 30)
     }
     setIsLoading(false)
@@ -43,14 +42,11 @@ export default function DietTimelinePage() {
 
   const handleAdaptationToggle = (value: boolean) => {
     setNeedsAdaptation(value)
-    // Adjust selected days when toggling adaptation
     if (value) {
-      // Switching to adaptation - increase minimum if needed
       if (selectedDays < 58) {
         setSelectedDays(58)
       }
     } else {
-      // Switching to no adaptation - decrease if beyond new max
       if (selectedDays > 90) {
         setSelectedDays(90)
       }
@@ -62,8 +58,6 @@ export default function DietTimelinePage() {
   }
 
   const handleContinue = async () => {
-    // If adaptation is needed, store the total days (adaptation + elimination)
-    // but also store that the user wants adaptation
     if (needsAdaptation) {
       localStorage.setItem("userAdaptationChoice", "Yes")
       localStorage.setItem("userDietTimeline", selectedDays.toString())
@@ -101,36 +95,29 @@ export default function DietTimelinePage() {
     if (isEditMode) {
       router.push("/profile")
     } else {
-      // Check if user came from adaptation-period page
       const vegetableHabits = localStorage.getItem("userVegetableHabits") || ""
       const caffeineHabits = localStorage.getItem("userCaffeineHabits") || ""
       const alcoholHabits = localStorage.getItem("userAlcoholHabits") || ""
       const sugarHabits = localStorage.getItem("userSugarHabits") || ""
 
-      // Count how many habits might need adaptation
       let adaptationCount = 0
 
-      // Check caffeine habits
       if (caffeineHabits === "3-4 cups" || caffeineHabits === "5+ cups") {
         adaptationCount++
       }
 
-      // Check alcohol habits
       if (alcoholHabits === "Weekly (1-2 times a week)" || alcoholHabits === "Frequently (3+ times a week)") {
         adaptationCount++
       }
 
-      // Check sugar habits
       if (sugarHabits === "Yes, daily (in coffee, tea, etc.)" || sugarHabits === "Yes, multiple times a day") {
         adaptationCount++
       }
 
-      // Check vegetable habits
       if (vegetableHabits === "1-2 servings" || vegetableHabits === "None") {
         adaptationCount++
       }
 
-      // If 2 or more habits need adaptation, go back to adaptation period page
       if (adaptationCount >= 2) {
         router.push("/onboarding/adaptation-period")
       } else {
@@ -142,14 +129,13 @@ export default function DietTimelinePage() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-brand-lightest to-white text-brand-dark">
-        <p>Loading...</p>
+        <p>{t("onboarding.dietTimeline.loading", "Loading...")}</p>
       </div>
     )
   }
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-brand-lightest to-white text-brand-dark">
-      {/* Header */}
       <header className="p-4 flex justify-center items-center bg-brand-dark text-white relative">
         <button
           onClick={handleBack}
@@ -157,35 +143,35 @@ export default function DietTimelinePage() {
           aria-label="Go back to previous page"
         >
           <ArrowLeft className="h-5 w-5 mr-1" />
-          <span>Back</span>
+          <span>{t("common.back", "Back")}</span>
         </button>
         <Logo variant="light" />
       </header>
 
-      {/* Main Content */}
       <main className="flex-1 px-4 pb-8 overflow-auto">
         <div className="max-w-md mx-auto">
           <div className="mb-6">
             <h2 className="text-2xl font-bold mb-2 text-center">
-              {isEditMode ? "Edit Your Diet Settings" : "Set Your Goals"}
+              {isEditMode
+                ? t("onboarding.dietTimeline.titleEdit", "Edit Your Diet Settings")
+                : t("onboarding.dietTimeline.title", "Set Your Goals")}
             </h2>
             <p className="text-center">
               {isEditMode
-                ? "Update your diet timeline and adaptation period preferences"
-                : "Select a period to monitor your AIP progress"}
+                ? t("onboarding.dietTimeline.subtitleEdit", "Update your diet timeline and adaptation period preferences")
+                : t("onboarding.dietTimeline.subtitle", "Select a period to monitor your AIP progress")}
               {!isEditMode && (
                 <>
-                  . Refer to{" "}
+                  {t("onboarding.dietTimeline.faqRef", ". Refer to")}{" "}
                   <Link href="/faq" className="text-pink-400 underline">
-                    FAQ
+                    {t("onboarding.dietTimeline.faqLink", "FAQ")}
                   </Link>{" "}
-                  for diet duration info.
+                  {t("onboarding.dietTimeline.faqSuffix", "for diet duration info.")}
                 </>
               )}
             </p>
           </div>
 
-          {/* Error message */}
           {error && (
             <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-xl text-center text-red-700">
               {error}
@@ -194,10 +180,9 @@ export default function DietTimelinePage() {
 
           {isEditMode && (
             <div className="glass-card rounded-2xl p-6 mb-6">
-              <h3 className="font-semibold mb-4 text-lg">Adaptation Period</h3>
+              <h3 className="font-semibold mb-4 text-lg">{t("onboarding.dietTimeline.adaptTitle", "Adaptation Period")}</h3>
               <p className="text-sm text-brand-dark/70 mb-4">
-                An adaptation period helps you gradually transition into the AIP diet over 28 days before starting the
-                full elimination phase.
+                {t("onboarding.dietTimeline.adaptDesc", "An adaptation period helps you gradually transition into the AIP diet over 28 days before starting the full elimination phase.")}
               </p>
 
               <div className="flex flex-col gap-3">
@@ -214,7 +199,7 @@ export default function DietTimelinePage() {
                   >
                     {needsAdaptation && <div className="w-3 h-3 rounded-full bg-white"></div>}
                   </div>
-                  <span>Yes, include adaptation period</span>
+                  <span>{t("onboarding.dietTimeline.yesAdapt", "Yes, include adaptation period")}</span>
                 </div>
 
                 <div
@@ -230,25 +215,22 @@ export default function DietTimelinePage() {
                   >
                     {!needsAdaptation && <div className="w-3 h-3 rounded-full bg-white"></div>}
                   </div>
-                  <span>No, start directly with elimination</span>
+                  <span>{t("onboarding.dietTimeline.noAdapt", "No, start directly with elimination")}</span>
                 </div>
               </div>
             </div>
           )}
 
-          {/* Slider */}
           <div className="glass-card rounded-2xl p-6 mb-8">
-            <h3 className="font-semibold mb-4 text-lg">Diet Timeline</h3>
+            <h3 className="font-semibold mb-4 text-lg">{t("onboarding.dietTimeline.sliderTitle", "Diet Timeline")}</h3>
             <div className="flex justify-between mb-2">
-              <span className="font-bold">{minDays} Days</span>
-              <span className="font-bold">{maxDays} Days</span>
+              <span className="font-bold">{minDays} {t("onboarding.dietTimeline.days", "Days")}</span>
+              <span className="font-bold">{maxDays} {t("onboarding.dietTimeline.days", "Days")}</span>
             </div>
 
             <div className="relative py-4">
-              {/* Track background */}
               <div className="absolute top-1/2 left-0 right-0 h-2 -translate-y-1/2 bg-gray-200 rounded-full"></div>
 
-              {/* Filled track */}
               <div
                 className="absolute top-1/2 left-0 h-2 -translate-y-1/2 bg-pink-400 rounded-full"
                 style={{
@@ -256,7 +238,6 @@ export default function DietTimelinePage() {
                 }}
               ></div>
 
-              {/* Actual input slider */}
               <input
                 type="range"
                 min={minDays}
@@ -265,14 +246,12 @@ export default function DietTimelinePage() {
                 onChange={handleSliderChange}
                 className="w-full h-2 appearance-none cursor-pointer bg-transparent relative z-10"
                 style={{
-                  // Custom thumb styling
                   WebkitAppearance: "none",
                 }}
               />
             </div>
 
             <style jsx>{`
-              /* Custom thumb styling for webkit browsers */
               input[type="range"]::-webkit-slider-thumb {
                 -webkit-appearance: none;
                 appearance: none;
@@ -285,7 +264,6 @@ export default function DietTimelinePage() {
                 box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
               }
 
-              /* Custom thumb styling for Firefox */
               input[type="range"]::-moz-range-thumb {
                 width: 20px;
                 height: 20px;
@@ -298,24 +276,24 @@ export default function DietTimelinePage() {
             `}</style>
 
             <div className="mt-4 text-center">
-              <p className="font-medium">Selected timeframe: {selectedDays} days</p>
+              <p className="font-medium">
+                {t("onboarding.dietTimeline.selected", "Selected timeframe: {n} days").replace("{n}", selectedDays.toString())}
+              </p>
 
               {needsAdaptation && (
                 <p className="text-sm text-brand-dark/70 mt-2">
-                  Includes 28 days of adaptation + {selectedDays - 28} days of elimination phase
+                  {t("onboarding.dietTimeline.includes28", "Includes 28 days of adaptation + {n} days of elimination phase").replace("{n}", (selectedDays - 28).toString())}
                 </p>
               )}
             </div>
           </div>
 
-          {/* Next button */}
           <button onClick={handleContinue} className="w-full gradient-button py-4 rounded-full">
-            {isEditMode ? "Save Changes" : "Next"}
+            {isEditMode ? t("onboarding.dietTimeline.saveChanges", "Save Changes") : t("common.next", "Next")}
           </button>
         </div>
       </main>
 
-      {/* Progress indicator - only show in onboarding mode */}
       {!isEditMode && (
         <div className="p-4 flex justify-center">
           <div className="flex space-x-2">

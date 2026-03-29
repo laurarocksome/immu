@@ -58,6 +58,27 @@ Helper functions (all defined inside the component):
 - `createWeightCurvePath` — cubic bezier for weight line
 - `createWeightAreaPath` — area fill for weight chart
 
+## i18n / Translations
+
+Translations stored in Supabase `translations` table (columns: `locale`, `key`, `value`, `category`).  
+`lib/i18n/context.tsx` fetches all keys for the active locale on mount (module-level in-memory cache).  
+Supported locales: `en`, `lt`. Language toggle is on the dashboard header.
+
+### Pages fully migrated to `t()`:
+- Food list (`app/food-list/page.tsx`) — 216 food name keys + 58 tag keys
+- Symptoms (`app/add-symptom/page.tsx`, `app/onboarding/symptoms/page.tsx`, `app/log-day/log-day-content.tsx`)
+- Dashboard (`app/dashboard/page.tsx`) — all UI + Lithuanian month array
+- Calendar (`app/calendar/page.tsx`)
+- All 12 onboarding pages — conditions, stress, no-stress-help, diet-timeline, adaptation-period, create-account, user-profile, activity, caffeine-habits, alcohol-habits, sugar-habits, vegetable-habits, athlete-info
+
+### Key patterns:
+- `t(key, fallback)` for simple strings
+- `t(key, template).replace("{n}", value)` for interpolation
+- `optKey(prefix, value)` helper — `prefix + "." + value.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/, "")` — used for options that are also stored in localStorage (stress, activity, habits). Stored English values are never changed; only displayed labels are translated.
+- Medical conditions kept in English (internationally recognized terms).
+- `category: 'general'` required on all rows.
+- Total DB rows: ~1,600+
+
 ## Dev Command
 
 ```bash

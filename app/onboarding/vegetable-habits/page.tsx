@@ -6,12 +6,17 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Logo from "@/app/components/logo"
 import { ArrowLeft } from "lucide-react"
+import { useLanguage } from "@/lib/i18n/context"
 
-// Vegetable consumption options
+function optKey(prefix: string, value: string) {
+  return prefix + "." + value.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/, "")
+}
+
 const vegetableOptions = ["5+ servings", "3-4 servings", "1-2 servings", "None"]
 
 export default function VegetablePage() {
   const router = useRouter()
+  const { t } = useLanguage()
   const [selectedOption, setSelectedOption] = useState<string | null>(null)
   const [error, setError] = useState("")
 
@@ -22,48 +27,39 @@ export default function VegetablePage() {
 
   const handleContinue = () => {
     if (!selectedOption) {
-      setError("Please select an option to continue")
+      setError(t("onboarding.habits.error", "Please select an option to continue"))
       return
     }
 
-    // Save to local storage
     localStorage.setItem("userVegetableHabits", selectedOption)
 
-    // Check if user needs adaptation period
     checkAdaptationNeeded()
   }
 
   const checkAdaptationNeeded = () => {
-    // Get all habit selections
     const caffeineHabits = localStorage.getItem("userCaffeineHabits") || ""
     const alcoholHabits = localStorage.getItem("userAlcoholHabits") || ""
     const sugarHabits = localStorage.getItem("userSugarHabits") || ""
     const vegetableHabits = selectedOption || ""
 
-    // Count how many habits might need adaptation
     let adaptationCount = 0
 
-    // Check caffeine habits
     if (caffeineHabits === "3-4 cups" || caffeineHabits === "5+ cups") {
       adaptationCount++
     }
 
-    // Check alcohol habits
     if (alcoholHabits === "Weekly (1-2 times a week)" || alcoholHabits === "Frequently (3+ times a week)") {
       adaptationCount++
     }
 
-    // Check sugar habits
     if (sugarHabits === "Yes, daily (in coffee, tea, etc.)" || sugarHabits === "Yes, multiple times a day") {
       adaptationCount++
     }
 
-    // Check vegetable habits
     if (vegetableHabits === "1-2 servings" || vegetableHabits === "None") {
       adaptationCount++
     }
 
-    // If 2 or more habits need adaptation, show adaptation period page
     if (adaptationCount >= 2) {
       router.push("/onboarding/adaptation-period")
     } else {
@@ -77,7 +73,6 @@ export default function VegetablePage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-brand-lightest to-white text-brand-dark">
-      {/* Header */}
       <header className="p-4 flex justify-center items-center bg-brand-dark text-white relative">
         <button
           onClick={handleBack}
@@ -85,27 +80,24 @@ export default function VegetablePage() {
           aria-label="Go back to previous page"
         >
           <ArrowLeft className="h-5 w-5 mr-1" />
-          <span>Back</span>
+          <span>{t("common.back", "Back")}</span>
         </button>
         <Logo variant="light" />
       </header>
 
-      {/* Main Content */}
       <main className="flex-1 px-4 pb-8 overflow-auto">
         <div className="max-w-md mx-auto">
           <div className="mb-6 text-center">
-            <h2 className="text-2xl font-bold mb-2">Your Habits</h2>
-            <p className="text-brand-dark/70">How many servings of vegetables do you eat daily?</p>
+            <h2 className="text-2xl font-bold mb-2">{t("onboarding.habits.title", "Your Habits")}</h2>
+            <p className="text-brand-dark/70">{t("onboarding.habits.vegetableSubtitle", "How many servings of vegetables do you eat daily?")}</p>
           </div>
 
-          {/* Error message */}
           {error && (
             <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-xl text-center text-red-700">
               {error}
             </div>
           )}
 
-          {/* Vegetable options */}
           <div className="flex flex-col gap-3 mb-8">
             {vegetableOptions.map((option) => (
               <button
@@ -115,19 +107,17 @@ export default function VegetablePage() {
                   selectedOption === option ? "bg-pink-400 text-white" : "glass-card hover:bg-white"
                 }`}
               >
-                {option}
+                {t(optKey("habits.vegetable", option), option)}
               </button>
             ))}
           </div>
 
-          {/* Next button */}
           <button onClick={handleContinue} className="w-full gradient-button py-4 rounded-full">
-            Next
+            {t("common.next", "Next")}
           </button>
         </div>
       </main>
 
-      {/* Progress indicator */}
       <div className="p-4 flex justify-center">
         <div className="flex space-x-2">
           <div className="w-2 h-2 rounded-full bg-pink-400"></div>

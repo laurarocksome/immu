@@ -8,6 +8,7 @@ import { ChevronDown, ArrowLeft } from "lucide-react"
 import Logo from "@/app/components/logo"
 import { saveUserProfile } from "@/lib/user-data"
 import { getSession } from "@/lib/auth"
+import { useLanguage } from "@/lib/i18n/context"
 
 type WeightUnit = "kg" | "lb"
 type HeightUnit = "cm" | "ft"
@@ -15,6 +16,7 @@ type HeightUnit = "cm" | "ft"
 export default function UserProfilePage() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { t } = useLanguage()
   const [gender, setGender] = useState<string | null>(null)
   const [age, setAge] = useState<string>("")
   const [weight, setWeight] = useState<string>("")
@@ -93,22 +95,22 @@ export default function UserProfilePage() {
 
   const validateInputs = () => {
     if (!gender) {
-      setError("Please select your gender")
+      setError(t("onboarding.userProfile.errorGender", "Please select your gender"))
       return false
     }
 
     if (!age || isNaN(Number(age)) || Number(age) <= 0 || Number(age) > 120) {
-      setError("Please enter a valid age")
+      setError(t("onboarding.userProfile.errorAge", "Please enter a valid age"))
       return false
     }
 
     if (!weight || isNaN(Number(weight)) || Number(weight) <= 0) {
-      setError("Please enter a valid weight")
+      setError(t("onboarding.userProfile.errorWeight", "Please enter a valid weight"))
       return false
     }
 
     if (!height || isNaN(Number(height)) || Number(height) <= 0) {
-      setError("Please enter a valid height")
+      setError(t("onboarding.userProfile.errorHeight", "Please enter a valid height"))
       return false
     }
 
@@ -167,7 +169,7 @@ export default function UserProfilePage() {
           aria-label="Go back to previous page"
         >
           <ArrowLeft className="h-5 w-5 mr-1" />
-          <span>Back</span>
+          <span>{t("common.back", "Back")}</span>
         </button>
         <Logo variant="light" />
       </header>
@@ -175,8 +177,8 @@ export default function UserProfilePage() {
       <main className="flex-1 px-4 pb-8 overflow-auto">
         <div className="max-w-md mx-auto">
           <div className="mb-8 text-center">
-            <h2 className="text-2xl font-bold mb-2">About You</h2>
-            <p className="text-brand-dark/70">Please enter some basic information to personalize your experience.</p>
+            <h2 className="text-2xl font-bold mb-2">{t("onboarding.userProfile.title", "About You")}</h2>
+            <p className="text-brand-dark/70">{t("onboarding.userProfile.subtitle", "Please enter some basic information to personalize your experience.")}</p>
           </div>
 
           {error && (
@@ -187,7 +189,7 @@ export default function UserProfilePage() {
 
           <div className="glass-card rounded-2xl p-6 space-y-6">
             <div>
-              <label className="block mb-2">Your gender at birth</label>
+              <label className="block mb-2">{t("onboarding.userProfile.gender", "Your gender at birth")}</label>
               <div className="grid grid-cols-2 gap-4">
                 <button
                   type="button"
@@ -198,7 +200,7 @@ export default function UserProfilePage() {
                       : "bg-white/80 border border-brand-dark/20 hover:bg-white"
                   }`}
                 >
-                  Female
+                  {t("onboarding.userProfile.female", "Female")}
                 </button>
                 <button
                   type="button"
@@ -209,21 +211,21 @@ export default function UserProfilePage() {
                       : "bg-white/80 border border-brand-dark/20 hover:bg-white"
                   }`}
                 >
-                  Male
+                  {t("onboarding.userProfile.male", "Male")}
                 </button>
               </div>
             </div>
 
             <div>
               <label htmlFor="age" className="block mb-2">
-                Age
+                {t("onboarding.userProfile.age", "Age")}
               </label>
               <input
                 type="number"
                 id="age"
                 value={age}
                 onChange={(e) => setAge(e.target.value)}
-                placeholder="Enter your age"
+                placeholder={t("onboarding.userProfile.agePlaceholder", "Enter your age")}
                 className="w-full p-3 rounded-xl bg-white/80 border border-brand-dark/20 focus:outline-none focus:ring-2 focus:ring-pink-400"
                 min="1"
                 max="120"
@@ -231,13 +233,13 @@ export default function UserProfilePage() {
             </div>
 
             <div>
-              <label className="block mb-2 text-center">Weight</label>
+              <label className="block mb-2 text-center">{t("onboarding.userProfile.weight", "Weight")}</label>
               <div className="flex">
                 <input
                   type="number"
                   value={weight}
                   onChange={(e) => setWeight(e.target.value)}
-                  placeholder="Enter weight"
+                  placeholder={t("onboarding.userProfile.weightPlaceholder", "Enter weight")}
                   className="flex-1 p-3 rounded-l-xl bg-white/80 border border-brand-dark/20 focus:outline-none focus:ring-2 focus:ring-pink-400"
                   min="1"
                 />
@@ -274,13 +276,13 @@ export default function UserProfilePage() {
             </div>
 
             <div>
-              <label className="block mb-2 text-center">Height</label>
+              <label className="block mb-2 text-center">{t("onboarding.userProfile.height", "Height")}</label>
               <div className="flex">
                 <input
                   type="number"
                   value={height}
                   onChange={(e) => setHeight(e.target.value)}
-                  placeholder="Enter height"
+                  placeholder={t("onboarding.userProfile.heightPlaceholder", "Enter height")}
                   className="flex-1 p-3 rounded-l-xl bg-white/80 border border-brand-dark/20 focus:outline-none focus:ring-2 focus:ring-pink-400"
                   min="1"
                 />
@@ -322,7 +324,11 @@ export default function UserProfilePage() {
             disabled={isLoading}
             className="w-full gradient-button py-4 rounded-full mt-8"
           >
-            {isLoading ? "Saving..." : isEditMode ? "Save" : "Next"}
+            {isLoading
+              ? t("common.saving", "Saving...")
+              : isEditMode
+                ? t("common.save", "Save")
+                : t("common.next", "Next")}
           </button>
         </div>
       </main>
