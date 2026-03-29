@@ -77,7 +77,11 @@ Supported locales: `en`, `lt`. Language toggle is on the dashboard header.
 - `optKey(prefix, value)` helper — `prefix + "." + value.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/, "")` — used for options that are also stored in localStorage (stress, activity, habits). Stored English values are never changed; only displayed labels are translated.
 - Medical conditions fully translated to Lithuanian via `condition.*` keys; `conditionKey()` helper used in both the onboarding conditions page and the profile page. Search on the conditions page matches both English and translated names.
 - `category: 'general'` required on all rows.
-- Total DB rows: ~1,750+ (76 condition keys × 2 locales = 152 added in latest session)
+- Total DB rows: ~1,850+ (99 new rows for nutrition phase plans, FAQ content, and my-diet diet names)
+- `planKey(title)` helper in all 3 nutrition phase pages — same slug pattern, used for `nutritionplan.{slug}.title`, `.desc`, `.task.{idx}`
+- `faqKey(question)` helper in `faq/page.tsx` — same slug pattern, used for `faq.{slug}.q` and `.a`
+- `faq/page.tsx` fully migrated to i18n (shell text + all 14 FAQ questions and answers)
+- `my-diet/page.tsx` diet fullNames now translated via `myDiet.{id}.fullName` keys
 
 ## Dev Command
 

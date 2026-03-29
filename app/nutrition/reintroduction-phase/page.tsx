@@ -9,6 +9,10 @@ import Image from "next/image"
 import { createBrowserClient } from "@supabase/ssr"
 import { useLanguage } from "@/lib/i18n/context"
 
+function planKey(title: string) {
+  return "nutritionplan." + title.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/, "")
+}
+
 export default function ReintroductionPhasePage() {
   const router = useRouter()
   const { t } = useLanguage()
@@ -104,13 +108,13 @@ export default function ReintroductionPhasePage() {
           ) : (
             nutritionPlans.map((plan) => (
               <div key={plan.id} className="mb-6 last:mb-0">
-                <h3 className="font-semibold text-lg mb-3">{plan.title}</h3>
+                <h3 className="font-semibold text-lg mb-3">{t(planKey(plan.title) + ".title", plan.title)}</h3>
                 {plan.content?.steps && (
                   <ul className="space-y-3">
                     {plan.content.steps.map((step: string, idx: number) => (
                       <li key={idx} className="flex items-start">
                         <span className="text-pink-500 mr-2 mt-1 flex-shrink-0">•</span>
-                        <p>{step}</p>
+                        <p>{t(planKey(plan.title) + ".task." + idx, step)}</p>
                       </li>
                     ))}
                   </ul>

@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation"
 import { ArrowLeft, PlusIcon } from "lucide-react"
 import Logo from "@/app/components/logo"
 import { createBrowserClient } from "@supabase/ssr"
+import { useLanguage } from "@/lib/i18n/context"
+import { isPageVisible } from "@/lib/page-visibility"
 
 interface FAQItem {
   id: string
@@ -14,8 +16,13 @@ interface FAQItem {
   phase?: string
 }
 
+function faqKey(question: string) {
+  return "faq." + question.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/, "")
+}
+
 export default function FAQPage() {
   const router = useRouter()
+  const { t } = useLanguage()
   const [expandedFaq, setExpandedFaq] = useState<string | null>(null)
   const [faqItems, setFaqItems] = useState<FAQItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -65,22 +72,20 @@ export default function FAQPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-brand-lightest to-white text-brand-dark">
-      {/* Header */}
       <header className="p-4 border-b border-pink-200/30 flex justify-between items-center bg-gradient-to-r from-pink-300 to-peach-300">
         <button onClick={handleBack} className="flex items-center gap-1 bg-white/20 rounded-full px-3 py-1.5">
           <ArrowLeft className="h-4 w-4 text-white" />
-          <span className="text-sm font-medium text-white">Back</span>
+          <span className="text-sm font-medium text-white">{t("faq.back", "Back")}</span>
         </button>
         <Logo variant="light" />
         <div className="w-20" />
       </header>
 
-      {/* Main Content */}
       <main className="flex-1 p-4 overflow-auto pb-24">
-        <h1 className="text-3xl font-bold mb-6">Frequently Asked Questions</h1>
+        <h1 className="text-3xl font-bold mb-6">{t("faq.title", "Frequently Asked Questions")}</h1>
 
         {loading ? (
-          <div className="text-center py-8 text-brand-dark/60">Loading FAQs...</div>
+          <div className="text-center py-8 text-brand-dark/60">{t("faq.loading", "Loading FAQs...")}</div>
         ) : (
           <div className="space-y-4">
             {faqItems.map((item) => (
@@ -89,14 +94,14 @@ export default function FAQPage() {
                   className="w-full p-4 flex justify-between items-start text-left hover:bg-pink-50/50 transition-colors"
                   onClick={() => toggleFaq(item.id)}
                 >
-                  <span className="font-medium pr-4">{item.question}</span>
+                  <span className="font-medium pr-4">{t(faqKey(item.question) + ".q", item.question)}</span>
                   <PlusIcon
                     className={`h-5 w-5 flex-shrink-0 transition-transform ${expandedFaq === item.id ? "rotate-45" : ""}`}
                   />
                 </button>
                 {expandedFaq === item.id && (
                   <div className="px-4 pb-4">
-                    <div className="text-brand-dark/80 whitespace-pre-wrap">{item.answer}</div>
+                    <div className="text-brand-dark/80 whitespace-pre-wrap">{t(faqKey(item.question) + ".a", item.answer)}</div>
                   </div>
                 )}
               </div>

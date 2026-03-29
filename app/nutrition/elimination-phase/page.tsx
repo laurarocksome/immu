@@ -9,6 +9,10 @@ import Image from "next/image"
 import { createBrowserClient } from "@supabase/ssr"
 import { useLanguage } from "@/lib/i18n/context"
 
+function planKey(title: string) {
+  return "nutritionplan." + title.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/, "")
+}
+
 export default function EliminationPhasePage() {
   const router = useRouter()
   const { t } = useLanguage()
@@ -108,12 +112,12 @@ export default function EliminationPhasePage() {
                 <li key={plan.id} className="flex items-start">
                   <span className="text-pink-500 mr-2 mt-1 flex-shrink-0">•</span>
                   <div>
-                    <strong className="block mb-1">{plan.title}</strong>
-                    <p>{plan.description}</p>
+                    <strong className="block mb-1">{t(planKey(plan.title) + ".title", plan.title)}</strong>
+                    <p>{t(planKey(plan.title) + ".desc", plan.description)}</p>
                     {plan.content?.tasks && (
                       <ul className="mt-2 space-y-1">
                         {plan.content.tasks.map((task: string, idx: number) => (
-                          <li key={idx} className="text-sm text-brand-dark/80">• {task}</li>
+                          <li key={idx} className="text-sm text-brand-dark/80">• {t(planKey(plan.title) + ".task." + idx, task)}</li>
                         ))}
                       </ul>
                     )}

@@ -8,12 +8,12 @@ import Logo from "@/app/components/logo"
 import { useLanguage } from "@/lib/i18n/context"
 
 const DIETS = [
-  { name: "AIP", fullName: "Autoimmune Protocol", active: true },
-  { name: "Whole30", fullName: "Whole30", active: false },
-  { name: "Low-FODMAP", fullName: "Low-FODMAP", active: false },
-  { name: "SCD", fullName: "Specific Carbohydrate Diet", active: false },
-  { name: "Elimination Diet", fullName: "Elimination Diet", active: false },
-  { name: "GAPS", fullName: "Gut and Psychology Syndrome", active: false },
+  { name: "AIP", fullNameKey: "myDiet.aip.fullName", fullNameFallback: "Autoimmune Protocol", active: true },
+  { name: "Whole30", fullNameKey: "myDiet.whole30.fullName", fullNameFallback: "Whole30", active: false },
+  { name: "Low-FODMAP", fullNameKey: "myDiet.lowFodmap.fullName", fullNameFallback: "Low-FODMAP", active: false },
+  { name: "SCD", fullNameKey: "myDiet.scd.fullName", fullNameFallback: "Specific Carbohydrate Diet", active: false },
+  { name: "Elimination Diet", fullNameKey: "myDiet.eliminationDiet.fullName", fullNameFallback: "Elimination Diet", active: false },
+  { name: "GAPS", fullNameKey: "myDiet.gaps.fullName", fullNameFallback: "Gut and Psychology Syndrome", active: false },
 ]
 
 export default function MyDietPage() {
@@ -52,7 +52,7 @@ export default function MyDietPage() {
                     <span className="text-white text-xs font-semibold">{t("myDiet.active", "Active")}</span>
                   </div>
                   <p className="font-bold text-brand-dark text-lg pr-20">{diet.name}</p>
-                  <p className="text-brand-dark/50 text-sm mt-0.5">{diet.fullName}</p>
+                  <p className="text-brand-dark/50 text-sm mt-0.5">{t(diet.fullNameKey, diet.fullNameFallback)}</p>
                 </div>
               ) : (
                 <div
@@ -63,7 +63,7 @@ export default function MyDietPage() {
                     <span className="text-brand-dark/50 text-xs font-medium">{t("myDiet.comingSoon", "Coming Soon")}</span>
                   </div>
                   <p className="font-bold text-brand-dark/50 text-lg pr-24">{diet.name}</p>
-                  <p className="text-brand-dark/30 text-sm mt-0.5">{diet.fullName}</p>
+                  <p className="text-brand-dark/30 text-sm mt-0.5">{t(diet.fullNameKey, diet.fullNameFallback)}</p>
                 </div>
               )
             )}
