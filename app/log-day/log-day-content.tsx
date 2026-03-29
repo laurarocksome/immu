@@ -10,6 +10,10 @@ import { saveDietInfo } from "@/lib/user-data"
 import { useLanguage } from "@/lib/i18n/context"
 import Logo from "@/app/components/logo"
 
+function symptomKey(name: string) {
+  return "symptom." + name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/, "")
+}
+
 interface Symptom {
   id: string
   name: string
@@ -297,7 +301,7 @@ export default function LogDayContent() {
               {symptoms.map(symptom => (
                 <div key={symptom.id}>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="font-medium text-brand-dark">{symptom.name}</span>
+                    <span className="font-medium text-brand-dark">{t(symptomKey(symptom.name), symptom.name)}</span>
                     <button onClick={() => removeSymptom(symptom.id)}
                       className="text-xs text-pink-400 hover:text-pink-600">{t("logDay.remove", "Remove")}</button>
                   </div>
@@ -326,7 +330,7 @@ export default function LogDayContent() {
               .map(symptom => (
                 <button key={symptom} onClick={() => addSymptom(symptom)}
                   className="px-3 py-1.5 text-sm rounded-full border border-pink-200 text-brand-dark hover:bg-pink-50 transition-colors">
-                  + {symptom}
+                  + {t(symptomKey(symptom), symptom)}
                 </button>
               ))}
           </div>

@@ -9,10 +9,16 @@ import Logo from "@/app/components/logo"
 import { getSession } from "@/lib/auth"
 import { createClient } from "@/lib/supabase/client"
 import { saveUserSymptomsAction } from "@/app/actions/symptoms"
+import { useLanguage } from "@/lib/i18n/context"
+
+function symptomKey(name: string) {
+  return "symptom." + name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/, "")
+}
 
 export default function SymptomsPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { t } = useLanguage()
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [error, setError] = useState("")
@@ -94,7 +100,10 @@ export default function SymptomsPage() {
     "Weight loss",
   ].sort()
 
-  const filteredSymptoms = symptomsList.filter((symptom) => symptom.toLowerCase().includes(searchTerm.toLowerCase()))
+  const filteredSymptoms = symptomsList.filter((symptom) =>
+    symptom.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    t(symptomKey(symptom), symptom).toLowerCase().includes(searchTerm.toLowerCase())
+  )
 
   const displayedSymptoms = filteredSymptoms
 
@@ -116,7 +125,7 @@ export default function SymptomsPage() {
 
   const handleContinue = async () => {
     if (selectedSymptoms.length === 0) {
-      setError("Please select at least 1 symptom to continue")
+      setError(t("onboarding.symptoms.error", "Please select at least 1 symptom to continue"))
     } else {
       localStorage.setItem("selectedSymptoms", JSON.stringify(selectedSymptoms))
 
@@ -159,7 +168,7 @@ export default function SymptomsPage() {
           aria-label="Go back"
         >
           <ArrowLeft className="h-5 w-5 mr-1" />
-          <span>Back</span>
+          <span>{t("common.back", "Back")}</span>
         </button>
         <Logo variant="light" />
       </header>
@@ -167,9 +176,9 @@ export default function SymptomsPage() {
       <main className="flex-1 px-4 pb-8 overflow-auto">
         <div className="max-w-md mx-auto">
           <div className="mb-6 text-center">
-            <h2 className="text-2xl font-bold mb-2">What symptoms are you experiencing?</h2>
+            <h2 className="text-2xl font-bold mb-2">{t("onboarding.symptoms.title", "What symptoms are you experiencing?")}</h2>
             <p className="text-brand-dark/70 mb-4">
-              Select symptoms that you're currently experiencing. You can select as many as you'd like.
+              {t("onboarding.symptoms.subtitle", "Select symptoms that you're currently experiencing. You can select as many as you'd like.")}
             </p>
           </div>
 
@@ -177,7 +186,7 @@ export default function SymptomsPage() {
           <div className="relative mb-4">
             <input
               type="text"
-              placeholder="Search symptoms..."
+              placeholder={t("onboarding.symptoms.search", "Search symptoms...")}
               className="w-full p-3 rounded-xl bg-white/80 border border-brand-dark/20 focus:outline-none focus:ring-2 focus:ring-pink-400"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -197,7 +206,7 @@ export default function SymptomsPage() {
           )}
 
           {/* Selected count */}
-          <p className="text-sm text-brand-dark/70 mb-2">Selected: {selectedSymptoms.length}</p>
+          <p className="text-sm text-brand-dark/70 mb-2">{t("onboarding.symptoms.selected", "Selected:")} {selectedSymptoms.length}</p>
 
           {/* Symptoms list */}
           <div className="glass-card rounded-2xl p-4 mb-8 overflow-hidden">
@@ -213,18 +222,20 @@ export default function SymptomsPage() {
                   onClick={() => handleSymptomClick(symptom)}
                 >
                   <div className="flex items-center">
-                    <span className="flex-1">{symptom}</span>
+                    <span className="flex-1">{t(symptomKey(symptom), symptom)}</span>
                     {selectedSymptoms.includes(symptom) && <span>✓</span>}
                   </div>
                 </div>
               ))}
-              {filteredSymptoms.length === 0 && <p className="text-center p-4 text-brand-dark/70">No symptoms found</p>}
+              {filteredSymptoms.length === 0 && (
+                <p className="text-center p-4 text-brand-dark/70">{t("onboarding.symptoms.none", "No symptoms found")}</p>
+              )}
             </div>
           </div>
 
           {/* Navigation buttons */}
           <button className={`w-full gradient-button py-4 rounded-full`} onClick={handleContinue}>
-            {isEditMode ? "Save" : "Continue"}
+            {isEditMode ? t("onboarding.symptoms.save", "Save") : t("onboarding.symptoms.continue", "Continue")}
           </button>
         </div>
 
