@@ -163,6 +163,10 @@ const getAllTags = (products) => {
   return Array.from(new Set(products.flatMap((item) => item.tags))).sort()
 }
 
+function foodNameKey(name: string) {
+  return "food.name." + name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/, "")
+}
+
 export default function FoodListPage() {
   const { t } = useLanguage()
   const [allProducts, setAllProducts] = useState<any[]>([])
@@ -315,10 +319,12 @@ export default function FoodListPage() {
       // Filter "5-Hour Energy" from filtered products
       if (product.name === "5-Hour Energy") return false
 
-      // Apply search filter
+      // Apply search filter (search both English name and translated name)
+      const translatedName = t(foodNameKey(product.name), product.name)
       const matchesSearch =
         searchQuery === "" ||
         product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        translatedName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         product.tags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase()))
 
       // Apply tag filter
@@ -606,7 +612,7 @@ export default function FoodListPage() {
                       {products.slice(0, itemsToShow).map((product) => (
                         <div key={product.name} className="glass-card p-3 rounded-xl flex items-center justify-between">
                           <div>
-                            <h4 className="font-medium">{product.name}</h4>
+                            <h4 className="font-medium">{t(foodNameKey(product.name), product.name)}</h4>
                             <div className="flex flex-wrap gap-1 mt-1">
                               {!product.is_aip && (
                                 <span className="px-2 py-0.5 rounded text-xs bg-red-100 text-red-800">
@@ -694,7 +700,7 @@ export default function FoodListPage() {
             {filteredProducts.slice(0, itemsToShow).map((product) => (
               <div key={product.name} className="glass-card p-3 rounded-xl flex items-center justify-between">
                 <div>
-                  <h4 className="font-medium">{product.name}</h4>
+                  <h4 className="font-medium">{t(foodNameKey(product.name), product.name)}</h4>
                   <div className="flex flex-wrap gap-1 mt-1">
                     {!product.is_aip && (
                       <span className="px-2 py-0.5 rounded text-xs bg-red-100 text-red-800">
