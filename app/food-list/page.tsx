@@ -18,6 +18,8 @@ import {
   ChevronDown,
   ChevronUp,
   Heart,
+  Lock,
+  Unlock,
 } from "lucide-react"
 import Logo from "@/app/components/logo"
 import { createBrowserClient } from "@supabase/ssr"
@@ -188,6 +190,7 @@ export default function FoodListPage() {
   const [favorites, setFavorites] = useState<string[]>([])
   const [showOnlyFavorites, setShowOnlyFavorites] = useState(false)
   const [userModifiedStatuses, setUserModifiedStatuses] = useState<Record<string, string>>({})
+  const [lockedStatuses, setLockedStatuses] = useState<Record<string, string>>({})
   const [allTags, setAllTags] = useState<string[]>([])
   const [showRecipesNav, setShowRecipesNav] = useState(true)
   const [openTooltip, setOpenTooltip] = useState<string | null>(null)
@@ -245,6 +248,12 @@ export default function FoodListPage() {
     if (savedStatuses) {
       setUserModifiedStatuses(JSON.parse(savedStatuses))
     }
+
+    // Load locked statuses (persist across diet cycles)
+    const savedLocked = localStorage.getItem("aipLockedStatuses")
+    if (savedLocked) {
+      setLockedStatuses(JSON.parse(savedLocked))
+    }
   }, [])
 
   useEffect(() => {
@@ -268,53 +277,79 @@ export default function FoodListPage() {
     localStorage.setItem("aipFavorites", JSON.stringify(newFavorites))
   }
 
-  // Update product status
+  // Update product status (also updates the locked value if this product is locked)
   const updateProductStatus = (productName: string, status: string) => {
     const newStatuses = { ...userModifiedStatuses, [productName]: status }
     setUserModifiedStatuses(newStatuses)
     localStorage.setItem("userModifiedStatuses", JSON.stringify(newStatuses))
+
+    if (lockedStatuses[productName]) {
+      const newLocked = { ...lockedStatuses, [productName]: status }
+      setLockedStatuses(newLocked)
+      localStorage.setItem("aipLockedStatuses", JSON.stringify(newLocked))
+    }
+  }
+
+  // Toggle lock on a product — locks the currently-displayed status so it
+  // persists across phase changes and future diet cycles
+  const toggleLock = (productName: string, currentStatus: string) => {
+    const newLocked = { ...lockedStatuses }
+    if (newLocked[productName]) {
+      delete newLocked[productName]
+    } else {
+      newLocked[productName] = currentStatus
+    }
+    setLockedStatuses(newLocked)
+    localStorage.setItem("aipLockedStatuses", JSON.stringify(newLocked))
   }
 
   const getProductStatus = (product: any) => {
-    // 1. User manual override takes priority
+    // 1. Locked status wins — survives phase changes and diet restarts
+    if (lockedStatuses[product.name]) {
+      return lockedStatuses[product.name]
+    }
+
+    // 2. User manual override
     if (userModifiedStatuses[product.name]) {
       return userModifiedStatuses[product.name]
     }
 
-    const dbStatus = product.status || (product.is_aip ? "Can eat" : "Can't eat")
+    // AIP-friendly products are always safe
+    if (product.is_aip) return "Can eat"
 
-    // 2. Reintroduction: every product is "Under evaluation" until the user manually sets it
+    // 3. Reintroduction: every non-AIP product is Under evaluation until user decides
     if (currentPhase === "reintroduction") {
       return "Under evaluation"
     }
 
-    // 3. Elimination: use DB status directly
+    // 4. Elimination: every non-AIP product is Can't eat
     if (currentPhase === "elimination") {
-      return dbStatus
+      return "Can't eat"
     }
 
-    // 4. Adaptation: progressively restrict by tag week by week
-    // Only non-AIP products get restricted during adaptation
+    // 5. Adaptation: progressively restrict by tag week by week. Anything not yet
+    // restricted stays Under evaluation (the user is establishing new habits).
     if (currentPhase === "adaptation") {
       const tags = (product.tags || []).map((t: string) => t.toLowerCase())
-      const name = product.name.toLowerCase()
-
       const hasCaffeine = tags.includes("caffeine") || containsCaffeine(product)
       const hasAlcohol = tags.includes("alcohol") || containsAlcohol(product)
       const hasSugar = tags.includes("sugar") || containsSugar(product)
 
-      // Week 1 (days 1-7): restrict caffeine
-      if (adaptationDay <= 7 && hasCaffeine) return "Can't eat"
-      // Week 2 (days 8-14): + alcohol
-      if (adaptationDay <= 14 && (hasCaffeine || hasAlcohol)) return "Can't eat"
-      // Week 3-4 (days 15-28): + sugar
-      if (adaptationDay <= 28 && (hasCaffeine || hasAlcohol || hasSugar)) return "Can't eat"
-
-      // Everything else is allowed during adaptation
-      return "Can eat"
+      // Week 1 (days 1–7): only caffeine becomes Can't eat
+      if (adaptationDay <= 7) {
+        return hasCaffeine ? "Can't eat" : "Under evaluation"
+      }
+      // Week 2 (days 8–14): + alcohol
+      if (adaptationDay <= 14) {
+        return hasCaffeine || hasAlcohol ? "Can't eat" : "Under evaluation"
+      }
+      // Weeks 3 & 4 (days 15–28): + sugar; week 4 keeps the same set so the
+      // user has time to establish the new habits before elimination starts
+      return hasCaffeine || hasAlcohol || hasSugar ? "Can't eat" : "Under evaluation"
     }
 
-    return dbStatus
+    // Fallback (no phase loaded yet)
+    return product.is_aip ? "Can eat" : "Under evaluation"
   }
 
   // Filter and sort products based on user selections
@@ -674,6 +709,16 @@ export default function FoodListPage() {
                               <ChevronDown className="absolute right-1 top-1/2 transform -translate-y-1/2 h-3 w-3 pointer-events-none" />
                             </div>
                             <button
+                              onClick={() => toggleLock(product.name, getProductStatus(product))}
+                              className={lockedStatuses[product.name] ? "text-pink-500" : "text-gray-400 hover:text-pink-400"}
+                              aria-label={lockedStatuses[product.name] ? t("foodList.unlockStatus", "Unlock status") : t("foodList.lockStatus", "Lock status")}
+                              title={lockedStatuses[product.name] ? t("foodList.unlockStatus", "Unlock status") : t("foodList.lockStatus", "Lock status")}
+                            >
+                              {lockedStatuses[product.name]
+                                ? <Lock className="h-4 w-4" />
+                                : <Unlock className="h-4 w-4" />}
+                            </button>
+                            <button
                               onClick={() => toggleFavorite(product.name)}
                               className="text-gray-400 hover:text-pink-400"
                             >
@@ -759,6 +804,16 @@ export default function FoodListPage() {
                     </select>
                     <ChevronDown className="absolute right-1 top-1/2 transform -translate-y-1/2 h-3 w-3 pointer-events-none" />
                   </div>
+                  <button
+                    onClick={() => toggleLock(product.name, getProductStatus(product))}
+                    className={lockedStatuses[product.name] ? "text-pink-500" : "text-gray-400 hover:text-pink-400"}
+                    aria-label={lockedStatuses[product.name] ? t("foodList.unlockStatus", "Unlock status") : t("foodList.lockStatus", "Lock status")}
+                    title={lockedStatuses[product.name] ? t("foodList.unlockStatus", "Unlock status") : t("foodList.lockStatus", "Lock status")}
+                  >
+                    {lockedStatuses[product.name]
+                      ? <Lock className="h-4 w-4" />
+                      : <Unlock className="h-4 w-4" />}
+                  </button>
                   <button onClick={() => toggleFavorite(product.name)} className="text-gray-400 hover:text-pink-400">
                     <Heart
                       className={`h-5 w-5 ${favorites.includes(product.name) ? "fill-pink-400 text-pink-400" : ""}`}
