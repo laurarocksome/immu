@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation"
 import { List, Home, Plus, BookOpen, UtensilsCrossed, ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react"
 import Logo from "@/app/components/logo"
 import BottomNav from "@/app/components/bottom-nav"
-import { useLanguage } from "@/lib/i18n/context"
+import { useLanguage, daysWord } from "@/lib/i18n/context"
 
 // Replace the ProgressBar component with this updated version that handles all three phases
 
@@ -179,7 +179,7 @@ function ProgressBar() {
       <div className="flex items-center justify-between gap-4">
         <div>
           <p className="text-xs text-brand-dark/60">{phaseLabel}</p>
-          <p className="text-xl font-bold text-brand-dark">{progressData.daysRemaining} <span className="text-sm font-normal">{t("calendar.daysLeft", "days left")}</span></p>
+          <p className="text-xl font-bold text-brand-dark">{progressData.daysRemaining} <span className="text-sm font-normal">{locale === "lt" ? `${daysWord(progressData.daysRemaining, "lt")} liko` : "days left"}</span></p>
         </div>
 
         <div className="flex-1 max-w-[140px]">
@@ -294,7 +294,15 @@ export default function CalendarPage() {
   }
 
   const calendarDays = generateCalendarDays()
-  const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+  const weekdays = [
+    t("calendar.weekday.sun", "Sun"),
+    t("calendar.weekday.mon", "Mon"),
+    t("calendar.weekday.tue", "Tue"),
+    t("calendar.weekday.wed", "Wed"),
+    t("calendar.weekday.thu", "Thu"),
+    t("calendar.weekday.fri", "Fri"),
+    t("calendar.weekday.sat", "Sat"),
+  ]
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-brand-lightest to-white text-brand-dark">
@@ -302,7 +310,7 @@ export default function CalendarPage() {
       <header className="p-4 flex justify-center items-center header-gradient text-white relative">
         <button onClick={handleBack} className="absolute left-4 flex items-center text-white/80 hover:text-white">
           <ArrowLeft className="h-5 w-5 mr-1" />
-          <span>Back</span>
+          <span>{t("common.back", "Back")}</span>
         </button>
         <Logo variant="light" />
       </header>
@@ -376,7 +384,7 @@ export default function CalendarPage() {
 
         {/* Progress Bar Section */}
         <div className="glass-card rounded-2xl p-4 mb-6">
-          <h3 className="font-medium mb-4">Your Progress</h3>
+          <h3 className="font-medium mb-4">{t("calendar.yourProgress", "Your Progress")}</h3>
           <ProgressBar />
         </div>
 
@@ -403,7 +411,11 @@ export default function CalendarPage() {
                 <div className="flex justify-between items-center mb-1">
                   <h4 className="font-medium">{event.title}</h4>
                   <span className="text-xs px-2 py-0.5 rounded-full bg-brand-lightest">
-                    {event.type === "meal" ? "Meal" : event.type === "symptom" ? "Symptom" : "Milestone"}
+                    {event.type === "meal"
+                      ? t("calendar.event.meal", "Meal")
+                      : event.type === "symptom"
+                        ? t("calendar.event.symptom", "Symptom")
+                        : t("calendar.event.milestone", "Milestone")}
                   </span>
                 </div>
                 <p className="text-sm text-brand-dark/70">{event.details}</p>
@@ -412,7 +424,7 @@ export default function CalendarPage() {
           </div>
         ) : (
           <div className="glass-card rounded-2xl p-6 text-center mb-6">
-            <p className="text-brand-dark/70">No events for this date</p>
+            <p className="text-brand-dark/70">{t("calendar.no_events", "No events for this date")}</p>
           </div>
         )}
 
@@ -423,7 +435,7 @@ export default function CalendarPage() {
             className="w-full py-3 gradient-button rounded-xl flex items-center justify-center"
           >
             <Plus className="h-4 w-4 mr-2" />
-            Log Day
+            {t("calendar.log_day", "Log Day").replace(/^\+\s*/, "")}
           </button>
         </div>
         </div>

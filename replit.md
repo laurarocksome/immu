@@ -77,7 +77,11 @@ Supported locales: `en`, `lt`. Language toggle is on the dashboard header.
 - `optKey(prefix, value)` helper — `prefix + "." + value.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/, "")` — used for options that are also stored in localStorage (stress, activity, habits). Stored English values are never changed; only displayed labels are translated.
 - Medical conditions fully translated to Lithuanian via `condition.*` keys; `conditionKey()` helper used in both the onboarding conditions page and the profile page. Search on the conditions page matches both English and translated names.
 - `category: 'general'` required on all rows.
-- Total DB rows: ~1,850+ (99 new rows for nutrition phase plans, FAQ content, and my-diet diet names)
+- Total DB rows: ~1,870+ (added gender.*, calendar.weekday.*, calendar.yourProgress, etc.)
+- `slugifyKey(value)` exported from `lib/i18n/context.tsx` — same slug pattern as optKey, used for `symptom.${slug}` keys in profile + dashboard symptom pills.
+- Lithuanian "day" plural grammar: `daysWord(n, locale)` and `daysLeftText(n, locale)` exported from `lib/i18n/context.tsx`. Rule: last digit 1 (not 11) → "diena"; last digit 2-9 (not 12-19) → "dienos"; otherwise → "dienų". Used in calendar's "X days left" and dashboard's phase widget.
+- Gender display in profile uses `gender.${value.toLowerCase()}` (gender.female="Moteris", gender.male="Vyras", gender.other="Kita"); stored values remain English.
+- Wellness tab renamed: `dashboard.tab.wellness` LT updated to "Savijauta" (was "Gerovės balas"). Wellness chart summary redesigned: large color-coded score bubble + 3 horizontal bars showing latest mood/sleep/stress values.
 - `planKey(title)` helper in all 3 nutrition phase pages — same slug pattern, used for `nutritionplan.{slug}.title`, `.desc`, `.task.{idx}`
 - `faqKey(question)` helper in `faq/page.tsx` — same slug pattern, used for `faq.{slug}.q` and `.a`
 - `faq/page.tsx` fully migrated to i18n (shell text + all 14 FAQ questions and answers)

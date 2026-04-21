@@ -118,3 +118,29 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 }
 
 export const useLanguage = () => useContext(LanguageContext)
+
+// Lithuanian plural form for "day": 1 = diena, 2-9 (not 12-19) = dienos, otherwise dienų.
+export function daysWord(n: number, locale: string): string {
+  if (locale === "lt") {
+    const lastTwo = Math.abs(n) % 100
+    const last = Math.abs(n) % 10
+    if (lastTwo >= 11 && lastTwo <= 19) return "dienų"
+    if (last === 1) return "diena"
+    if (last >= 2 && last <= 9) return "dienos"
+    return "dienų"
+  }
+  return n === 1 ? "day" : "days"
+}
+
+// Full localized "X days left" string.
+export function daysLeftText(n: number, locale: string): string {
+  if (locale === "lt") return `${n} ${daysWord(n, "lt")} liko`
+  return `${n} ${daysWord(n, "en")} left`
+}
+
+// Slug helper used to derive translation keys from raw English values
+// (e.g. "Abdominal pain" -> "abdominal_pain"). Mirrors the conditionKey/optKey
+// pattern used elsewhere.
+export function slugifyKey(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/, "")
+}

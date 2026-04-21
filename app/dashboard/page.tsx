@@ -33,7 +33,7 @@ import { WeightLogModal } from "@/components/weight-log-modal" // Imported Weigh
 import { createClient } from "@/lib/supabase/client" // Import createClient from supabase client
 import { getUserStreak, getSymptomHistory, getWellnessHistory } from "@/lib/user-data"
 import { getWeightLogs as fetchWeightLogs } from "@/lib/weight-data" // Renamed to avoid redeclaration
-import { useLanguage } from "@/lib/i18n/context"
+import { useLanguage, daysWord, slugifyKey } from "@/lib/i18n/context"
 
 // import { getUserProfile, loadDietInfo, loadTrackedDates, calculateDietInfo } from "@/lib/dashboard-data" // Imported new functions
 
@@ -1945,7 +1945,7 @@ export default function DashboardPage() {
                               ? t("dashboard.phase.elimination", "Elimination") + " " + t("dashboard.phase.suffix", "Phase")
                               : t("dashboard.phase.reintroduction", "Reintroduction") + " " + t("dashboard.phase.suffix", "Phase")}
                         </p>
-                        <p className="font-bold text-primary-color">{daysRemaining} {t("dashboard.daysLeft", "days left")}</p>
+                        <p className="font-bold text-primary-color">{daysRemaining} {locale === "lt" ? `${daysWord(daysRemaining, "lt")} liko` : "days left"}</p>
                       </>
                     )
                   })()}
@@ -2179,7 +2179,7 @@ export default function DashboardPage() {
                         }}
                       >
                         <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: symptom.color }} />
-                        <span className="truncate max-w-[80px] md:max-w-none">{symptom.name}</span>
+                        <span className="truncate max-w-[80px] md:max-w-none">{t(`symptom.${slugifyKey(symptom.name)}`, symptom.name)}</span>
                       </button>
                     ))}
                   </div>
@@ -2202,25 +2202,48 @@ export default function DashboardPage() {
                 </div>
               ) : (
                 <>
-                  {/* Wellness score summary row */}
-                  <div className="flex items-center justify-between mb-3 px-1">
-                    <span className="text-sm text-secondary-color">{t("dashboard.tab.wellness", "Wellness Score")}</span>
-                    <div className="flex items-center gap-2">
-                      <div
-                        className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md"
-                        style={{
-                          backgroundColor:
-                            wellnessScore >= 75 ? "#9bb8a0"
-                            : wellnessScore >= 50 ? "#f6d84c"
-                            : wellnessScore >= 25 ? "#f6c1b0"
-                            : "#f4a6b8",
-                        }}
-                      >
-                        {wellnessScore}
+                  {/* Wellness score summary: colored score bubble + per-metric bars */}
+                  {(() => {
+                    const lastValue = (arr: number[]) => {
+                      for (let i = arr.length - 1; i >= 0; i--) if (arr[i] > 0) return arr[i]
+                      return 0
+                    }
+                    const bubbleColor =
+                      wellnessScore >= 75 ? "#9bb8a0"
+                      : wellnessScore >= 50 ? "#f6d84c"
+                      : wellnessScore >= 25 ? "#f6c1b0"
+                      : "#f4a6b8"
+                    const bars = [
+                      { label: t("dashboard.wellness.mood", "Mood"),    val: lastValue(wellnessData.mood   as number[]), color: "#f4a6b8" },
+                      { label: t("dashboard.wellness.sleep", "Sleep"),  val: lastValue(wellnessData.sleep  as number[]), color: "#f6c1b0" },
+                      { label: t("dashboard.wellness.stress", "Stress"),val: lastValue(wellnessData.stress as number[]), color: "#f09f88" },
+                    ]
+                    return (
+                      <div className="flex items-center gap-4 mb-4 px-1">
+                        <div
+                          className="w-16 h-16 md:w-20 md:h-20 rounded-full flex flex-col items-center justify-center text-white shadow-md flex-shrink-0"
+                          style={{ backgroundColor: bubbleColor }}
+                        >
+                          <span className="text-xl md:text-2xl font-bold leading-none">{wellnessScore}</span>
+                          <span className="text-[10px] md:text-xs opacity-90 mt-0.5">/ 100</span>
+                        </div>
+                        <div className="flex-1 space-y-1.5 min-w-0">
+                          {bars.map(({ label, val, color }) => (
+                            <div key={label} className="flex items-center gap-2">
+                              <span className="text-[11px] md:text-xs text-brand-dark/80 w-14 md:w-16 truncate">{label}</span>
+                              <div className="flex-1 h-1.5 rounded-full bg-gray-100 overflow-hidden">
+                                <div
+                                  className="h-full rounded-full transition-all"
+                                  style={{ width: `${val}%`, backgroundColor: color }}
+                                />
+                              </div>
+                              <span className="text-[11px] md:text-xs font-semibold text-brand-dark w-7 text-right tabular-nums">{val}</span>
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                      <span className="text-xs text-secondary-color">/ 100</span>
-                    </div>
-                  </div>
+                    )
+                  })()}
 
                   {/* Chart area */}
                   <div className="relative h-[300px]">

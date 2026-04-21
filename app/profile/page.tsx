@@ -4,7 +4,7 @@
 export const dynamic = "force-dynamic"
 
 import { useEffect, useState } from "react"
-import { useLanguage } from "@/lib/i18n/context"
+import { useLanguage, slugifyKey } from "@/lib/i18n/context"
 import { useRouter } from "next/navigation"
 import { List, Home, Plus, BookOpen, UtensilsCrossed, ArrowLeft, Edit, Trash2, ChevronRight, Salad } from "lucide-react"
 import Logo from "@/app/components/logo"
@@ -295,7 +295,7 @@ export default function ProfilePage() {
               <div className="space-y-4">
                 <div>
                   <p className="text-brand-dark/50 text-sm font-medium mb-1">{t("profile.gender", "Gender")}</p>
-                  <p className="text-brand-dark font-medium">{profile.gender || t("common.notSet", "Not set")}</p>
+                  <p className="text-brand-dark font-medium">{profile.gender ? t(`gender.${profile.gender.toLowerCase()}`, profile.gender) : t("common.notSet", "Not set")}</p>
                 </div>
                 <div>
                   <p className="text-brand-dark/50 text-sm font-medium mb-1">{t("profile.age", "Age")}</p>
@@ -395,7 +395,7 @@ export default function ProfilePage() {
                       key={index}
                       className="bg-gradient-to-r from-pink-100 to-peach-100 text-brand-dark px-4 py-2 rounded-full text-sm font-medium"
                     >
-                      {symptom}
+                      {t(`symptom.${slugifyKey(symptom)}`, symptom)}
                     </span>
                   ))}
                 </div>
