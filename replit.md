@@ -87,6 +87,16 @@ Supported locales: `en`, `lt`. Language toggle is on the dashboard header.
 - `faq/page.tsx` fully migrated to i18n (shell text + all 14 FAQ questions and answers)
 - `my-diet/page.tsx` diet fullNames now translated via `myDiet.{id}.fullName` keys
 
+## Admin Panel (`app/admin/`)
+
+Existing sections: foods, recipes, nutrition, faqs, translations, pages (visibility), and **todos** (new).
+
+`app/admin/todos/` — Daily Tasks &amp; Tips management.
+- Lists every `dashboard.todo.*` translation key with EN + LT side-by-side inline editing.
+- Each tip is annotated with phase (Adaptation / Elimination / Reintroduction / UI) and exact display rule (e.g. "Days 8–28", "21–40% of phase", "Day 18 only") via the `TODO_METADATA` map in `todo-management.tsx` — keep that map in sync with `generateAdaptationTodoItems` / `generateEliminationTodoItems` / `generateReintroductionTodoItems` in `app/dashboard/page.tsx`.
+- Filter by phase + free-text search across keys/EN/LT values.
+- Save updates both EN + LT atomically via Supabase upsert; missing rows are inserted on save.
+
 ## Dev Command
 
 ```bash

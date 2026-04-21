@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Eye, Globe } from "lucide-react"
+import { Eye, Globe, CheckSquare } from "lucide-react"
 import { Settings, List, BookOpen, FileText, LogOut, HelpCircle } from "lucide-react"
 import Logo from "@/app/components/logo"
 
@@ -159,6 +159,17 @@ export default function AdminDashboard() {
               </div>
               <h3 className="text-xl font-bold mb-2">Translations</h3>
               <p className="text-brand-dark/70">Manage EN and LT content translations</p>
+            </button>
+
+            <button
+              onClick={() => router.push("/admin/todos")}
+              className="glass-card rounded-2xl p-8 hover:shadow-lg transition-all hover:scale-105 text-left"
+            >
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-300 to-pink-400 flex items-center justify-center mb-4">
+                <CheckSquare className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-xl font-bold mb-2">Daily Tasks &amp; Tips</h3>
+              <p className="text-brand-dark/70">Edit the wording of tips shown in the user&apos;s &quot;Daily Tasks&quot; list</p>
             </button>
           </div>
         </div>
