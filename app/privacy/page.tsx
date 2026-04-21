@@ -1,122 +1,136 @@
+"use client"
+
 import Link from "next/link"
 import Logo from "@/app/components/logo"
+import { useLanguage } from "@/lib/i18n/context"
 
 export default function PrivacyPolicyPage() {
+  const { t } = useLanguage()
+
+  const sections = [
+    {
+      title: t("privacy.s1.title", "1. What We Collect"),
+      intro: t("privacy.s1.intro", "When you use Immu Health, we may collect the following data:"),
+      items: [
+        t("privacy.s1.item1", "Account info: email address, name (if provided)"),
+        t("privacy.s1.item2", "Health-related data: food logs, symptoms, wellness tracking inputs, preferences"),
+        t("privacy.s1.item3", "Device info: IP address, browser type, operating system"),
+        t("privacy.s1.item4", "Usage data: which features you use, frequency, error logs"),
+      ],
+      outro: t("privacy.s1.outro", "We do not collect or store any sensitive medical records or diagnostic data."),
+    },
+    {
+      title: t("privacy.s2.title", "2. How We Use Your Data"),
+      intro: t("privacy.s2.intro", "We use your data to:"),
+      items: [
+        t("privacy.s2.item1", "Provide core features (e.g. symptom tracking, food logs)"),
+        t("privacy.s2.item2", "Personalize your app experience"),
+        t("privacy.s2.item3", "Improve the app (analytics, bug fixing)"),
+        t("privacy.s2.item4", "Communicate with you (e.g. reminders, feature updates, optional newsletters)"),
+      ],
+    },
+    {
+      title: t("privacy.s3.title", "3. How We Store & Protect Your Data"),
+      body: t(
+        "privacy.s3.body",
+        "Your data is stored securely on trusted third-party services (e.g. Supabase, Vercel). We use encryption and access control to protect your information. Only authorized personnel can access your personal data — and only when absolutely necessary.",
+      ),
+    },
+    {
+      title: t("privacy.s4.title", "4. Sharing Your Data"),
+      body: t("privacy.s4.body", "We do not sell or share your personal data with third parties."),
+      intro: t("privacy.s4.intro", "We may disclose data only:"),
+      items: [
+        t("privacy.s4.item1", "If required by law"),
+        t("privacy.s4.item2", "To prevent fraud or protect app security"),
+        t("privacy.s4.item3", "If you explicitly consent (e.g. optional integrations or research features)"),
+      ],
+    },
+    {
+      title: t("privacy.s5.title", "5. Your Rights (Especially for EU Users – GDPR)"),
+      intro: t("privacy.s5.intro", "You have the right to:"),
+      items: [
+        t("privacy.s5.item1", "Access your data"),
+        t("privacy.s5.item2", "Correct inaccurate data"),
+        t("privacy.s5.item3", "Delete your account and data"),
+        t("privacy.s5.item4", "Withdraw consent at any time"),
+        t("privacy.s5.item5", "Lodge a complaint with a data protection authority"),
+      ],
+      contactPrefix: t("privacy.s5.contactPrefix", "To exercise your rights, contact us at"),
+    },
+    {
+      title: t("privacy.s6.title", "6. Cookies & Tracking"),
+      body: t(
+        "privacy.s6.body",
+        "We may use cookies or similar technologies to analyze app usage and improve performance. You can control cookie preferences through your browser or device settings.",
+      ),
+    },
+    {
+      title: t("privacy.s7.title", "7. Children's Privacy"),
+      body: t(
+        "privacy.s7.body",
+        "Immu Health is not intended for users under the age of 16 (or 13 in the US). We do not knowingly collect personal data from children.",
+      ),
+    },
+    {
+      title: t("privacy.s8.title", "8. Updates to This Policy"),
+      body: t(
+        "privacy.s8.body",
+        "We may update this Privacy Policy from time to time. If changes are significant, we'll notify you through the app or email.",
+      ),
+    },
+    {
+      title: t("privacy.s9.title", "9. Contact Us"),
+      contactPrefix: t("privacy.s9.contactPrefix", "If you have questions or requests about your data, contact us at"),
+    },
+  ]
+
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-brand-lightest to-white text-brand-dark">
-      {/* Header */}
       <header className="p-4 flex justify-center items-center bg-brand-dark text-white">
         <Logo />
       </header>
 
-      {/* Main Content */}
       <main className="flex-1 px-4 py-8 overflow-auto">
         <div className="max-w-3xl mx-auto">
           <div className="mb-6">
-            <h1 className="text-3xl font-bold mb-2">Privacy Policy</h1>
-            <p className="text-sm text-brand-dark/70">Effective Date: 2025.02.15</p>
+            <h1 className="text-3xl font-bold mb-2">{t("privacy.title", "Privacy Policy")}</h1>
+            <p className="text-sm text-brand-dark/70">
+              {t("privacy.effectiveDate", "Effective Date: 2025.02.15")}
+            </p>
           </div>
 
           <div className="glass-card rounded-2xl p-6 space-y-6 mb-6">
             <p>
-              Welcome to Immu Health. We respect your privacy and are committed to protecting your personal data. This
-              policy explains what information we collect, how we use it, and your rights.
+              {t(
+                "privacy.intro",
+                "Welcome to Immu Health. We respect your privacy and are committed to protecting your personal data. This policy explains what information we collect, how we use it, and your rights.",
+              )}
             </p>
 
-            <div>
-              <h2 className="text-xl font-semibold mb-2">1. What We Collect</h2>
-              <p>When you use Immu Health, we may collect the following data:</p>
-              <ul className="list-disc pl-6 mt-2 space-y-1">
-                <li>Account info: email address, name (if provided)</li>
-                <li>Health-related data: food logs, symptoms, wellness tracking inputs, preferences</li>
-                <li>Device info: IP address, browser type, operating system</li>
-                <li>Usage data: which features you use, frequency, error logs</li>
-              </ul>
-              <p className="mt-2">We do not collect or store any sensitive medical records or diagnostic data.</p>
-            </div>
-
-            <div>
-              <h2 className="text-xl font-semibold mb-2">2. How We Use Your Data</h2>
-              <p>We use your data to:</p>
-              <ul className="list-disc pl-6 mt-2 space-y-1">
-                <li>Provide core features (e.g. symptom tracking, food logs)</li>
-                <li>Personalize your app experience</li>
-                <li>Improve the app (analytics, bug fixing)</li>
-                <li>Communicate with you (e.g. reminders, feature updates, optional newsletters)</li>
-              </ul>
-            </div>
-
-            <div>
-              <h2 className="text-xl font-semibold mb-2">3. How We Store & Protect Your Data</h2>
-              <p>
-                Your data is stored securely on trusted third-party services (e.g. Supabase, Vercel). We use encryption
-                and access control to protect your information. Only authorized personnel can access your personal data
-                — and only when absolutely necessary.
-              </p>
-            </div>
-
-            <div>
-              <h2 className="text-xl font-semibold mb-2">4. Sharing Your Data</h2>
-              <p>We do not sell or share your personal data with third parties.</p>
-              <p className="mt-2">We may disclose data only:</p>
-              <ul className="list-disc pl-6 mt-2 space-y-1">
-                <li>If required by law</li>
-                <li>To prevent fraud or protect app security</li>
-                <li>If you explicitly consent (e.g. optional integrations or research features)</li>
-              </ul>
-            </div>
-
-            <div>
-              <h2 className="text-xl font-semibold mb-2">5. Your Rights (Especially for EU Users – GDPR)</h2>
-              <p>You have the right to:</p>
-              <ul className="list-disc pl-6 mt-2 space-y-1">
-                <li>Access your data</li>
-                <li>Correct inaccurate data</li>
-                <li>Delete your account and data</li>
-                <li>Withdraw consent at any time</li>
-                <li>Lodge a complaint with a data protection authority</li>
-              </ul>
-              <p className="mt-2">
-                To exercise your rights, contact us at{" "}
-                <a href="mailto:info@rocksome.com" className="text-pink-500 hover:underline">
-                  info@rocksome.com
-                </a>
-              </p>
-            </div>
-
-            <div>
-              <h2 className="text-xl font-semibold mb-2">6. Cookies & Tracking</h2>
-              <p>
-                We may use cookies or similar technologies to analyze app usage and improve performance. You can control
-                cookie preferences through your browser or device settings.
-              </p>
-            </div>
-
-            <div>
-              <h2 className="text-xl font-semibold mb-2">7. Children's Privacy</h2>
-              <p>
-                Immu Health is not intended for users under the age of 16 (or 13 in the US). We do not knowingly collect
-                personal data from children.
-              </p>
-            </div>
-
-            <div>
-              <h2 className="text-xl font-semibold mb-2">8. Updates to This Policy</h2>
-              <p>
-                We may update this Privacy Policy from time to time. If changes are significant, we'll notify you
-                through the app or email.
-              </p>
-            </div>
-
-            <div>
-              <h2 className="text-xl font-semibold mb-2">9. Contact Us</h2>
-              <p>
-                If you have questions or requests about your data, contact us at{" "}
-                <a href="mailto:info@rocksome.com" className="text-pink-500 hover:underline">
-                  info@rocksome.com
-                </a>
-              </p>
-            </div>
+            {sections.map((s, idx) => (
+              <div key={idx}>
+                <h2 className="text-xl font-semibold mb-2">{s.title}</h2>
+                {s.body && <p>{s.body}</p>}
+                {s.intro && <p className={s.body ? "mt-2" : ""}>{s.intro}</p>}
+                {s.items && (
+                  <ul className="list-disc pl-6 mt-2 space-y-1">
+                    {s.items.map((it, i) => (
+                      <li key={i}>{it}</li>
+                    ))}
+                  </ul>
+                )}
+                {s.outro && <p className="mt-2">{s.outro}</p>}
+                {s.contactPrefix && (
+                  <p className={s.items ? "mt-2" : ""}>
+                    {s.contactPrefix}{" "}
+                    <a href="mailto:info@rocksome.com" className="text-pink-500 hover:underline">
+                      info@rocksome.com
+                    </a>
+                  </p>
+                )}
+              </div>
+            ))}
           </div>
 
           <div className="flex justify-between">
@@ -124,10 +138,10 @@ export default function PrivacyPolicyPage() {
               href="/terms"
               className="px-6 py-2 rounded-full border border-pink-400 text-pink-500 hover:bg-pink-50"
             >
-              Back to Terms
+              {t("privacy.backToTerms", "Back to Terms")}
             </Link>
             <Link href="/onboarding/create-account" className="px-6 py-2 rounded-full gradient-button">
-              Back to Sign Up
+              {t("privacy.backToSignUp", "Back to Sign Up")}
             </Link>
           </div>
         </div>
