@@ -60,7 +60,7 @@ export default function StressPage() {
         <button
           onClick={() => router.push("/onboarding/symptoms")}
           className="absolute left-4 text-white/80 hover:text-white transition-colors flex items-center"
-          aria-label="Go back to previous page"
+          aria-label={t("common.goBackPrev", "Go back to previous page")}
         >
           <ArrowLeft className="h-5 w-5 mr-1" />
           <span>{t("common.back", "Back")}</span>

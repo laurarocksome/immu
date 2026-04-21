@@ -203,7 +203,7 @@ export default function ConditionsPage() {
         <button
           onClick={handleBack}
           className="absolute left-4 text-white/80 hover:text-white transition-colors flex items-center"
-          aria-label="Go back"
+          aria-label={t("common.goBack", "Go back")}
         >
           <ArrowLeft className="h-5 w-5 mr-1" />
           <span>{t("common.back", "Back")}</span>
@@ -230,7 +230,7 @@ export default function ConditionsPage() {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
             {searchTerm && (
-              <button className="absolute right-3 top-3 text-gray-500" onClick={clearSearch} aria-label="Clear search">
+              <button className="absolute right-3 top-3 text-gray-500" onClick={clearSearch} aria-label={t("common.clearSearch", "Clear search")}>
                 ✕
               </button>
             )}
