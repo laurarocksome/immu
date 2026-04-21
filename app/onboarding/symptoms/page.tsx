@@ -6,6 +6,7 @@ import { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { ArrowLeft } from "lucide-react"
 import Logo from "@/app/components/logo"
+import LanguageToggle from "@/app/components/language-toggle"
 import { getSession } from "@/lib/auth"
 import { createClient } from "@/lib/supabase/client"
 import { saveUserSymptomsAction } from "@/app/actions/symptoms"
@@ -171,6 +172,7 @@ export default function SymptomsPage() {
           <span>{t("common.back", "Back")}</span>
         </button>
         <Logo variant="light" />
+        <LanguageToggle className="absolute right-4 top-1/2 -translate-y-1/2" />
       </header>
 
       <main className="flex-1 px-4 pb-8 overflow-auto">

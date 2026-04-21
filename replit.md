@@ -97,6 +97,14 @@ Existing sections: foods, recipes, nutrition, faqs, translations, pages (visibil
 - Filter by phase + free-text search across keys/EN/LT values.
 - Save updates both EN + LT atomically via Supabase upsert; missing rows are inserted on save.
 
+## Language Toggle
+
+`app/components/language-toggle.tsx` — small EN/LT pill toggle reading `locale` and `setLocale` from `useLanguage()`. Used in:
+- Profile page (full button row, primary control)
+- All 14 onboarding pages, mounted in the dark header (top-right, absolutely positioned). Lets unauthenticated users switch language before/while signing up.
+
+Persistence: `setLocale` writes to `localStorage` (key `immu_locale`) immediately and, if the user is authenticated, mirrors to `user_profiles.locale`. So a guest's onboarding language choice survives into their account when they create one.
+
 ## Dev Command
 
 ```bash

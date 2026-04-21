@@ -5,6 +5,7 @@ export const dynamic = "force-dynamic"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Logo from "@/app/components/logo"
+import LanguageToggle from "@/app/components/language-toggle"
 import { ArrowLeft } from "lucide-react"
 import { useLanguage } from "@/lib/i18n/context"
 
@@ -57,6 +58,7 @@ export default function CaffeinePage() {
           <span>{t("common.back", "Back")}</span>
         </button>
         <Logo variant="light" />
+        <LanguageToggle className="absolute right-4 top-1/2 -translate-y-1/2" />
       </header>
 
       <main className="flex-1 px-4 pb-8 overflow-auto">

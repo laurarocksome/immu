@@ -7,6 +7,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Logo from "@/app/components/logo"
+import LanguageToggle from "@/app/components/language-toggle"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 import { saveDietInfo } from "@/lib/user-data"
@@ -146,6 +147,7 @@ export default function DietTimelinePage() {
           <span>{t("common.back", "Back")}</span>
         </button>
         <Logo variant="light" />
+        <LanguageToggle className="absolute right-4 top-1/2 -translate-y-1/2" />
       </header>
 
       <main className="flex-1 px-4 pb-8 overflow-auto">

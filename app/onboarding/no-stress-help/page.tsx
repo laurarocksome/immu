@@ -4,6 +4,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Check } from "lucide-react"
 import Logo from "@/app/components/logo"
+import LanguageToggle from "@/app/components/language-toggle"
 import { useLanguage } from "@/lib/i18n/context"
 
 export default function NoStressHelpPage() {
@@ -23,8 +24,9 @@ export default function NoStressHelpPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-brand-lightest to-white text-brand-dark">
-      <header className="p-4 flex justify-center items-center bg-brand-dark text-white">
+      <header className="p-4 flex justify-center items-center bg-brand-dark text-white relative">
         <Logo variant="light" />
+        <LanguageToggle className="absolute right-4 top-1/2 -translate-y-1/2" />
       </header>
 
       <main className="flex-1 px-4 pb-8 overflow-auto">
