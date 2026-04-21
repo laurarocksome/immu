@@ -1787,7 +1787,7 @@ export default function DashboardPage() {
                 <div className="flex flex-wrap gap-2">
                   {conditions.map((condition, index) => (
                     <span key={index} className="bg-pink-100 text-primary-color px-3 py-1 rounded-full text-sm">
-                      {condition}
+                      {t(`condition.${slugifyKey(condition)}`, condition)}
                     </span>
                   ))}
                 </div>
@@ -1795,9 +1795,9 @@ export default function DashboardPage() {
             )}
 
             <p className="mb-6 text-secondary-color">
-              {userName ? `Welcome, ${userName}! ` : "Welcome! "}
-              We've created your personalized plan based on your selections. Track your symptoms and progress right from
-              your dashboard.
+              {userName
+                ? t("dashboard.welcome.bodyName", "Welcome, {name}! We've created your personalized plan based on your selections. Track your symptoms and progress right from your dashboard.").replace("{name}", userName)
+                : t("dashboard.welcome.body", "Welcome! We've created your personalized plan based on your selections. Track your symptoms and progress right from your dashboard.")}
             </p>
 
             <button onClick={handleCloseWelcome} className="w-full gradient-button py-3 rounded-full">
