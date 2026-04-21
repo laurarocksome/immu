@@ -173,6 +173,10 @@ function foodTagKey(tag: string) {
   return "food.tag." + tag.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/, "")
 }
 
+function foodTooltipKey(name: string) {
+  return "food.tooltip." + name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/, "")
+}
+
 export default function FoodListPage() {
   const { t } = useLanguage()
   const [allProducts, setAllProducts] = useState<any[]>([])
@@ -189,6 +193,7 @@ export default function FoodListPage() {
   const [showTagDropdown, setShowTagDropdown] = useState(false)
   const [favorites, setFavorites] = useState<string[]>([])
   const [showOnlyFavorites, setShowOnlyFavorites] = useState(false)
+  const [showOnlyLocked, setShowOnlyLocked] = useState(false)
   const [userModifiedStatuses, setUserModifiedStatuses] = useState<Record<string, string>>({})
   const [lockedStatuses, setLockedStatuses] = useState<Record<string, string>>({})
   const [allTags, setAllTags] = useState<string[]>([])
@@ -372,7 +377,10 @@ export default function FoodListPage() {
       // Apply favorites filter
       const matchesFavorites = !showOnlyFavorites || favorites.includes(product.name)
 
-      return matchesSearch && matchesTags && matchesFavorites
+      // Apply locked filter
+      const matchesLocked = !showOnlyLocked || Boolean(lockedStatuses[product.name])
+
+      return matchesSearch && matchesTags && matchesFavorites && matchesLocked
     })
     .sort((a, b) => {
       // Update the status order in the sort function
@@ -419,6 +427,7 @@ export default function FoodListPage() {
     setSearchQuery("")
     setSelectedTags([])
     setShowOnlyFavorites(false)
+    setShowOnlyLocked(false)
   }
 
   // Get classes for status badge
@@ -612,17 +621,31 @@ export default function FoodListPage() {
                 </div>
               </div>
 
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="favorites-only"
-                  checked={showOnlyFavorites}
-                  onChange={() => setShowOnlyFavorites(!showOnlyFavorites)}
-                  className="mr-2 h-4 w-4 rounded border-brand-dark/30 text-pink-400 focus:ring-pink-400"
-                />
-                <label htmlFor="favorites-only" className="text-sm">
-                  {t("foodList.showFavorites", "Show favorites only")}
-                </label>
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="favorites-only"
+                    checked={showOnlyFavorites}
+                    onChange={() => setShowOnlyFavorites(!showOnlyFavorites)}
+                    className="mr-2 h-4 w-4 rounded border-brand-dark/30 text-pink-400 focus:ring-pink-400"
+                  />
+                  <label htmlFor="favorites-only" className="text-sm">
+                    {t("foodList.showFavorites", "Show favorites only")}
+                  </label>
+                </div>
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="locked-only"
+                    checked={showOnlyLocked}
+                    onChange={() => setShowOnlyLocked(!showOnlyLocked)}
+                    className="mr-2 h-4 w-4 rounded border-brand-dark/30 text-pink-400 focus:ring-pink-400"
+                  />
+                  <label htmlFor="locked-only" className="text-sm">
+                    {t("foodList.showLocked", "Show locked only")}
+                  </label>
+                </div>
               </div>
             </div>
 
@@ -687,7 +710,7 @@ export default function FoodListPage() {
                                 </button>
                                 {openTooltip === product.name && (
                                   <div className="absolute right-0 bottom-6 z-50 bg-gray-800 text-white text-xs rounded-xl p-3 w-52 shadow-xl leading-relaxed">
-                                    {product.tooltip}
+                                    {t(foodTooltipKey(product.name), product.tooltip)}
                                     <div className="absolute right-1.5 bottom-[-4px] w-2 h-2 bg-gray-800 rotate-45" />
                                   </div>
                                 )}
@@ -783,7 +806,7 @@ export default function FoodListPage() {
                       </button>
                       {openTooltip === product.name && (
                         <div className="absolute right-0 bottom-6 z-50 bg-gray-800 text-white text-xs rounded-xl p-3 w-52 shadow-xl leading-relaxed">
-                          {product.tooltip}
+                          {t(foodTooltipKey(product.name), product.tooltip)}
                           <div className="absolute right-1.5 bottom-[-4px] w-2 h-2 bg-gray-800 rotate-45" />
                         </div>
                       )}
