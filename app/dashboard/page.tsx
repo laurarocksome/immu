@@ -1121,9 +1121,10 @@ export default function DashboardPage() {
             const adaptationDaysCount = (dietInfoData.adaptation_choice ?? "").toLowerCase() === "yes" ? 28 : 0
             let progressPercentage = phaseProgress.eliminationPhasePercentage
             if (phaseProgress.isAdaptationPhase && adaptationDaysCount > 0) {
-              progressPercentage = Math.min(Math.round((phaseProgress.adaptationDay / adaptationDaysCount) * 100), 100)
+              // Use daysElapsed (not adaptationDay which is daysElapsed+1) so day 1 shows 0%
+              progressPercentage = Math.min(Math.floor((phaseProgress.daysElapsed / adaptationDaysCount) * 100), 100)
             }
-            setProgress(Math.max(progressPercentage, 1))
+            setProgress(Math.max(progressPercentage, 0))
           }
         }
 

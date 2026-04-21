@@ -97,25 +97,23 @@ function ProgressBar() {
       let progressPercentage = 0
 
       if (hasAdaptation && daysElapsed < adaptationDays) {
-        // In adaptation phase
         currentPhase = "adaptation"
         daysRemaining = adaptationDays - daysElapsed
-        // Use (daysElapsed + 1) to match dashboard's adaptationDay convention, then Math.floor to match dashboard
-        progressPercentage = Math.max(Math.min(Math.floor(((daysElapsed + 1) / adaptationDays) * 100), 100), 1)
+        // Use daysElapsed (no +1) so day 1 shows 0% — matches dashboard
+        progressPercentage = Math.max(Math.min(Math.floor((daysElapsed / adaptationDays) * 100), 100), 0)
       } else if (daysElapsed < (hasAdaptation ? adaptationDays + eliminationDays : eliminationDays)) {
         // In elimination phase
         currentPhase = "elimination"
         const eliminationDaysElapsed = daysElapsed - (hasAdaptation ? adaptationDays : 0)
         daysRemaining = eliminationDays - eliminationDaysElapsed
-        // Math.floor to match dashboard (dashboard-data.ts uses Math.floor), Math.max 1 to match setProgress(Math.max(..., 1))
-        progressPercentage = Math.max(Math.min(Math.floor((eliminationDaysElapsed / eliminationDays) * 100), 100), 1)
+        progressPercentage = Math.max(Math.min(Math.floor((eliminationDaysElapsed / eliminationDays) * 100), 100), 0)
       } else {
         // In reintroduction phase
         currentPhase = "reintroduction"
         const reintroductionDaysElapsed =
           daysElapsed - (hasAdaptation ? adaptationDays + eliminationDays : eliminationDays)
         daysRemaining = Math.max(reintroductionDays - reintroductionDaysElapsed, 0)
-        progressPercentage = Math.max(Math.min(Math.floor((reintroductionDaysElapsed / reintroductionDays) * 100), 100), 1)
+        progressPercentage = Math.max(Math.min(Math.floor((reintroductionDaysElapsed / reintroductionDays) * 100), 100), 0)
       }
 
       setProgressData({
