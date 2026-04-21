@@ -340,17 +340,17 @@ export default function FoodListPage() {
       const hasAlcohol = tags.includes("alcohol") || containsAlcohol(product)
       const hasSugar = tags.includes("sugar") || containsSugar(product)
 
-      // Week 1 (days 1–7): only caffeine becomes Can't eat
+      // Week 1 (days 1–7): only caffeine becomes Can't eat; everything else stays Can eat
       if (adaptationDay <= 7) {
-        return hasCaffeine ? "Can't eat" : "Under evaluation"
+        return hasCaffeine ? "Can't eat" : "Can eat"
       }
       // Week 2 (days 8–14): + alcohol
       if (adaptationDay <= 14) {
-        return hasCaffeine || hasAlcohol ? "Can't eat" : "Under evaluation"
+        return hasCaffeine || hasAlcohol ? "Can't eat" : "Can eat"
       }
       // Weeks 3 & 4 (days 15–28): + sugar; week 4 keeps the same set so the
       // user has time to establish the new habits before elimination starts
-      return hasCaffeine || hasAlcohol || hasSugar ? "Can't eat" : "Under evaluation"
+      return hasCaffeine || hasAlcohol || hasSugar ? "Can't eat" : "Can eat"
     }
 
     // Fallback (no phase loaded yet)
