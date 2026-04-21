@@ -220,16 +220,7 @@ function ProgressBar() {
   )
 }
 
-// Sample data for the calendar
-const sampleEvents = [
-  { date: "2023-04-08", type: "meal", title: "Breakfast", details: "Sweet potato hash, Avocado" },
-  { date: "2023-04-08", type: "meal", title: "Lunch", details: "Grilled chicken, Mixed greens" },
-  { date: "2023-04-08", type: "symptom", title: "Fatigue", details: "Severity: 3/5" },
-  { date: "2023-04-09", type: "meal", title: "Breakfast", details: "Coconut yogurt, Berries" },
-  { date: "2023-04-09", type: "milestone", title: "Elimination Phase", details: "Day 7 completed" },
-  { date: "2023-04-10", type: "meal", title: "Dinner", details: "Salmon, Roasted vegetables" },
-  { date: "2023-04-10", type: "symptom", title: "Joint Pain", details: "Severity: 2/5" },
-]
+type DayNote = { date: string; notes: string }
 
 export default function CalendarPage() {
   const router = useRouter()
@@ -237,6 +228,42 @@ export default function CalendarPage() {
   const dateLocale = locale === "lt" ? "lt-LT" : "en-US"
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState(new Date())
+  const [dayNotes, setDayNotes] = useState<DayNote[]>([])
+
+  // Load notes from daily_logs for the visible month
+  useEffect(() => {
+    async function loadNotes() {
+      try {
+        const { createClient } = await import("@/lib/supabase/client")
+        const sb = createClient()
+        const { data: { user } } = await sb.auth.getUser()
+        if (!user) return
+
+        const year = currentMonth.getFullYear()
+        const month = currentMonth.getMonth()
+        const monthStart = new Date(year, month, 1).toISOString().split("T")[0]
+        const monthEnd = new Date(year, month + 1, 0).toISOString().split("T")[0]
+
+        const { data } = await sb
+          .from("daily_logs")
+          .select("log_date, notes")
+          .eq("user_id", user.id)
+          .gte("log_date", monthStart)
+          .lte("log_date", monthEnd)
+
+        if (data) {
+          setDayNotes(
+            data
+              .filter((row: any) => row.notes && row.notes.trim().length > 0)
+              .map((row: any) => ({ date: row.log_date, notes: row.notes }))
+          )
+        }
+      } catch (e) {
+        console.error("Calendar notes load error:", e)
+      }
+    }
+    loadNotes()
+  }, [currentMonth])
 
   const handleBack = () => {
     router.back()
@@ -250,13 +277,16 @@ export default function CalendarPage() {
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))
   }
 
-  // Get events for the selected date
-  const getEventsForDate = (date: Date) => {
-    const dateString = date.toISOString().split("T")[0]
-    return sampleEvents.filter((event) => event.date === dateString)
+  // Format a Date to a YYYY-MM-DD string in local time (matches log_date stored by log-day)
+  const toLocalDateString = (date: Date) => {
+    const y = date.getFullYear()
+    const m = String(date.getMonth() + 1).padStart(2, "0")
+    const d = String(date.getDate()).padStart(2, "0")
+    return `${y}-${m}-${d}`
   }
 
-  const selectedDateEvents = getEventsForDate(selectedDate)
+  const selectedDateString = toLocalDateString(selectedDate)
+  const selectedNote = dayNotes.find((n) => n.date === selectedDateString)
 
   // Generate calendar days
   const generateCalendarDays = () => {
@@ -354,7 +384,7 @@ export default function CalendarPage() {
 
               const isToday = date.toDateString() === new Date().toDateString()
               const isSelected = date.toDateString() === selectedDate.toDateString()
-              const hasEvents = sampleEvents.some((event) => event.date === date.toISOString().split("T")[0])
+              const hasEvents = dayNotes.some((n) => n.date === toLocalDateString(date))
 
               return (
                 <button
@@ -393,36 +423,16 @@ export default function CalendarPage() {
           </h3>
         </div>
 
-        {selectedDateEvents.length > 0 ? (
-          <div className="space-y-3 mb-6">
-            {selectedDateEvents.map((event, index) => (
-              <div
-                key={index}
-                className={`glass-card rounded-2xl p-4 ${
-                  event.type === "meal"
-                    ? "border-l-4 border-pink-400"
-                    : event.type === "symptom"
-                      ? "border-l-4 border-yellow-400"
-                      : "border-l-4 border-pink-400"
-                }`}
-              >
-                <div className="flex justify-between items-center mb-1">
-                  <h4 className="font-medium">{event.title}</h4>
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-brand-lightest">
-                    {event.type === "meal"
-                      ? t("calendar.event.meal", "Meal")
-                      : event.type === "symptom"
-                        ? t("calendar.event.symptom", "Symptom")
-                        : t("calendar.event.milestone", "Milestone")}
-                  </span>
-                </div>
-                <p className="text-sm text-brand-dark/70">{event.details}</p>
-              </div>
-            ))}
+        {selectedNote ? (
+          <div className="glass-card rounded-2xl p-4 mb-6 border-l-4 border-pink-400">
+            <div className="flex justify-between items-center mb-2">
+              <h4 className="font-medium">{t("calendar.notes", "Notes")}</h4>
+            </div>
+            <p className="text-sm text-brand-dark/80 whitespace-pre-wrap">{selectedNote.notes}</p>
           </div>
         ) : (
           <div className="glass-card rounded-2xl p-6 text-center mb-6">
-            <p className="text-brand-dark/70">{t("calendar.no_events", "No events for this date")}</p>
+            <p className="text-brand-dark/70">{t("calendar.noNotes", "No notes for this date")}</p>
           </div>
         )}
 
