@@ -298,8 +298,8 @@ export default function CalendarPage() {
     // Last day of the month
     const lastDay = new Date(year, month + 1, 0)
 
-    // Day of the week for the first day (0 = Sunday, 6 = Saturday)
-    const firstDayOfWeek = firstDay.getDay()
+    // Day of the week for the first day, Monday-first (0 = Monday, 6 = Sunday)
+    const firstDayOfWeek = (firstDay.getDay() + 6) % 7
 
     // Total days in the month
     const daysInMonth = lastDay.getDate()
@@ -323,13 +323,13 @@ export default function CalendarPage() {
 
   const calendarDays = generateCalendarDays()
   const weekdays = [
-    t("calendar.weekday.sun", "Sun"),
     t("calendar.weekday.mon", "Mon"),
     t("calendar.weekday.tue", "Tue"),
     t("calendar.weekday.wed", "Wed"),
     t("calendar.weekday.thu", "Thu"),
     t("calendar.weekday.fri", "Fri"),
     t("calendar.weekday.sat", "Sat"),
+    t("calendar.weekday.sun", "Sun"),
   ]
 
   return (
