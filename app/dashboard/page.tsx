@@ -532,40 +532,40 @@ export default function DashboardPage() {
     switch (reintroductionDay) {
       case 1:
         return [
-          { id: "reintroduce_egg_yolk", text: "Reintroduce egg yolk (boiled or poached)", isSpecial: true },
+          { id: "reintroduce_egg_yolk", text: t("dashboard.todo.reintroduceEggYolk", "Reintroduce egg yolk (boiled or poached)"), isSpecial: true },
           ...commonItems,
           { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
         ]
       case 2:
         return [
-          { id: "rest_day", text: "Rest day — no new food", isSpecial: true },
+          { id: "rest_day", text: t("dashboard.todo.restDay", "Rest day — no new food"), isSpecial: true },
           ...commonItems,
-          { id: "observe_symptoms", text: "Observe for any delayed symptoms" },
+          { id: "observe_symptoms", text: t("dashboard.todo.observeSymptoms", "Observe for any delayed symptoms") },
           { id: "update_product_list", text: t("dashboard.todo.updateProductList", "Update the product list") },
         ]
       case 3:
         return [
-          { id: "reintroduce_peas", text: "Reintroduce green peas or sugar snap peas", isSpecial: true },
+          { id: "reintroduce_peas", text: t("dashboard.todo.reintroducePeas", "Reintroduce green peas or sugar snap peas"), isSpecial: true },
           ...commonItems,
           { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
         ]
       case 4:
         return [
-          { id: "eat_vegetables", text: "Eat a variety of vegetables today" },
+          { id: "eat_vegetables", text: t("dashboard.todo.eatVegetables", "Eat a variety of vegetables today") },
           ...commonItems,
           { id: "update_product_list", text: t("dashboard.todo.updateProductList", "Update the product list") },
         ]
       case 5:
         return [
-          { id: "reintroduce_ghee", text: "Reintroduce ghee (1 tsp with a warm meal)", isSpecial: true },
+          { id: "reintroduce_ghee", text: t("dashboard.todo.reintroduceGhee", "Reintroduce ghee (1 tsp with a warm meal)"), isSpecial: true },
           ...commonItems,
-          { id: "lemon_water", text: "Drink lemon water in the morning" },
+          { id: "lemon_water", text: t("dashboard.todo.lemonWater", "Drink lemon water in the morning") },
           { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
-          { id: "calming_music", text: "Play calming music in the evening" },
+          { id: "calming_music", text: t("dashboard.todo.calmingMusic", "Play calming music in the evening") },
         ]
       case 6:
         return [
-          { id: "stretching", text: "Do a stretching session" },
+          { id: "stretching", text: t("dashboard.todo.stretching", "Do a stretching session") },
           ...commonItems,
           { id: "update_product_list", text: t("dashboard.todo.updateProductList", "Update the product list") },
         ]
@@ -573,28 +573,28 @@ export default function DashboardPage() {
         return [
           {
             id: "reintroduce_spices",
-            text: "Reintroduce cumin or coriander (use sparingly in cooking)",
+            text: t("dashboard.todo.reintroduceSpices", "Reintroduce cumin or coriander (use sparingly in cooking)"),
             isSpecial: true,
           },
           ...commonItems,
           { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
-          { id: "meditate", text: "Meditate for 10 minutes" },
+          { id: "meditate", text: t("dashboard.todo.meditate", "Meditate for 10 minutes") },
         ]
       case 8:
         return [
-          { id: "cook_dinner", text: "Cook a nourishing veggie-based dinner" },
+          { id: "cook_dinner", text: t("dashboard.todo.cookDinner", "Cook a nourishing veggie-based dinner") },
           ...commonItems,
           { id: "update_product_list", text: t("dashboard.todo.updateProductList", "Update the product list") },
         ]
       case 9:
         return [
-          { id: "reintroduce_cocoa", text: "Reintroduce unsweetened cocoa (1 tsp max)", isSpecial: true },
+          { id: "reintroduce_cocoa", text: t("dashboard.todo.reintroduceCocoa", "Reintroduce unsweetened cocoa (1 tsp max)"), isSpecial: true },
           ...commonItems,
           { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
         ]
       case 10:
         return [
-          { id: "mocktail", text: "Try a mocktail as a reward" },
+          { id: "mocktail", text: t("dashboard.todo.mocktail", "Try a mocktail as a reward") },
           ...commonItems,
           { id: "update_product_list", text: t("dashboard.todo.updateProductList", "Update the product list") },
         ]
@@ -602,11 +602,11 @@ export default function DashboardPage() {
         return [
           {
             id: "reintroduce_nut_oil",
-            text: "Reintroduce nut/seed oil (e.g., walnut or sesame, 1 tsp)",
+            text: t("dashboard.todo.reintroduceNutOil", "Reintroduce nut/seed oil (e.g., walnut or sesame, 1 tsp)"),
             isSpecial: true,
           },
           ...commonItems,
-          { id: "extra_water", text: "Drink extra water" },
+          { id: "extra_water", text: t("dashboard.todo.extraWater", "Drink extra water") },
           { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
         ]
       case 12:
@@ -616,47 +616,47 @@ export default function DashboardPage() {
         ]
       case 13:
         return [
-          { id: "reintroduce_sprouts", text: "Reintroduce legume sprouts (e.g., pea shoots)", isSpecial: true },
+          { id: "reintroduce_sprouts", text: t("dashboard.todo.reintroduceSprouts", "Reintroduce legume sprouts (e.g., pea shoots)"), isSpecial: true },
           ...commonItems,
-          { id: "new_vegetables", text: "Add three new vegetables to your plate" },
+          { id: "new_vegetables", text: t("dashboard.todo.newVegetables", "Add three new vegetables to your plate") },
           { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
         ]
       case 14:
         return [
-          { id: "meditate_longer", text: "Meditate for 20 minutes" },
+          { id: "meditate_longer", text: t("dashboard.todo.meditateLonger", "Meditate for 20 minutes") },
           ...commonItems,
           { id: "update_product_list", text: t("dashboard.todo.updateProductList", "Update the product list") },
         ]
       case 15:
         return [
-          { id: "reintroduce_almonds", text: "Reintroduce almonds (start small, preferably soaked)", isSpecial: true },
+          { id: "reintroduce_almonds", text: t("dashboard.todo.reintroduceAlmonds", "Reintroduce almonds (start small, preferably soaked)"), isSpecial: true },
           ...commonItems,
           { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
         ]
       case 16:
       case 17:
         return [
-          { id: "eat_almonds", text: "Eat almonds (start small, preferably soaked)" },
+          { id: "eat_almonds", text: t("dashboard.todo.eatAlmonds", "Eat almonds (start small, preferably soaked)") },
           ...commonItems,
-          { id: "almond_milk", text: "Use a splash of almond milk" },
+          { id: "almond_milk", text: t("dashboard.todo.almondMilk", "Use a splash of almond milk") },
           { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
-          ...(reintroductionDay === 17 ? [{ id: "update_product_list", text: "Update the product list" }] : []),
+          ...(reintroductionDay === 17 ? [{ id: "update_product_list", text: t("dashboard.todo.updateProductList", "Update the product list") }] : []),
         ]
       case 18:
         return [
-          { id: "reintroduce_seeds", text: "Reintroduce seeds (tahini or raw seeds, one type only)", isSpecial: true },
+          { id: "reintroduce_seeds", text: t("dashboard.todo.reintroduceSeeds", "Reintroduce seeds (tahini or raw seeds, one type only)"), isSpecial: true },
           ...commonItems,
           { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
         ]
       case 19:
       case 20:
         return [
-          { id: "eat_seeds", text: "Eat seeds (tahini or raw seeds, one type only)" },
+          { id: "eat_seeds", text: t("dashboard.todo.eatSeeds", "Eat seeds (tahini or raw seeds, one type only)") },
           ...commonItems,
           { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
           ...(reintroductionDay === 20
             ? [
-                { id: "avoid_mixing", text: "Avoid mixing seeds" },
+                { id: "avoid_mixing", text: t("dashboard.todo.avoidMixing", "Avoid mixing seeds") },
                 { id: "update_product_list", text: t("dashboard.todo.updateProductList", "Update the product list") },
               ]
             : []),
@@ -665,7 +665,7 @@ export default function DashboardPage() {
         return [
           {
             id: "reintroduce_egg_whites",
-            text: "Reintroduce egg whites (start small, gradually increase)",
+            text: t("dashboard.todo.reintroduceEggWhites", "Reintroduce egg whites (start small, gradually increase)"),
             isSpecial: true,
           },
           ...commonItems,
@@ -673,14 +673,14 @@ export default function DashboardPage() {
         ]
       case 22:
         return [
-          { id: "eat_egg_whites", text: "Eat egg whites (start small, gradually increase)" },
+          { id: "eat_egg_whites", text: t("dashboard.todo.eatEggWhites", "Eat egg whites (start small, gradually increase)") },
           ...commonItems,
-          { id: "grounding", text: "Add grounding practices: journaling, stretching, slow walks" },
+          { id: "grounding", text: t("dashboard.todo.grounding", "Add grounding practices: journaling, stretching, slow walks") },
           { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
         ]
       case 23:
         return [
-          { id: "eat_whole_egg", text: "Eat a whole egg" },
+          { id: "eat_whole_egg", text: t("dashboard.todo.eatWholeEgg", "Eat a whole egg") },
           ...commonItems,
           { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
           { id: "update_product_list", text: t("dashboard.todo.updateProductList", "Update the product list") },
@@ -689,7 +689,7 @@ export default function DashboardPage() {
         return [
           {
             id: "reintroduce_butter",
-            text: "Reintroduce grass-fed butter (do not combine with other dairy)",
+            text: t("dashboard.todo.reintroduceButter", "Reintroduce grass-fed butter (do not combine with other dairy)"),
             isSpecial: true,
           },
           ...commonItems,
@@ -698,94 +698,94 @@ export default function DashboardPage() {
       case 25:
       case 26:
         return [
-          { id: "eat_butter", text: "Eat grass-fed butter (do not combine with other dairy)" },
+          { id: "eat_butter", text: t("dashboard.todo.eatButter", "Eat grass-fed butter (do not combine with other dairy)") },
           ...commonItems,
           { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
-          ...(reintroductionDay === 26 ? [{ id: "update_product_list", text: "Update the product list" }] : []),
+          ...(reintroductionDay === 26 ? [{ id: "update_product_list", text: t("dashboard.todo.updateProductList", "Update the product list") }] : []),
         ]
       case 27:
         return [
-          { id: "review_list", text: "Review your personal 'Can consume' list" },
+          { id: "review_list", text: t("dashboard.todo.reviewList", "Review your personal 'Can consume' list") },
           ...commonItems,
-          { id: "calming_activity", text: "Plan a calming activity" },
+          { id: "calming_activity", text: t("dashboard.todo.calmingActivity", "Plan a calming activity") },
         ]
       case 28:
         return [
-          { id: "reintroduce_cashews", text: "Reintroduce plain, unroasted cashews", isSpecial: true },
+          { id: "reintroduce_cashews", text: t("dashboard.todo.reintroduceCashews", "Reintroduce plain, unroasted cashews"), isSpecial: true },
           ...commonItems,
-          { id: "tea", text: "Add lemon or ginger tea to support digestion" },
+          { id: "tea", text: t("dashboard.todo.tea", "Add lemon or ginger tea to support digestion") },
           { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
         ]
       case 29:
         return [
-          { id: "eat_cashews", text: "Eat plain, unroasted cashews" },
+          { id: "eat_cashews", text: t("dashboard.todo.eatCashews", "Eat plain, unroasted cashews") },
           ...commonItems,
-          { id: "tea", text: "Add lemon or ginger tea to support digestion" },
+          { id: "tea", text: t("dashboard.todo.tea", "Add lemon or ginger tea to support digestion") },
           { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
           { id: "update_product_list", text: t("dashboard.todo.updateProductList", "Update the product list") },
         ]
       case 30:
         return [
-          { id: "reintroduce_potato", text: "Reintroduce cooked potato (white, peeled)", isSpecial: true },
+          { id: "reintroduce_potato", text: t("dashboard.todo.reintroducePotato", "Reintroduce cooked potato (white, peeled)"), isSpecial: true },
           ...commonItems,
           { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
           { id: "update_product_list", text: t("dashboard.todo.updateProductList", "Update the product list") },
         ]
       case 31:
         return [
-          { id: "reintroduce_pepper", text: "Reintroduce sweet red pepper (roasted or sautéed)", isSpecial: true },
+          { id: "reintroduce_pepper", text: t("dashboard.todo.reintroducePepper", "Reintroduce sweet red pepper (roasted or sautéed)"), isSpecial: true },
           ...commonItems,
           { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
         ]
       case 32:
       case 33:
         return [
-          { id: "eat_pepper", text: "Eat sweet red pepper (roasted or sautéed)" },
+          { id: "eat_pepper", text: t("dashboard.todo.eatPepper", "Eat sweet red pepper (roasted or sautéed)") },
           ...commonItems,
           { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
-          ...(reintroductionDay === 33 ? [{ id: "update_product_list", text: "Update the product list" }] : []),
+          ...(reintroductionDay === 33 ? [{ id: "update_product_list", text: t("dashboard.todo.updateProductList", "Update the product list") }] : []),
         ]
       case 34:
         return [
-          { id: "reintroduce_paprika", text: "Reintroduce paprika (use a small pinch in meals)", isSpecial: true },
+          { id: "reintroduce_paprika", text: t("dashboard.todo.reintroducePaprika", "Reintroduce paprika (use a small pinch in meals)"), isSpecial: true },
           ...commonItems,
-          { id: "no_new_food", text: "Do not introduce any other new food during this time" },
+          { id: "no_new_food", text: t("dashboard.todo.noNewFood", "Do not introduce any other new food during this time") },
           { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
         ]
       case 35:
       case 36:
         return [
-          { id: "eat_paprika", text: "Eat paprika (use a small pinch in meals)" },
+          { id: "eat_paprika", text: t("dashboard.todo.eatPaprika", "Eat paprika (use a small pinch in meals)") },
           ...commonItems,
-          { id: "no_new_food", text: "Do not introduce any other new food during this time" },
+          { id: "no_new_food", text: t("dashboard.todo.noNewFood", "Do not introduce any other new food during this time") },
           { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
-          ...(reintroductionDay === 36 ? [{ id: "update_product_list", text: "Update the product list" }] : []),
+          ...(reintroductionDay === 36 ? [{ id: "update_product_list", text: t("dashboard.todo.updateProductList", "Update the product list") }] : []),
         ]
       case 37:
         return [
-          { id: "reintroduce_eggplant", text: "Reintroduce cooked eggplant (start with 1/4 cup)", isSpecial: true },
+          { id: "reintroduce_eggplant", text: t("dashboard.todo.reintroduceEggplant", "Reintroduce cooked eggplant (start with 1/4 cup)"), isSpecial: true },
           ...commonItems,
           { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
           { id: "update_product_list", text: t("dashboard.todo.updateProductList", "Update the product list") },
         ]
       case 38:
         return [
-          { id: "reintroduce_rice", text: "Reintroduce white rice (start with 2 tbsp cooked)", isSpecial: true },
+          { id: "reintroduce_rice", text: t("dashboard.todo.reintroduceRice", "Reintroduce white rice (start with 2 tbsp cooked)"), isSpecial: true },
           ...commonItems,
-          { id: "deep_breathing", text: "Add deep breathing after meals" },
+          { id: "deep_breathing", text: t("dashboard.todo.deepBreathing", "Add deep breathing after meals") },
           { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
-          { id: "relaxing_ritual", text: "End day with a relaxing ritual (bath, walk, etc.)" },
+          { id: "relaxing_ritual", text: t("dashboard.todo.relaxingRitual", "End day with a relaxing ritual (bath, walk, etc.)") },
         ]
       case 39:
       case 40:
         return [
-          { id: "eat_rice", text: "Eat white rice" },
+          { id: "eat_rice", text: t("dashboard.todo.eatRice", "Eat white rice") },
           ...commonItems,
-          { id: "deep_breathing", text: "Add deep breathing after meals" },
+          { id: "deep_breathing", text: t("dashboard.todo.deepBreathing", "Add deep breathing after meals") },
           { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
           ...(reintroductionDay === 40
             ? [
-                { id: "relaxing_ritual", text: "End day with a relaxing ritual (bath, walk, etc.)" },
+                { id: "relaxing_ritual", text: t("dashboard.todo.relaxingRitual", "End day with a relaxing ritual (bath, walk, etc.)") },
                 { id: "update_product_list", text: t("dashboard.todo.updateProductList", "Update the product list") },
               ]
             : []),
@@ -794,7 +794,7 @@ export default function DashboardPage() {
         return [
           {
             id: "reintroduce_yogurt",
-            text: "Reintroduce grass-fed yogurt or kefir (unsweetened, small portion)",
+            text: t("dashboard.todo.reintroduceYogurt", "Reintroduce grass-fed yogurt or kefir (unsweetened, small portion)"),
             isSpecial: true,
           },
           ...commonItems,
@@ -803,16 +803,16 @@ export default function DashboardPage() {
       case 42:
       case 43:
         return [
-          { id: "eat_yogurt", text: "Eat grass-fed yogurt or kefir (unsweetened, small portion)" },
+          { id: "eat_yogurt", text: t("dashboard.todo.eatYogurt", "Eat grass-fed yogurt or kefir (unsweetened, small portion)") },
           ...commonItems,
           { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
-          ...(reintroductionDay === 43 ? [{ id: "update_product_list", text: "Update the product list" }] : []),
+          ...(reintroductionDay === 43 ? [{ id: "update_product_list", text: t("dashboard.todo.updateProductList", "Update the product list") }] : []),
         ]
       case 44:
         return [
           {
             id: "reintroduce_tomato",
-            text: "Reintroduce cooked and peeled tomato (start with 1 tbsp)",
+            text: t("dashboard.todo.reintroduceTomato", "Reintroduce cooked and peeled tomato (start with 1 tbsp)"),
             isSpecial: true,
           },
           ...commonItems,
@@ -820,19 +820,18 @@ export default function DashboardPage() {
         ]
       case 45:
         return [
-          { id: "eat_tomato", text: "Eat cooked and peeled tomato (start with 1 tbsp)" },
+          { id: "eat_tomato", text: t("dashboard.todo.eatTomato", "Eat cooked and peeled tomato (start with 1 tbsp)") },
           ...commonItems,
           { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
           { id: "update_product_list", text: t("dashboard.todo.updateProductList", "Update the product list") },
         ]
       default:
-        // For days beyond 45, provide general maintenance tasks
         return [
           ...commonItems,
           { id: "log_feelings", text: t("dashboard.todo.logFeelings", "Log how you feel 2–3 times per day") },
           {
             id: "continue_reintroductions",
-            text: "Continue with your personalized reintroduction schedule",
+            text: t("dashboard.todo.continueReintroductions", "Continue with your personalized reintroduction schedule"),
             isSpecial: true,
           },
         ]
