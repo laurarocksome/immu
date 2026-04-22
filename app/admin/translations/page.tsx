@@ -36,12 +36,23 @@ export default function TranslationsAdmin() {
 
   const loadTranslations = async () => {
     setLoading(true)
-    const { data } = await supabase
-      .from("translations")
-      .select("*")
-      .order("category")
-      .order("key")
-    setTranslations(data || [])
+    // Fetch all rows in batches of 1000 (Supabase default limit per request)
+    const PAGE = 1000
+    let all: Translation[] = []
+    let from = 0
+    while (true) {
+      const { data } = await supabase
+        .from("translations")
+        .select("*")
+        .order("category")
+        .order("key")
+        .range(from, from + PAGE - 1)
+      if (!data || data.length === 0) break
+      all = [...all, ...data]
+      if (data.length < PAGE) break
+      from += PAGE
+    }
+    setTranslations(all)
     setLoading(false)
   }
 
