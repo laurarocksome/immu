@@ -1322,18 +1322,18 @@ export default function DashboardPage() {
     const wellnessDateMap = new Map<string, number>()
     lastSevenW.forEach((log, i) => { if (log) wellnessDateMap.set(log.log_date, i) })
 
-    // Create chart data for all 7 days, initialized with 0
-    const moodData: number[] = [0, 0, 0, 0, 0, 0, 0]
-    const sleepData: number[] = [0, 0, 0, 0, 0, 0, 0]
-    const stressData: number[] = [0, 0, 0, 0, 0, 0, 0]
+    // Create chart data for all 7 days, initialized with null (null = no data, 0 = valid lowest score)
+    const moodData: (number | null)[] = [null, null, null, null, null, null, null]
+    const sleepData: (number | null)[] = [null, null, null, null, null, null, null]
+    const stressData: (number | null)[] = [null, null, null, null, null, null, null]
 
     // Fill in actual data from database
     wellnessHistory.forEach((log) => {
       const dayIndex = wellnessDateMap.get(log.log_date)
       if (dayIndex !== undefined) {
-        moodData[dayIndex] = log.mood ? ((log.mood - 1) / 4) * 100 : 0
-        sleepData[dayIndex] = log.sleep ? ((log.sleep - 1) / 4) * 100 : 0
-        stressData[dayIndex] = log.stress ? ((5 - log.stress) / 4) * 100 : 0
+        moodData[dayIndex]   = log.mood   != null ? ((log.mood - 1) / 4) * 100       : null
+        sleepData[dayIndex]  = log.sleep  != null ? ((log.sleep - 1) / 4) * 100      : null
+        stressData[dayIndex] = log.stress != null ? ((5 - log.stress) / 4) * 100     : null
       }
     })
 
@@ -1345,10 +1345,9 @@ export default function DashboardPage() {
     })
 
     // Calculate and set current wellness score from most recent day with data
-    // Find the most recent day index that has data
     let latestDayIndex = -1
     for (let i = 6; i >= 0; i--) {
-      if (moodData[i] > 0 || sleepData[i] > 0 || stressData[i] > 0) {
+      if (moodData[i] != null || sleepData[i] != null || stressData[i] != null) {
         latestDayIndex = i
         break
       }
@@ -1358,9 +1357,9 @@ export default function DashboardPage() {
       const m = moodData[latestDayIndex]
       const s = sleepData[latestDayIndex]
       const st = stressData[latestDayIndex]
-      const count = [m, s, st].filter(v => v > 0).length
-      const avgScore = count > 0
-        ? Math.round((m + s + st) / count)
+      const vals = [m, s, st].filter((v): v is number => v != null)
+      const avgScore = vals.length > 0
+        ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length)
         : 0
       setWellnessScore(avgScore)
     }
@@ -1572,11 +1571,11 @@ export default function DashboardPage() {
     return path.trim()
   }
 
-  // Connects ALL non-zero points regardless of gaps (handles sparse wellness data)
-  const createWellnessLinePath = (values: number[]) => {
+  // Connects ALL non-null points regardless of gaps (handles sparse wellness data)
+  const createWellnessLinePath = (values: (number | null)[]) => {
     const pts = values
-      .map((v, i) => ({ x: (values.length > 1 ? i / (values.length - 1) : 0.5) * 100, y: 100 - v, v }))
-      .filter(p => p.v > 0)
+      .map((v, i) => ({ x: (values.length > 1 ? i / (values.length - 1) : 0.5) * 100, y: 100 - (v ?? 0), v }))
+      .filter(p => p.v != null)
     if (pts.length === 0) return ""
     if (pts.length === 1) return `M ${pts[0].x},${pts[0].y}`
     let path = `M ${pts[0].x},${pts[0].y}`
@@ -1590,10 +1589,10 @@ export default function DashboardPage() {
     return path
   }
 
-  const createWellnessAreaFill = (values: number[]) => {
+  const createWellnessAreaFill = (values: (number | null)[]) => {
     const pts = values
-      .map((v, i) => ({ x: (values.length > 1 ? i / (values.length - 1) : 0.5) * 100, y: 100 - v, v }))
-      .filter(p => p.v > 0)
+      .map((v, i) => ({ x: (values.length > 1 ? i / (values.length - 1) : 0.5) * 100, y: 100 - (v ?? 0), v }))
+      .filter(p => p.v != null)
     if (pts.length < 2) return ""
     let path = `M ${pts[0].x},${pts[0].y}`
     for (let i = 0; i < pts.length - 1; i++) {
@@ -2192,9 +2191,9 @@ export default function DashboardPage() {
           {/* Wellness Chart */}
           {!isChartLoading && activeTab === "wellness" && (
             <div className="relative">
-              {wellnessData.mood.every((score: number) => score === 0) &&
-              wellnessData.sleep.every((score: number) => score === 0) &&
-              wellnessData.stress.every((score: number) => score === 0) ? (
+              {wellnessData.mood.every((score: number | null) => score == null) &&
+              wellnessData.sleep.every((score: number | null) => score == null) &&
+              wellnessData.stress.every((score: number | null) => score == null) ? (
                 // Show empty state without chart when no data
                 <div className="text-center text-sm text-secondary-color p-6 bg-peach-50 rounded-lg min-h-[200px] flex items-center justify-center">
                   <p className="max-w-md">
@@ -2205,8 +2204,8 @@ export default function DashboardPage() {
                 <>
                   {/* Wellness score summary: colored score bubble + per-metric bars */}
                   {(() => {
-                    const lastValue = (arr: number[]) => {
-                      for (let i = arr.length - 1; i >= 0; i--) if (arr[i] > 0) return arr[i]
+                    const lastValue = (arr: (number | null)[]) => {
+                      for (let i = arr.length - 1; i >= 0; i--) if (arr[i] != null) return arr[i] as number
                       return 0
                     }
                     const bubbleColor =
@@ -2320,11 +2319,11 @@ export default function DashboardPage() {
                             {/* Dots */}
                             <div className="absolute inset-0 pointer-events-none">
                               {visible.flatMap(m => {
-                                const vals = wellnessData[m.key] as number[]
+                                const vals = wellnessData[m.key] as (number | null)[]
                                 return vals.map((v, i) => {
-                                  if (v === 0) return null
+                                  if (v == null) return null
                                   const x = vals.length > 1 ? (i / (vals.length - 1)) * 100 : 50
-                                  const isIsolated = (i === 0 || vals[i-1] === 0) && (i === vals.length - 1 || vals[i+1] === 0)
+                                  const isIsolated = (i === 0 || vals[i-1] == null) && (i === vals.length - 1 || vals[i+1] == null)
                                   return (
                                     <div
                                       key={`${m.id}-${i}`}
