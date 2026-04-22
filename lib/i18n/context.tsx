@@ -35,19 +35,31 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       return
     }
     const supabase = createClient()
-    const { data, error } = await supabase
-      .from("translations")
-      .select("key, value")
-      .eq("locale", loc)
-
-    if (error) {
-      console.error("[i18n] Failed to load translations for locale:", loc, error)
+    const map: Translations = {}
+    const PAGE = 1000
+    let from = 0
+    let done = false
+    while (!done) {
+      const { data, error } = await supabase
+        .from("translations")
+        .select("key, value")
+        .eq("locale", loc)
+        .range(from, from + PAGE - 1)
+      if (error) {
+        console.error("[i18n] Failed to load translations for locale:", loc, error)
+        break
+      }
+      if (data && data.length > 0) {
+        data.forEach(({ key, value }) => { map[key] = value })
+      }
+      if (!data || data.length < PAGE) {
+        done = true
+      } else {
+        from += PAGE
+      }
     }
-    console.log("[i18n] Loaded", data?.length ?? 0, "translations for locale:", loc)
-
-    if (data && data.length > 0) {
-      const map: Translations = {}
-      data.forEach(({ key, value }) => { map[key] = value })
+    console.log("[i18n] Loaded", Object.keys(map).length, "translations for locale:", loc)
+    if (Object.keys(map).length > 0) {
       cache[loc] = map
       setTranslations(map)
     }
