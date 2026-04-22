@@ -134,12 +134,6 @@ function ProgressBar() {
     loadDietData()
   }, [locale])
 
-  // Render different UI based on current phase
-  const total = progressData.adaptationDays + progressData.eliminationDays + progressData.reintroductionDays
-  const adaptPct = total > 0 ? (progressData.adaptationDays / total) * 100 : 0
-  const elimPct = total > 0 ? (progressData.eliminationDays / total) * 100 : 0
-  const reintroPct = total > 0 ? (progressData.reintroductionDays / total) * 100 : 0
-
   const phaseColor = progressData.currentPhase === "adaptation"
     ? "bg-yellow-400" : progressData.currentPhase === "elimination"
     ? "bg-pink-400" : "bg-green-400"
@@ -154,25 +148,6 @@ function ProgressBar() {
 
   return (
     <div className="space-y-5">
-      {/* Phase bar */}
-      <div>
-        <div className="flex gap-1 h-3 rounded-full overflow-hidden mb-2">
-          {progressData.adaptationDays > 0 && (
-            <div className={`h-full bg-yellow-400 ${progressData.currentPhase === "adaptation" ? "ring-2 ring-yellow-500 ring-offset-1" : ""}`}
-              style={{ width: `${adaptPct}%` }} />
-          )}
-          <div className={`h-full bg-pink-400 ${progressData.currentPhase === "elimination" ? "ring-2 ring-pink-500 ring-offset-1" : ""}`}
-            style={{ width: `${elimPct}%` }} />
-          <div className={`h-full bg-green-300 ${progressData.currentPhase === "reintroduction" ? "ring-2 ring-green-500 ring-offset-1" : ""}`}
-            style={{ width: `${reintroPct}%` }} />
-        </div>
-        <div className="flex justify-between text-xs text-brand-dark/50">
-          {progressData.adaptationDays > 0 && <span className="text-yellow-600">{t("calendar.adaptation", "Adaptation")}</span>}
-          <span className="text-pink-500">{t("calendar.elimination", "Elimination")}</span>
-          <span className="text-green-600">{t("calendar.reintroduction", "Reintroduction")}</span>
-        </div>
-      </div>
-
       {/* Current phase info */}
       <div className="flex items-center justify-between gap-4">
         <div>
