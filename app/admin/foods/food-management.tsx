@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { ArrowLeft, Plus, Search, Edit2, Trash2, X, Save } from "lucide-react"
@@ -18,6 +17,12 @@ type Food = {
   category?: string
 }
 
+const slug = (s: string) =>
+  s.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "")
+
+const foodNameKey = (name: string) => "food.name." + slug(name)
+const foodTooltipKey = (name: string) => "food.tooltip." + slug(name)
+
 export default function FoodManagement() {
   const router = useRouter()
   const [foods, setFoods] = useState<Food[]>([])
@@ -31,29 +36,24 @@ export default function FoodManagement() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
   )
 
-  // Form state
   const [formData, setFormData] = useState({
     name: "",
+    nameLt: "",
     is_aip: false,
     status: "Can eat",
     tags: "",
     tooltip: "",
+    tooltipLt: "",
     category: "",
   })
 
-  useEffect(() => {
-    loadFoods()
-  }, [])
+  useEffect(() => { loadFoods() }, [])
 
   const loadFoods = async () => {
     setLoading(true)
     const { data, error } = await supabase.from("foods").select("*").order("name")
-
-    if (error) {
-      console.error("[v0] Error loading foods:", error)
-    } else {
-      setFoods(data || [])
-    }
+    if (error) console.error("[admin] Error loading foods:", error)
+    else setFoods(data || [])
     setLoading(false)
   }
 
@@ -64,57 +64,69 @@ export default function FoodManagement() {
       name: formData.name,
       is_aip: formData.is_aip,
       status: formData.status,
-      tags: formData.tags.split(",").map((t) => t.trim()),
+      tags: formData.tags.split(",").map((t) => t.trim()).filter(Boolean),
       tooltip: formData.tooltip || null,
       category: formData.category || null,
     }
 
+    let ok = false
     if (editingFood) {
-      // Update existing food
       const { error } = await supabase.from("foods").update(foodData).eq("id", editingFood.id)
-
-      if (error) {
-        console.error("[v0] Error updating food:", error)
-        alert("Failed to update food item")
-      } else {
-        await loadFoods()
-        handleCloseModal()
-      }
+      if (error) { alert("Failed to update food item"); return }
+      ok = true
     } else {
-      // Create new food
       const { error } = await supabase.from("foods").insert(foodData)
+      if (error) { alert("Failed to create food item"); return }
+      ok = true
+    }
 
-      if (error) {
-        console.error("[v0] Error creating food:", error)
-        alert("Failed to create food item")
-      } else {
-        await loadFoods()
-        handleCloseModal()
+    if (ok) {
+      // Upsert translation rows
+      const translationRows: any[] = [
+        { key: foodNameKey(formData.name), locale: "en", value: formData.name, category: "general" },
+      ]
+      if (formData.nameLt.trim()) {
+        translationRows.push({ key: foodNameKey(formData.name), locale: "lt", value: formData.nameLt.trim(), category: "general" })
       }
+      if (formData.tooltip.trim()) {
+        translationRows.push({ key: foodTooltipKey(formData.name), locale: "en", value: formData.tooltip.trim(), category: "general" })
+        if (formData.tooltipLt.trim()) {
+          translationRows.push({ key: foodTooltipKey(formData.name), locale: "lt", value: formData.tooltipLt.trim(), category: "general" })
+        }
+      }
+      await supabase.from("translations").upsert(translationRows, { onConflict: "locale,key" })
+      await loadFoods()
+      handleCloseModal()
     }
   }
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this food item?")) return
-
     const { error } = await supabase.from("foods").delete().eq("id", id)
-
-    if (error) {
-      console.error("[v0] Error deleting food:", error)
-      alert("Failed to delete food item")
-    } else {
-      await loadFoods()
-    }
+    if (error) alert("Failed to delete food item")
+    else await loadFoods()
   }
 
-  const handleEdit = (food: Food) => {
+  const handleEdit = async (food: Food) => {
     setEditingFood(food)
+
+    // Load existing LT translations if available
+    const { data: tRows } = await supabase
+      .from("translations")
+      .select("key,locale,value")
+      .in("key", [foodNameKey(food.name), foodTooltipKey(food.name)])
+
+    const get = (key: string, locale: string) =>
+      tRows?.find((r: any) => r.key === key && r.locale === locale)?.value || ""
+
     setFormData({
       name: food.name,
+      nameLt: get(foodNameKey(food.name), "lt"),
       is_aip: food.is_aip,
       status: food.status,
       tags: food.tags.join(", "),
       tooltip: food.tooltip || "",
+      tooltipLt: get(foodTooltipKey(food.name), "lt"),
       category: food.category || "",
     })
     setShowModal(true)
@@ -123,14 +135,7 @@ export default function FoodManagement() {
   const handleCloseModal = () => {
     setShowModal(false)
     setEditingFood(null)
-    setFormData({
-      name: "",
-      is_aip: false,
-      status: "Can eat",
-      tags: "",
-      tooltip: "",
-      category: "",
-    })
+    setFormData({ name: "", nameLt: "", is_aip: false, status: "Can eat", tags: "", tooltip: "", tooltipLt: "", category: "" })
   }
 
   const filteredFoods = foods.filter(
@@ -141,7 +146,6 @@ export default function FoodManagement() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-brand-lightest to-white">
-      {/* Header */}
       <header className="p-4 border-b border-pink-200/30 flex justify-between items-center bg-gradient-to-r from-pink-300 to-peach-300">
         <div className="flex items-center gap-3">
           <button onClick={() => router.push("/admin")} className="text-white hover:opacity-80 transition-opacity">
@@ -152,10 +156,8 @@ export default function FoodManagement() {
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="flex-1 p-6">
         <div className="max-w-6xl mx-auto">
-          {/* Actions Bar */}
           <div className="flex flex-col sm:flex-row gap-4 mb-6">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-brand-dark/50" />
@@ -176,7 +178,6 @@ export default function FoodManagement() {
             </button>
           </div>
 
-          {/* Foods Table */}
           <div className="glass-card rounded-2xl overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
@@ -191,31 +192,19 @@ export default function FoodManagement() {
                 </thead>
                 <tbody>
                   {loading ? (
-                    <tr>
-                      <td colSpan={5} className="text-center p-8 text-brand-dark/60">
-                        Loading...
-                      </td>
-                    </tr>
+                    <tr><td colSpan={5} className="text-center p-8 text-brand-dark/60">Loading...</td></tr>
                   ) : filteredFoods.length === 0 ? (
-                    <tr>
-                      <td colSpan={5} className="text-center p-8 text-brand-dark/60">
-                        No food items found
-                      </td>
-                    </tr>
+                    <tr><td colSpan={5} className="text-center p-8 text-brand-dark/60">No food items found</td></tr>
                   ) : (
                     filteredFoods.map((food) => (
                       <tr key={food.id} className="border-t border-brand-dark/10 hover:bg-pink-50/50">
                         <td className="p-4 font-medium">{food.name}</td>
                         <td className="p-4">
-                          <span
-                            className={`inline-block px-3 py-1 rounded-full text-xs ${
-                              food.status === "Can eat"
-                                ? "bg-green-100 text-calm-green"
-                                : food.status === "Can't eat"
-                                  ? "bg-red-100 text-red-600"
-                                  : "bg-yellow-100 text-yellow-600"
-                            }`}
-                          >
+                          <span className={`inline-block px-3 py-1 rounded-full text-xs ${
+                            food.status === "Can eat" ? "bg-green-100 text-calm-green"
+                              : food.status === "Can't eat" ? "bg-red-100 text-red-600"
+                              : "bg-yellow-100 text-yellow-600"
+                          }`}>
                             {food.status}
                           </span>
                         </td>
@@ -223,27 +212,17 @@ export default function FoodManagement() {
                         <td className="p-4">
                           <div className="flex flex-wrap gap-1">
                             {food.tags.slice(0, 3).map((tag, i) => (
-                              <span key={i} className="bg-pink-100 text-brand-dark px-2 py-1 rounded-full text-xs">
-                                {tag}
-                              </span>
+                              <span key={i} className="bg-pink-100 text-brand-dark px-2 py-1 rounded-full text-xs">{tag}</span>
                             ))}
-                            {food.tags.length > 3 && (
-                              <span className="text-xs text-brand-dark/60">+{food.tags.length - 3}</span>
-                            )}
+                            {food.tags.length > 3 && <span className="text-xs text-brand-dark/60">+{food.tags.length - 3}</span>}
                           </div>
                         </td>
                         <td className="p-4">
                           <div className="flex items-center justify-end gap-2">
-                            <button
-                              onClick={() => handleEdit(food)}
-                              className="p-2 hover:bg-pink-100 rounded-lg transition-colors"
-                            >
+                            <button onClick={() => handleEdit(food)} className="p-2 hover:bg-pink-100 rounded-lg transition-colors">
                               <Edit2 className="h-4 w-4 text-brand-dark" />
                             </button>
-                            <button
-                              onClick={() => handleDelete(food.id)}
-                              className="p-2 hover:bg-red-100 rounded-lg transition-colors"
-                            >
+                            <button onClick={() => handleDelete(food.id)} className="p-2 hover:bg-red-100 rounded-lg transition-colors">
                               <Trash2 className="h-4 w-4 text-red-500" />
                             </button>
                           </div>
@@ -258,37 +237,37 @@ export default function FoodManagement() {
         </div>
       </main>
 
-      {/* Add/Edit Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold">{editingFood ? "Edit Food Item" : "Add Food Item"}</h2>
-                <button onClick={handleCloseModal} className="p-2 hover:bg-gray-100 rounded-lg">
-                  <X className="h-5 w-5" />
-                </button>
+                <button onClick={handleCloseModal} className="p-2 hover:bg-gray-100 rounded-lg"><X className="h-5 w-5" /></button>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Name *</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-4 py-2 rounded-lg border border-brand-dark/20 focus:outline-none focus:ring-2 focus:ring-pink-400"
-                  />
+                {/* Name — EN + LT */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Name (EN) *</label>
+                    <input type="text" required value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      className="w-full px-4 py-2 rounded-lg border border-brand-dark/20 focus:outline-none focus:ring-2 focus:ring-pink-400" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Name (LT)</label>
+                    <input type="text" value={formData.nameLt}
+                      onChange={(e) => setFormData({ ...formData, nameLt: e.target.value })}
+                      placeholder="Lithuanian name"
+                      className="w-full px-4 py-2 rounded-lg border border-pink-300 focus:outline-none focus:ring-2 focus:ring-pink-400" />
+                  </div>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium mb-2">Status *</label>
-                  <select
-                    value={formData.status}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                    className="w-full px-4 py-2 rounded-lg border border-brand-dark/20 focus:outline-none focus:ring-2 focus:ring-pink-400"
-                  >
+                  <select value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                    className="w-full px-4 py-2 rounded-lg border border-brand-dark/20 focus:outline-none focus:ring-2 focus:ring-pink-400">
                     <option value="Can eat">Can eat</option>
                     <option value="Can't eat">Can't eat</option>
                     <option value="Moderate">Moderate</option>
@@ -298,61 +277,56 @@ export default function FoodManagement() {
 
                 <div>
                   <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={formData.is_aip}
+                    <input type="checkbox" checked={formData.is_aip}
                       onChange={(e) => setFormData({ ...formData, is_aip: e.target.checked })}
-                      className="w-4 h-4 rounded border-brand-dark/20"
-                    />
+                      className="w-4 h-4 rounded border-brand-dark/20" />
                     <span className="text-sm font-medium">AIP Compliant</span>
                   </label>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium mb-2">Category</label>
-                  <input
-                    type="text"
-                    value={formData.category}
+                  <input type="text" value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                     placeholder="e.g., Protein, Vegetable, Fruit"
-                    className="w-full px-4 py-2 rounded-lg border border-brand-dark/20 focus:outline-none focus:ring-2 focus:ring-pink-400"
-                  />
+                    className="w-full px-4 py-2 rounded-lg border border-brand-dark/20 focus:outline-none focus:ring-2 focus:ring-pink-400" />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium mb-2">Tags (comma-separated)</label>
-                  <input
-                    type="text"
-                    value={formData.tags}
+                  <input type="text" value={formData.tags}
                     onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
                     placeholder="e.g., Protein, Meat, Poultry"
-                    className="w-full px-4 py-2 rounded-lg border border-brand-dark/20 focus:outline-none focus:ring-2 focus:ring-pink-400"
-                  />
+                    className="w-full px-4 py-2 rounded-lg border border-brand-dark/20 focus:outline-none focus:ring-2 focus:ring-pink-400" />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium mb-2">Tooltip (optional)</label>
-                  <textarea
-                    value={formData.tooltip}
-                    onChange={(e) => setFormData({ ...formData, tooltip: e.target.value })}
-                    placeholder="Additional information about this food"
-                    rows={3}
-                    className="w-full px-4 py-2 rounded-lg border border-brand-dark/20 focus:outline-none focus:ring-2 focus:ring-pink-400"
-                  />
+                {/* Tooltip — EN + LT */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Tooltip (EN)</label>
+                    <textarea value={formData.tooltip}
+                      onChange={(e) => setFormData({ ...formData, tooltip: e.target.value })}
+                      placeholder="Additional information about this food"
+                      rows={3}
+                      className="w-full px-4 py-2 rounded-lg border border-brand-dark/20 focus:outline-none focus:ring-2 focus:ring-pink-400" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Tooltip (LT)</label>
+                    <textarea value={formData.tooltipLt}
+                      onChange={(e) => setFormData({ ...formData, tooltipLt: e.target.value })}
+                      placeholder="Papildoma informacija"
+                      rows={3}
+                      className="w-full px-4 py-2 rounded-lg border border-pink-300 focus:outline-none focus:ring-2 focus:ring-pink-400" />
+                  </div>
                 </div>
 
                 <div className="flex gap-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={handleCloseModal}
-                    className="flex-1 px-6 py-3 rounded-xl border border-brand-dark/20 hover:bg-gray-50 transition-colors"
-                  >
+                  <button type="button" onClick={handleCloseModal}
+                    className="flex-1 px-6 py-3 rounded-xl border border-brand-dark/20 hover:bg-gray-50 transition-colors">
                     Cancel
                   </button>
-                  <button
-                    type="submit"
-                    className="flex-1 gradient-button px-6 py-3 rounded-xl flex items-center justify-center gap-2"
-                  >
+                  <button type="submit"
+                    className="flex-1 gradient-button px-6 py-3 rounded-xl flex items-center justify-center gap-2">
                     <Save className="h-5 w-5" />
                     {editingFood ? "Update" : "Create"}
                   </button>
