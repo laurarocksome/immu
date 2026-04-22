@@ -14,7 +14,7 @@ type Translation = {
   category: string
 }
 
-const CATEGORIES = ["all", "common", "nav", "dashboard", "logday", "profile", "foodlist", "nutrition"]
+const CATEGORIES = ["all", "common", "nav", "dashboard", "logday", "profile", "foodlist", "nutrition", "food.name", "food.tooltip"]
 
 export default function TranslationsAdmin() {
   const router = useRouter()
@@ -22,10 +22,12 @@ export default function TranslationsAdmin() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("all")
-  const [editingId, setEditingId] = useState<string | null>(null)
-  const [editValue, setEditValue] = useState("")
   const [saving, setSaving] = useState(false)
-  const [saved, setSaved] = useState<string | null>(null)
+
+  // Track which cell is being edited: { key, locale }
+  const [editing, setEditing] = useState<{ key: string; locale: string } | null>(null)
+  const [editValue, setEditValue] = useState("")
+  const [savedKey, setSavedKey] = useState<string | null>(null)
 
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -36,7 +38,6 @@ export default function TranslationsAdmin() {
 
   const loadTranslations = async () => {
     setLoading(true)
-    // Fetch all rows in batches of 1000 (Supabase default limit per request)
     const PAGE = 1000
     let all: Translation[] = []
     let from = 0
@@ -56,32 +57,114 @@ export default function TranslationsAdmin() {
     setLoading(false)
   }
 
-  const saveTranslation = async (id: string, value: string) => {
+  const getTranslation = (key: string, locale: string) =>
+    translations.find(t => t.key === key && t.locale === locale)
+
+  const startEdit = (key: string, locale: string) => {
+    const existing = getTranslation(key, locale)
+    setEditing({ key, locale })
+    setEditValue(existing?.value || "")
+  }
+
+  const cancelEdit = () => {
+    setEditing(null)
+    setEditValue("")
+  }
+
+  const saveTranslation = async (key: string, locale: string, value: string) => {
+    if (!value.trim()) { cancelEdit(); return }
     setSaving(true)
-    const { error } = await supabase
+    const existing = getTranslation(key, locale)
+    const category = getTranslation(key, "en")?.category || getTranslation(key, "lt")?.category || "general"
+
+    const row = { key, locale, value: value.trim(), category }
+    const { data, error } = await supabase
       .from("translations")
-      .update({ value, updated_at: new Date().toISOString() })
-      .eq("id", id)
-    if (!error) {
-      setTranslations(prev => prev.map(t => t.id === id ? { ...t, value } : t))
-      setSaved(id)
-      setTimeout(() => setSaved(null), 2000)
+      .upsert(row, { onConflict: "locale,key" })
+      .select()
+      .single()
+
+    if (!error && data) {
+      setTranslations(prev => {
+        const without = prev.filter(t => !(t.key === key && t.locale === locale))
+        return [...without, data as Translation].sort((a, b) => a.key.localeCompare(b.key))
+      })
+      setSavedKey(key + locale)
+      setTimeout(() => setSavedKey(null), 2000)
     }
     setSaving(false)
-    setEditingId(null)
+    cancelEdit()
   }
 
   // Group by key, show EN and LT side by side
   const allKeys = [...new Set(translations.map(t => t.key))]
   const filtered = allKeys.filter(key => {
-    const matchesSearch = searchQuery === "" || key.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    const matchesSearch = searchQuery === "" ||
+      key.toLowerCase().includes(searchQuery.toLowerCase()) ||
       translations.filter(t => t.key === key).some(t => t.value.toLowerCase().includes(searchQuery.toLowerCase()))
-    const matchesCategory = selectedCategory === "all" || key.startsWith(selectedCategory + ".")
+    const matchesCategory = selectedCategory === "all" || key.startsWith(selectedCategory)
     return matchesSearch && matchesCategory
   })
 
-  const getTranslation = (key: string, locale: string) =>
-    translations.find(t => t.key === key && t.locale === locale)
+  const renderCell = (key: string, locale: string) => {
+    const t = getTranslation(key, locale)
+    const isEditing = editing?.key === key && editing?.locale === locale
+    const justSaved = savedKey === key + locale
+
+    if (isEditing) {
+      return (
+        <div className="flex gap-1">
+          <input
+            autoFocus
+            value={editValue}
+            onChange={e => setEditValue(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === "Enter") saveTranslation(key, locale, editValue)
+              if (e.key === "Escape") cancelEdit()
+            }}
+            placeholder={locale === "lt" ? "Lietuviškas vertimas..." : "English value..."}
+            className="flex-1 px-2 py-1 text-sm border border-pink-400 rounded-lg focus:outline-none"
+          />
+          <button
+            onClick={() => saveTranslation(key, locale, editValue)}
+            disabled={saving}
+            className="p-1 text-green-600 hover:bg-green-50 rounded"
+          >
+            <Save className="h-4 w-4" />
+          </button>
+          <button
+            onClick={cancelEdit}
+            className="p-1 text-brand-dark/40 hover:bg-gray-100 rounded text-xs"
+          >
+            ✕
+          </button>
+        </div>
+      )
+    }
+
+    if (!t) {
+      return (
+        <button
+          onClick={() => startEdit(key, locale)}
+          className="w-full text-left text-sm px-2 py-1 rounded hover:bg-pink-50 transition-colors group"
+        >
+          <span className="text-red-400 italic">missing</span>
+          <span className="ml-2 text-xs text-pink-400 opacity-0 group-hover:opacity-100 transition-opacity">+ add</span>
+        </button>
+      )
+    }
+
+    return (
+      <button
+        onClick={() => startEdit(key, locale)}
+        className={`w-full text-left text-sm px-2 py-1 rounded hover:bg-pink-50 transition-colors ${
+          justSaved ? "bg-green-50 text-green-700" : "text-brand-dark"
+        }`}
+      >
+        {justSaved ? "✓ " : ""}{t.value}
+      </button>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-brand-lightest to-white">
@@ -97,7 +180,9 @@ export default function TranslationsAdmin() {
           <Globe className="h-6 w-6 text-pink-400" />
           <h1 className="text-2xl font-bold text-brand-dark">Translation Management</h1>
         </div>
-        <p className="text-brand-dark/60 mb-6">Edit EN and LT translations for all app content.</p>
+        <p className="text-brand-dark/60 mb-6">
+          Edit EN and LT translations. Click any cell — including <span className="text-red-400 italic">missing</span> — to add or edit.
+        </p>
 
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3 mb-6">
@@ -131,63 +216,19 @@ export default function TranslationsAdmin() {
             <div className="grid grid-cols-12 gap-2 px-4 py-2 text-xs font-semibold text-brand-dark/50 uppercase">
               <div className="col-span-3">Key</div>
               <div className="col-span-4">English (EN)</div>
-              <div className="col-span-4">Lithuanian (LT)</div>
-              <div className="col-span-1"></div>
+              <div className="col-span-5">Lithuanian (LT)</div>
             </div>
 
             {filtered.map(key => {
               const en = getTranslation(key, "en")
-              const lt = getTranslation(key, "lt")
               return (
                 <div key={key} className="glass-card px-4 py-3 grid grid-cols-12 gap-2 items-center">
                   <div className="col-span-3">
-                    <p className="text-xs font-mono text-pink-600">{key}</p>
+                    <p className="text-xs font-mono text-pink-600 break-all">{key}</p>
                     <p className="text-xs text-brand-dark/40 mt-0.5">{en?.category}</p>
                   </div>
-
-                  {/* EN */}
-                  <div className="col-span-4">
-                    {editingId === en?.id ? (
-                      <div className="flex gap-1">
-                        <input autoFocus value={editValue} onChange={e => setEditValue(e.target.value)}
-                          onKeyDown={e => { if (e.key === "Enter") saveTranslation(en!.id, editValue); if (e.key === "Escape") setEditingId(null) }}
-                          className="flex-1 px-2 py-1 text-sm border border-pink-400 rounded-lg focus:outline-none" />
-                        <button onClick={() => saveTranslation(en!.id, editValue)} disabled={saving}
-                          className="p-1 text-green-600 hover:bg-green-50 rounded">
-                          <Save className="h-4 w-4" />
-                        </button>
-                      </div>
-                    ) : (
-                      <button onClick={() => { setEditingId(en?.id || null); setEditValue(en?.value || "") }}
-                        className={`w-full text-left text-sm px-2 py-1 rounded hover:bg-pink-50 transition-colors ${saved === en?.id ? "bg-green-50 text-green-700" : "text-brand-dark"}`}>
-                        {en?.value || <span className="text-red-400 italic">missing</span>}
-                      </button>
-                    )}
-                  </div>
-
-                  {/* LT */}
-                  <div className="col-span-4">
-                    {editingId === lt?.id ? (
-                      <div className="flex gap-1">
-                        <input autoFocus value={editValue} onChange={e => setEditValue(e.target.value)}
-                          onKeyDown={e => { if (e.key === "Enter") saveTranslation(lt!.id, editValue); if (e.key === "Escape") setEditingId(null) }}
-                          className="flex-1 px-2 py-1 text-sm border border-pink-400 rounded-lg focus:outline-none" />
-                        <button onClick={() => saveTranslation(lt!.id, editValue)} disabled={saving}
-                          className="p-1 text-green-600 hover:bg-green-50 rounded">
-                          <Save className="h-4 w-4" />
-                        </button>
-                      </div>
-                    ) : (
-                      <button onClick={() => { setEditingId(lt?.id || null); setEditValue(lt?.value || "") }}
-                        className={`w-full text-left text-sm px-2 py-1 rounded hover:bg-pink-50 transition-colors ${saved === lt?.id ? "bg-green-50 text-green-700" : "text-brand-dark"}`}>
-                        {lt?.value || <span className="text-red-400 italic">missing</span>}
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="col-span-1 text-xs text-brand-dark/30 text-center">
-                    {saved === en?.id || saved === lt?.id ? "✓" : ""}
-                  </div>
+                  <div className="col-span-4">{renderCell(key, "en")}</div>
+                  <div className="col-span-5">{renderCell(key, "lt")}</div>
                 </div>
               )
             })}
