@@ -27,6 +27,11 @@ import { isPageVisible } from "@/lib/page-visibility"
 import { getDietPhase } from "@/lib/diet-phase"
 import { useLanguage } from "@/lib/i18n/context"
 
+const supabase = createBrowserClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+)
+
 // Update the containsCaffeine function to better detect exact matches
 const containsCaffeine = (product) => {
   // List of caffeine-containing keywords
@@ -199,6 +204,7 @@ export default function FoodListPage() {
   const [allTags, setAllTags] = useState<string[]>([])
   const [showRecipesNav, setShowRecipesNav] = useState(true)
   const [openTooltip, setOpenTooltip] = useState<string | null>(null)
+  const [userId, setUserId] = useState<string | null>(null)
 
   // Router for navigation
   const router = useRouter()
@@ -259,6 +265,11 @@ export default function FoodListPage() {
     if (savedLocked) {
       setLockedStatuses(JSON.parse(savedLocked))
     }
+
+    // Get current user id for calendar notes
+    supabase.auth.getUser().then(({ data }) => {
+      if (data?.user) setUserId(data.user.id)
+    })
   }, [])
 
   useEffect(() => {
@@ -295,17 +306,63 @@ export default function FoodListPage() {
     }
   }
 
+  // Append a lock/unlock event to today's daily_log notes
+  const appendLockNoteToCalendar = async (productName: string, status: string, isLocking: boolean) => {
+    if (!userId) return
+    const today = new Date()
+    const logDate = [
+      today.getFullYear(),
+      String(today.getMonth() + 1).padStart(2, "0"),
+      String(today.getDate()).padStart(2, "0"),
+    ].join("-")
+
+    const emoji = isLocking
+      ? status === "Can eat" ? "✅" : status === "Can't eat" ? "❌" : "🔄"
+      : "🔓"
+    const line = isLocking
+      ? `${emoji} ${productName} — ${status === "Can eat" ? t("foodList.lockedAllowed", "confirmed allowed") : status === "Can't eat" ? t("foodList.lockedNotAllowed", "confirmed not allowed") : t("foodList.lockedEval", "marked under evaluation")}`
+      : `${emoji} ${productName} — ${t("foodList.unlocked", "lock removed")}`
+
+    // Fetch today's existing log (if any)
+    const { data: existing } = await supabase
+      .from("daily_logs")
+      .select("id, notes")
+      .eq("user_id", userId)
+      .eq("log_date", logDate)
+      .maybeSingle()
+
+    const existingNotes = existing?.notes?.trim() || ""
+    const separator = existingNotes ? "\n" : ""
+    const updatedNotes = existingNotes + separator + line
+
+    if (existing?.id) {
+      await supabase
+        .from("daily_logs")
+        .update({ notes: updatedNotes, updated_at: new Date().toISOString() })
+        .eq("id", existing.id)
+    } else {
+      await supabase.from("daily_logs").insert({
+        user_id: userId,
+        log_date: logDate,
+        notes: updatedNotes,
+      })
+    }
+  }
+
   // Toggle lock on a product — locks the currently-displayed status so it
   // persists across phase changes and future diet cycles
   const toggleLock = (productName: string, currentStatus: string) => {
     const newLocked = { ...lockedStatuses }
-    if (newLocked[productName]) {
+    const isCurrentlyLocked = Boolean(newLocked[productName])
+    if (isCurrentlyLocked) {
       delete newLocked[productName]
     } else {
       newLocked[productName] = currentStatus
     }
     setLockedStatuses(newLocked)
     localStorage.setItem("aipLockedStatuses", JSON.stringify(newLocked))
+    // Record the lock event in today's calendar note
+    appendLockNoteToCalendar(productName, currentStatus, !isCurrentlyLocked)
   }
 
   const getProductStatus = (product: any) => {
