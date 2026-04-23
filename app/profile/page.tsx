@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic"
 import { useEffect, useState } from "react"
 import { useLanguage, slugifyKey } from "@/lib/i18n/context"
 import { useRouter } from "next/navigation"
-import { List, Home, Plus, BookOpen, UtensilsCrossed, ArrowLeft, Edit, Trash2, ChevronRight, Salad } from "lucide-react"
+import { List, Home, Plus, BookOpen, UtensilsCrossed, ArrowLeft, Edit, Trash2, ChevronRight, Salad, ShieldCheck } from "lucide-react"
 import Logo from "@/app/components/logo"
 import BottomNav from "@/app/components/bottom-nav"
 import { deleteUser, signOut } from "@/lib/auth"
@@ -43,6 +43,7 @@ export default function ProfilePage() {
   const [isDeleting, setIsDeleting] = useState(false)
   const [needsSync, setNeedsSync] = useState(false)
   const [hiddenPages, setHiddenPages] = useState<string[]>([])
+  const [isAdmin, setIsAdmin] = useState(false)
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -163,6 +164,9 @@ export default function ProfilePage() {
           setDietInfo(loadedDietInfo)
           setConditions(loadedConditions)
           setSymptoms(loadedSymptoms)
+
+          const { data: adminData } = await supabase.from("admin_users").select("id").eq("user_id", userId).maybeSingle()
+          setIsAdmin(!!adminData)
 
           console.log("[v0] Loading complete. Final state:", {
             profile: loadedProfile,
@@ -434,6 +438,16 @@ export default function ProfilePage() {
           >
             {t("profile.contact", "Contact Support")}
           </a>
+
+          {isAdmin && (
+            <button
+              onClick={() => router.push("/admin")}
+              className="w-full bg-white border-2 border-purple-300 text-purple-600 hover:border-purple-400 hover:shadow-soft py-4 rounded-full transition-all mb-3 font-medium flex items-center justify-center gap-2"
+            >
+              <ShieldCheck className="h-4 w-4" />
+              Admin Panel
+            </button>
+          )}
 
           <button
             onClick={async () => {
