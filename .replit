@@ -37,3 +37,9 @@ externalPort = 80
 deploymentTarget = "autoscale"
 run = ["pnpm", "run", "start"]
 build = ["pnpm", "run", "build"]
+
+[userenv]
+
+[userenv.shared]
+SENTRY_ORG = "rocksome"
+SENTRY_PROJECT = "javascript-nextjs"
