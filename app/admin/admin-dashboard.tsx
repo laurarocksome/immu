@@ -178,12 +178,22 @@ export default function AdminDashboard() {
             <h2 className="text-sm font-semibold text-brand-dark/50 uppercase tracking-wider mb-4">Developer Tools</h2>
             <button
               onClick={async () => {
+                const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN
+                if (!dsn) {
+                  alert("❌ NEXT_PUBLIC_SENTRY_DSN is not available in the client bundle.\n\nMake sure the secret is set in Replit Secrets and restart the server.")
+                  return
+                }
                 try {
                   const Sentry = await import("@sentry/nextjs")
-                  Sentry.captureException(new Error("Immu Admin: manual Sentry test error"))
-                  alert("Test error sent to Sentry! Check your Sentry dashboard.")
-                } catch {
-                  alert("Sentry is not configured — add NEXT_PUBLIC_SENTRY_DSN to secrets.")
+                  const client = Sentry.getClient()
+                  if (!client) {
+                    alert("❌ Sentry SDK loaded but not initialized (no active client).\n\nDSN found: " + dsn.slice(0, 30) + "...\n\nTry restarting the server.")
+                    return
+                  }
+                  Sentry.captureException(new Error("Immu Admin: manual Sentry test error " + new Date().toISOString()))
+                  alert("✅ Test error sent! Check your Sentry dashboard under Issues.")
+                } catch (e: any) {
+                  alert("❌ Error: " + e?.message)
                 }
               }}
               className="flex items-center gap-2 px-4 py-2 rounded-xl border border-red-200 text-red-500 hover:bg-red-50 transition-colors text-sm"
