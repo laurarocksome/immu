@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Eye, Globe, CheckSquare } from "lucide-react"
+import { Eye, Globe, CheckSquare, Bug } from "lucide-react"
 import { Settings, List, BookOpen, FileText, LogOut, HelpCircle } from "lucide-react"
 import Logo from "@/app/components/logo"
 
@@ -170,6 +170,26 @@ export default function AdminDashboard() {
               </div>
               <h3 className="text-xl font-bold mb-2">Daily Tasks &amp; Tips</h3>
               <p className="text-brand-dark/70">Edit the wording of tips shown in the user&apos;s &quot;Daily Tasks&quot; list</p>
+            </button>
+          </div>
+
+          {/* Sentry test */}
+          <div className="mt-12 pt-8 border-t border-gray-200">
+            <h2 className="text-sm font-semibold text-brand-dark/50 uppercase tracking-wider mb-4">Developer Tools</h2>
+            <button
+              onClick={async () => {
+                try {
+                  const Sentry = await import("@sentry/nextjs")
+                  Sentry.captureException(new Error("Immu Admin: manual Sentry test error"))
+                  alert("Test error sent to Sentry! Check your Sentry dashboard.")
+                } catch {
+                  alert("Sentry is not configured — add NEXT_PUBLIC_SENTRY_DSN to secrets.")
+                }
+              }}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl border border-red-200 text-red-500 hover:bg-red-50 transition-colors text-sm"
+            >
+              <Bug className="h-4 w-4" />
+              Send test error to Sentry
             </button>
           </div>
         </div>

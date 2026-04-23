@@ -3,6 +3,7 @@ import "./globals.css"
 import type { Metadata, Viewport } from "next"
 import DesktopSidebar from "./components/desktop-sidebar"
 import { LanguageProvider } from "@/lib/i18n/context"
+import SentryUserProvider from "./components/sentry-user-provider"
 
 export const metadata: Metadata = {
   title: "IMMU - AIP Diet Tracking App",
@@ -44,6 +45,7 @@ export default function RootLayout({
       </head>
       <body>
         <LanguageProvider>
+          <SentryUserProvider />
           <DesktopSidebar />
           <div className="app-shell">
             {children}
