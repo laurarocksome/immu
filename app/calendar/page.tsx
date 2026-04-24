@@ -203,7 +203,7 @@ const STATUS_KEYS: Record<string, string> = {
 
 function translateNotes(notes: string, t: (key: string, fallback: string) => string): string {
   return notes.split("\n").map(line => {
-    const match = line.match(/^([✅❌🔄🔓])\s+(.+?)\s+—\s+(.+)$/)
+    const match = line.match(/^([✅❌🔄🔓])\s+(.+?)\s+—\s+(.+)$/u)
     if (!match) return line
     const [, emoji, name, phrase] = match
     const translatedName = t(foodNameKey(name), name)
