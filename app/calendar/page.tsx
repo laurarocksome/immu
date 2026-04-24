@@ -8,6 +8,7 @@ import { List, Home, Plus, BookOpen, UtensilsCrossed, ArrowLeft, ChevronLeft, Ch
 import Logo from "@/app/components/logo"
 import BottomNav from "@/app/components/bottom-nav"
 import { useLanguage, daysWord } from "@/lib/i18n/context"
+import { isPageVisible } from "@/lib/page-visibility"
 
 // Replace the ProgressBar component with this updated version that handles all three phases
 
@@ -29,14 +30,6 @@ function ProgressBar() {
     progressPercentage: 0,
     daysRemaining: 0,
   })
-
-  useEffect(() => {
-    async function checkVisibility() {
-      const visible = await isPageVisible("calendar")
-      if (!visible) { router.replace("/dashboard"); return }
-    }
-    checkVisibility()
-  }, [])
 
   useEffect(() => {
     async function loadDietData() {
@@ -204,6 +197,12 @@ export default function CalendarPage() {
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState(new Date())
   const [dayNotes, setDayNotes] = useState<DayNote[]>([])
+
+  useEffect(() => {
+    isPageVisible("calendar").then(visible => {
+      if (!visible) router.replace("/dashboard")
+    })
+  }, [])
 
   // Load notes from daily_logs for the visible month
   useEffect(() => {
