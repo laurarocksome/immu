@@ -190,6 +190,29 @@ function ProgressBar() {
 
 type DayNote = { date: string; notes: string }
 
+function foodNameKey(name: string) {
+  return "food.name." + name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/, "")
+}
+
+const STATUS_KEYS: Record<string, string> = {
+  "confirmed allowed": "foodList.lockedAllowed",
+  "confirmed not allowed": "foodList.lockedNotAllowed",
+  "marked under evaluation": "foodList.lockedEval",
+  "lock removed": "foodList.unlocked",
+}
+
+function translateNotes(notes: string, t: (key: string, fallback: string) => string): string {
+  return notes.split("\n").map(line => {
+    const match = line.match(/^([✅❌🔄🔓])\s+(.+?)\s+—\s+(.+)$/)
+    if (!match) return line
+    const [, emoji, name, phrase] = match
+    const translatedName = t(foodNameKey(name), name)
+    const statusKey = STATUS_KEYS[phrase]
+    const translatedPhrase = statusKey ? t(statusKey, phrase) : phrase
+    return `${emoji} ${translatedName} — ${translatedPhrase}`
+  }).join("\n")
+}
+
 export default function CalendarPage() {
   const router = useRouter()
   const { locale, t } = useLanguage()
@@ -402,7 +425,7 @@ export default function CalendarPage() {
             <div className="flex justify-between items-center mb-2">
               <h4 className="font-medium">{t("calendar.notes", "Notes")}</h4>
             </div>
-            <p className="text-sm text-brand-dark/80 whitespace-pre-wrap">{selectedNote.notes}</p>
+            <p className="text-sm text-brand-dark/80 whitespace-pre-wrap">{translateNotes(selectedNote.notes, t)}</p>
           </div>
         ) : (
           <div className="glass-card rounded-2xl p-6 text-center mb-6">

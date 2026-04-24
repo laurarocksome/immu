@@ -319,10 +319,10 @@ export default function FoodListPage() {
     const emoji = isLocking
       ? status === "Can eat" ? "✅" : status === "Can't eat" ? "❌" : "🔄"
       : "🔓"
-    const translatedName = t(foodNameKey(productName), productName)
-    const line = isLocking
-      ? `${emoji} ${translatedName} — ${status === "Can eat" ? t("foodList.lockedAllowed", "confirmed allowed") : status === "Can't eat" ? t("foodList.lockedNotAllowed", "confirmed not allowed") : t("foodList.lockedEval", "marked under evaluation")}`
-      : `${emoji} ${translatedName} — ${t("foodList.unlocked", "lock removed")}`
+    const statusPhrase = isLocking
+      ? status === "Can eat" ? "confirmed allowed" : status === "Can't eat" ? "confirmed not allowed" : "marked under evaluation"
+      : "lock removed"
+    const line = `${emoji} ${productName} — ${statusPhrase}`
 
     // Fetch today's existing log (if any)
     const { data: existing } = await supabase
