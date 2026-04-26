@@ -24,6 +24,7 @@ import {
 } from "lucide-react"
 import Logo from "@/app/components/logo"
 import ConfettiCelebration from "@/app/components/confetti-celebration"
+import WeeklyCheckinModal from "@/app/components/weekly-checkin-modal"
 import BottomNav from "@/app/components/bottom-nav"
 import { getSession } from "@/lib/auth"
 import { saveUserProfile, saveUserConditions, saveDietInfo, saveUserName } from "@/lib/user-data"
@@ -1229,20 +1230,26 @@ export default function DashboardPage() {
 
     console.log("[v0] Loaded symptom history from database:", symptomHistory)
 
-    if (symptomHistory.length === 0) {
+    // Also fetch all user-tracked symptoms so they always appear in the chart
+    const supabase = createClient()
+    const { data: userSymptomRows } = await supabase.from("user_symptoms").select("symptom").eq("user_id", userId)
+    const trackedSymptoms: string[] = userSymptomRows?.map((r: any) => r.symptom) || []
+
+    if (symptomHistory.length === 0 && trackedSymptoms.length === 0) {
       setHasLoggedSymptoms(false)
       return
     }
 
     setHasLoggedSymptoms(true)
 
-    // Extract all unique symptoms
+    // Extract all unique symptoms — from logs AND from user's tracked list
     const allSymptoms = new Set<string>()
     symptomHistory.forEach((dayLog) => {
       if (dayLog.symptom_logs) {
         dayLog.symptom_logs.forEach((log: any) => allSymptoms.add(log.symptom))
       }
     })
+    trackedSymptoms.forEach(s => allSymptoms.add(s))
 
     const symptomNames = Array.from(allSymptoms)
     setUserSymptoms(symptomNames)
@@ -2602,6 +2609,9 @@ export default function DashboardPage() {
           </div>
         )}
       </main>
+
+      {/* Weekly check-in */}
+      <WeeklyCheckinModal userId={userId || null} />
 
       {/* Confetti celebration */}
       <ConfettiCelebration active={showConfetti} onComplete={() => setShowConfetti(false)} duration={4000} />
