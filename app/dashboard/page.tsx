@@ -1508,73 +1508,43 @@ export default function DashboardPage() {
 
   // Function to create smooth curve path
   const createSmoothCurvePath = (values: number[]) => {
-    const points = values.map((value, i) => {
-      const x = (i / (values.length - 1)) * 100
-      const y = 100 - (value / 5) * 100
-      return { x, y, value }
-    })
+    // Collect ALL non-zero points and connect them regardless of gaps
+    const pts = values
+      .map((value, i) => ({ x: (values.length > 1 ? i / (values.length - 1) : 0.5) * 100, y: 100 - (value / 5) * 100, value }))
+      .filter(p => p.value > 0)
 
-    // Build segments of consecutive non-zero values
-    const segments: typeof points[] = []
-    let current: typeof points = []
-    for (const pt of points) {
-      if (pt.value > 0) {
-        current.push(pt)
-      } else {
-        if (current.length > 0) { segments.push(current); current = [] }
-      }
+    if (pts.length === 0) return ""
+    if (pts.length === 1) return `M ${pts[0].x},${pts[0].y}`
+
+    let path = `M ${pts[0].x},${pts[0].y}`
+    for (let i = 0; i < pts.length - 1; i++) {
+      const x1 = pts[i].x + (pts[i+1].x - pts[i].x) / 3
+      const y1 = pts[i].y
+      const x2 = pts[i].x + (2 * (pts[i+1].x - pts[i].x)) / 3
+      const y2 = pts[i+1].y
+      path += ` C ${x1},${y1} ${x2},${y2} ${pts[i+1].x},${pts[i+1].y}`
     }
-    if (current.length > 0) segments.push(current)
-
-    if (segments.length === 0) return ""
-
-    let path = ""
-    for (const seg of segments) {
-      if (seg.length === 1) {
-        path += ` M ${seg[0].x},${seg[0].y}`
-        continue
-      }
-      path += ` M ${seg[0].x},${seg[0].y}`
-      for (let i = 0; i < seg.length - 1; i++) {
-        const x1 = seg[i].x + (seg[i+1].x - seg[i].x) / 3
-        const y1 = seg[i].y
-        const x2 = seg[i].x + (2 * (seg[i+1].x - seg[i].x)) / 3
-        const y2 = seg[i+1].y
-        path += ` C ${x1},${y1} ${x2},${y2} ${seg[i+1].x},${seg[i+1].y}`
-      }
-    }
-    return path.trim()
+    return path
   }
 
-  // Area fill path for symptom chart (closes curve to bottom)
+  // Area fill path for symptom chart — connects all non-zero points, closes to bottom
   const createSmoothAreaPath = (values: number[]) => {
-    const points = values.map((value, i) => {
-      const x = (i / (values.length - 1)) * 100
-      const y = 100 - (value / 5) * 100
-      return { x, y, value }
-    })
-    const segments: typeof points[] = []
-    let current: typeof points = []
-    for (const pt of points) {
-      if (pt.value > 0) { current.push(pt) }
-      else { if (current.length > 0) { segments.push(current); current = [] } }
+    const pts = values
+      .map((value, i) => ({ x: (values.length > 1 ? i / (values.length - 1) : 0.5) * 100, y: 100 - (value / 5) * 100, value }))
+      .filter(p => p.value > 0)
+
+    if (pts.length < 2) return ""
+
+    let path = `M ${pts[0].x},${pts[0].y}`
+    for (let i = 0; i < pts.length - 1; i++) {
+      const x1 = pts[i].x + (pts[i+1].x - pts[i].x) / 3
+      const y1 = pts[i].y
+      const x2 = pts[i].x + (2 * (pts[i+1].x - pts[i].x)) / 3
+      const y2 = pts[i+1].y
+      path += ` C ${x1},${y1} ${x2},${y2} ${pts[i+1].x},${pts[i+1].y}`
     }
-    if (current.length > 0) segments.push(current)
-    if (segments.length === 0) return ""
-    let path = ""
-    for (const seg of segments) {
-      if (seg.length < 2) continue
-      path += ` M ${seg[0].x},${seg[0].y}`
-      for (let i = 0; i < seg.length - 1; i++) {
-        const x1 = seg[i].x + (seg[i+1].x - seg[i].x) / 3
-        const y1 = seg[i].y
-        const x2 = seg[i].x + (2 * (seg[i+1].x - seg[i].x)) / 3
-        const y2 = seg[i+1].y
-        path += ` C ${x1},${y1} ${x2},${y2} ${seg[i+1].x},${seg[i+1].y}`
-      }
-      path += ` L ${seg[seg.length-1].x},100 L ${seg[0].x},100 Z`
-    }
-    return path.trim()
+    path += ` L ${pts[pts.length-1].x},100 L ${pts[0].x},100 Z`
+    return path
   }
 
   // Connects ALL non-null points regardless of gaps (handles sparse wellness data)
