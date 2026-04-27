@@ -116,7 +116,7 @@ export default function WeeklyCheckinModal({ userId }: Props) {
   if (!visible) return null
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-end justify-center z-50 p-4 pb-8">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden">
         <div className="bg-gradient-to-r from-pink-400 to-purple-400 p-5">
           <div className="text-2xl mb-1">📅</div>
