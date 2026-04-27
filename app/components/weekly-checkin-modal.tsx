@@ -4,19 +4,11 @@ import { useState, useEffect } from "react"
 import { useLanguage } from "@/lib/i18n/context"
 import { createClient } from "@/lib/supabase/client"
 
-const STORAGE_KEY = "immu_weekly_checkin_shown"
+const STORAGE_KEY = "immu_weekly_checkin_week"
 
 function getTodayString(): string {
   const d = new Date()
   return [d.getFullYear(), String(d.getMonth() + 1).padStart(2, "0"), String(d.getDate()).padStart(2, "0")].join("-")
-}
-
-function getThisSundayString(): string {
-  const d = new Date()
-  const day = d.getDay() // 0=Sun
-  const sunday = new Date(d)
-  sunday.setDate(d.getDate() - day)
-  return [sunday.getFullYear(), String(sunday.getMonth() + 1).padStart(2, "0"), String(sunday.getDate()).padStart(2, "0")].join("-")
 }
 
 interface Props {
@@ -29,21 +21,57 @@ export default function WeeklyCheckinModal({ userId }: Props) {
   const [notes, setNotes] = useState("")
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [currentWeek, setCurrentWeek] = useState<number | null>(null)
 
   useEffect(() => {
     if (!userId) return
-    const today = new Date()
-    if (today.getDay() !== 0) return // Only Sundays
 
-    const thisSunday = getThisSundayString()
-    const lastShown = localStorage.getItem(STORAGE_KEY)
-    if (lastShown === thisSunday) return // Already shown this Sunday
+    async function checkShouldShow() {
+      try {
+        const supabase = createClient()
 
-    setVisible(true)
+        // Get diet start date from Supabase first, fall back to localStorage
+        let startDateStr: string | null = null
+        const { data: dietData } = await supabase
+          .from("diet_info")
+          .select("start_date")
+          .eq("user_id", userId)
+          .maybeSingle()
+
+        startDateStr = dietData?.start_date || localStorage.getItem("dietStartDate")
+        if (!startDateStr) return
+
+        const startDate = new Date(startDateStr)
+        startDate.setHours(0, 0, 0, 0)
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+
+        const daysElapsed = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
+
+        // Show on the 7th day, 14th day, 21st day etc. (daysElapsed 6, 13, 20...)
+        if ((daysElapsed + 1) % 7 !== 0) return
+
+        const weekNumber = Math.floor((daysElapsed + 1) / 7)
+        const lastShownWeek = localStorage.getItem(STORAGE_KEY)
+
+        if (lastShownWeek === String(weekNumber)) return // Already shown for this week
+
+        setCurrentWeek(weekNumber)
+        setVisible(true)
+      } catch (e) {
+        console.error("Weekly check-in check error:", e)
+      }
+    }
+
+    checkShouldShow()
   }, [userId])
 
+  const markShown = () => {
+    if (currentWeek !== null) localStorage.setItem(STORAGE_KEY, String(currentWeek))
+  }
+
   const handleSkip = () => {
-    localStorage.setItem(STORAGE_KEY, getThisSundayString())
+    markShown()
     setVisible(false)
   }
 
@@ -55,7 +83,7 @@ export default function WeeklyCheckinModal({ userId }: Props) {
     setSaving(true)
     try {
       const supabase = createClient()
-      const today = getTodayString() // This is Sunday since we only show on Sundays
+      const today = getTodayString()
       const header = `📅 ${t("weeklyCheckin.noteHeader", "Weekly check-in")}`
       const line = `${header}\n${notes.trim()}`
 
@@ -75,7 +103,7 @@ export default function WeeklyCheckinModal({ userId }: Props) {
         await supabase.from("daily_logs").insert({ user_id: userId, log_date: today, notes: updatedNotes })
       }
 
-      localStorage.setItem(STORAGE_KEY, getThisSundayString())
+      markShown()
       setSaved(true)
       setTimeout(() => setVisible(false), 2000)
     } catch (e) {
