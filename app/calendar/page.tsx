@@ -203,6 +203,11 @@ const STATUS_KEYS: Record<string, string> = {
 
 function translateNotes(notes: string, t: (key: string, fallback: string) => string): string {
   return notes.split("\n").map(line => {
+    // Translate weekly check-in header stored in English
+    if (/^📅\s+Weekly check-in$/u.test(line.trim())) {
+      return `📅 ${t("weeklyCheckin.noteHeader", "Weekly check-in")}`
+    }
+    // Translate food lock/unlock lines
     const match = line.match(/^([✅❌🔄🔓])\s+(.+?)\s+—\s+(.+)$/u)
     if (!match) return line
     const [, emoji, name, phrase] = match

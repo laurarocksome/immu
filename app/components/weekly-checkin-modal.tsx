@@ -84,7 +84,7 @@ export default function WeeklyCheckinModal({ userId }: Props) {
     try {
       const supabase = createClient()
       const today = getTodayString()
-      const header = `📅 ${t("weeklyCheckin.noteHeader", "Weekly check-in")}`
+      const header = `📅 Weekly check-in`
       const line = `${header}\n${notes.trim()}`
 
       const { data: existing } = await supabase
