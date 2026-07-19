@@ -585,7 +585,7 @@ export default function ProfilePage() {
               <button
                 onClick={handleFeedbackSubmit}
                 disabled={feedbackSubmitting || !feedbackMessage.trim()}
-                className="flex-1 bg-gradient-to-r from-brand-primary to-brand-secondary text-white py-3 rounded-full transition-all disabled:opacity-50 font-medium shadow-soft"
+                className="flex-1 bg-pink-500 hover:bg-pink-600 text-white py-3 rounded-full transition-all disabled:opacity-50 font-medium shadow-soft"
               >
                 {feedbackSubmitting ? t("feedback.modal.submitting", "Sending...") : t("feedback.modal.submit", "Send")}
               </button>
