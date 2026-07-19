@@ -106,12 +106,12 @@ export default function CreateAccountPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-brand-lightest to-white text-brand-dark">
-      <header className="p-4 border-b border-pink-200/30 flex justify-between items-center bg-gradient-to-r from-pink-300 to-peach-300">
+      <header className="p-4 border-b border-pink-200/30 flex justify-center items-center bg-gradient-to-r from-pink-300 to-peach-300 relative">
         <Logo variant="light" />
-        <LanguageToggle />
+        <LanguageToggle className="absolute right-4" />
       </header>
 
-      <main className="flex-1 px-4 pb-8 overflow-auto">
+      <main className="flex-1 px-4 pt-6 pb-8 overflow-auto">
         <div className="max-w-md mx-auto">
           <div className="mb-6 text-center">
             <h2 className="text-2xl font-bold mb-2">{titleKey}</h2>
