@@ -112,8 +112,7 @@ export default function ReintroductionPhasePage() {
                 {plan.content?.steps && (
                   <ul className="space-y-3">
                     {plan.content.steps.map((step: string, idx: number) => (
-                      <li key={idx} className="flex items-start">
-                        <span className="text-pink-500 mr-2 mt-1 flex-shrink-0">•</span>
+                      <li key={idx}>
                         <p>{t(planKey(plan.title) + ".task." + idx, step)}</p>
                       </li>
                     ))}

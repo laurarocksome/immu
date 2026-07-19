@@ -109,8 +109,7 @@ export default function EliminationPhasePage() {
           ) : (
             <ul className="space-y-5">
               {nutritionPlans.map((plan) => (
-                <li key={plan.id} className="flex items-start">
-                  <span className="text-pink-500 mr-2 mt-1 flex-shrink-0">•</span>
+                <li key={plan.id}>
                   <div>
                     <strong className="block mb-1">{t(planKey(plan.title) + ".title", plan.title)}</strong>
                     <p>{t(planKey(plan.title) + ".desc", plan.description)}</p>
