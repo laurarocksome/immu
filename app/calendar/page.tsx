@@ -188,7 +188,7 @@ function ProgressBar() {
   )
 }
 
-type DayNote = { date: string; notes: string }
+type DayLog = { date: string; notes: string | null; mood: number | null; sleep: number | null; stress: number | null; aip_compliant: boolean | null }
 
 function foodNameKey(name: string) {
   return "food.name." + name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/, "")
@@ -224,7 +224,7 @@ export default function CalendarPage() {
   const dateLocale = locale === "lt" ? "lt-LT" : "en-US"
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState(new Date())
-  const [dayNotes, setDayNotes] = useState<DayNote[]>([])
+  const [dayLogs, setDayLogs] = useState<DayLog[]>([])
 
   useEffect(() => {
     isPageVisible("calendar").then(visible => {
@@ -232,9 +232,9 @@ export default function CalendarPage() {
     })
   }, [])
 
-  // Load notes from daily_logs for the visible month
+  // Load all logged days for the visible month (not just days with notes)
   useEffect(() => {
-    async function loadNotes() {
+    async function loadLogs() {
       try {
         const { createClient } = await import("@/lib/supabase/client")
         const sb = createClient()
@@ -248,23 +248,26 @@ export default function CalendarPage() {
 
         const { data } = await sb
           .from("daily_logs")
-          .select("log_date, notes")
+          .select("log_date, notes, mood, sleep, stress, aip_compliant")
           .eq("user_id", user.id)
           .gte("log_date", monthStart)
           .lte("log_date", monthEnd)
 
         if (data) {
-          setDayNotes(
-            data
-              .filter((row: any) => row.notes && row.notes.trim().length > 0)
-              .map((row: any) => ({ date: row.log_date, notes: row.notes }))
-          )
+          setDayLogs(data.map((row: any) => ({
+            date: row.log_date,
+            notes: row.notes ?? null,
+            mood: row.mood ?? null,
+            sleep: row.sleep ?? null,
+            stress: row.stress ?? null,
+            aip_compliant: row.aip_compliant ?? null,
+          })))
         }
       } catch (e) {
-        console.error("Calendar notes load error:", e)
+        console.error("Calendar logs load error:", e)
       }
     }
-    loadNotes()
+    loadLogs()
   }, [currentMonth])
 
   const handleBack = () => {
@@ -288,7 +291,7 @@ export default function CalendarPage() {
   }
 
   const selectedDateString = toLocalDateString(selectedDate)
-  const selectedNote = dayNotes.find((n) => n.date === selectedDateString)
+  const selectedLog = dayLogs.find((n) => n.date === selectedDateString)
 
   // Generate calendar days
   const generateCalendarDays = () => {
@@ -386,7 +389,7 @@ export default function CalendarPage() {
 
               const isToday = date.toDateString() === new Date().toDateString()
               const isSelected = date.toDateString() === selectedDate.toDateString()
-              const hasEvents = dayNotes.some((n) => n.date === toLocalDateString(date))
+              const hasEvents = dayLogs.some((n) => n.date === toLocalDateString(date))
 
               return (
                 <button
@@ -425,12 +428,37 @@ export default function CalendarPage() {
           </h3>
         </div>
 
-        {selectedNote ? (
-          <div className="glass-card rounded-2xl p-4 mb-6 border-l-4 border-pink-400">
-            <div className="flex justify-between items-center mb-2">
-              <h4 className="font-medium">{t("calendar.notes", "Notes")}</h4>
+        {selectedLog ? (
+          <div className="glass-card rounded-2xl p-4 mb-6 border-l-4 border-pink-400 space-y-4">
+            {/* Scores row */}
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                { label: t("logDay.mood", "Mood"), value: selectedLog.mood, color: "text-pink-500" },
+                { label: t("logDay.sleep", "Sleep"), value: selectedLog.sleep, color: "text-purple-500" },
+                { label: t("logDay.stress", "Stress"), value: selectedLog.stress, color: "text-indigo-500" },
+              ].map(({ label, value, color }) => (
+                <div key={label} className="text-center bg-pink-50/60 rounded-xl py-2 px-1">
+                  <p className="text-xs text-brand-dark/50 mb-1">{label}</p>
+                  <p className={`text-2xl font-bold ${color}`}>{value ?? "—"}</p>
+                  <p className="text-[10px] text-brand-dark/40">/5</p>
+                </div>
+              ))}
             </div>
-            <p className="text-sm text-brand-dark/80 whitespace-pre-wrap">{translateNotes(selectedNote.notes, t)}</p>
+            {/* AIP compliant badge */}
+            {selectedLog.aip_compliant !== null && (
+              <p className="text-xs text-brand-dark/60">
+                {selectedLog.aip_compliant
+                  ? `✅ ${t("calendar.aipCompliant", "AIP compliant day")}`
+                  : `❌ ${t("calendar.aipNotCompliant", "Not fully AIP compliant")}`}
+              </p>
+            )}
+            {/* Notes */}
+            {selectedLog.notes && selectedLog.notes.trim().length > 0 && (
+              <div>
+                <h4 className="font-medium text-sm mb-1">{t("calendar.notes", "Notes")}</h4>
+                <p className="text-sm text-brand-dark/80 whitespace-pre-wrap">{translateNotes(selectedLog.notes, t)}</p>
+              </div>
+            )}
           </div>
         ) : (
           <div className="glass-card rounded-2xl p-6 text-center mb-6">
