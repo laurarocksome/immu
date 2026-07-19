@@ -803,14 +803,14 @@ export default function FoodListPage() {
                                 </span>
                               )}
 
-                              {product.tags.slice(0, 2).map((tag) => (
+                              {product.tags.filter(Boolean).slice(0, 2).map((tag) => (
                                 <span key={tag} className="bg-brand-lightest px-2 py-0.5 rounded text-xs">
                                   {t(foodTagKey(tag), tag)}
                                 </span>
                               ))}
-                              {product.tags.length > 2 && (
+                              {product.tags.filter(Boolean).length > 2 && (
                                 <span className="bg-brand-lightest px-2 py-0.5 rounded text-xs">
-                                  +{product.tags.length - 2}
+                                  +{product.tags.filter(Boolean).length - 2}
                                 </span>
                               )}
                             </div>
@@ -901,13 +901,13 @@ export default function FoodListPage() {
                       </span>
                     )}
 
-                    {product.tags.slice(0, 2).map((tag) => (
+                    {product.tags.filter(Boolean).slice(0, 2).map((tag) => (
                       <span key={tag} className="bg-brand-lightest px-2 py-0.5 rounded text-xs">
                         {t(foodTagKey(tag), tag)}
                       </span>
                     ))}
-                    {product.tags.length > 2 && (
-                      <span className="bg-brand-lightest px-2 py-0.5 rounded text-xs">+{product.tags.length - 2}</span>
+                    {product.tags.filter(Boolean).length > 2 && (
+                      <span className="bg-brand-lightest px-2 py-0.5 rounded text-xs">+{product.tags.filter(Boolean).length - 2}</span>
                     )}
                   </div>
                 </div>
