@@ -464,21 +464,19 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          <div className="flex gap-3 mb-3">
-            <button
-              onClick={() => { setShowFeedback(true); setFeedbackStatus("idle") }}
-              className="flex-1 bg-gradient-to-r from-brand-primary to-brand-secondary text-white hover:opacity-90 hover:shadow-soft py-4 rounded-full transition-all font-medium flex items-center justify-center gap-2"
-            >
-              <MessageSquare className="h-4 w-4" />
-              {t("profile.feedback", "Send Feedback")}
-            </button>
-            <a
-              href="mailto:laura@rocksome.com?subject=Immu%20Health%20Support"
-              className="flex-1 bg-white border-2 border-brand-primary/30 text-brand-primary hover:border-brand-primary/50 hover:shadow-soft py-4 rounded-full transition-all font-medium flex items-center justify-center gap-2"
-            >
-              {t("profile.contact", "Contact Support")}
-            </a>
-          </div>
+          <button
+            onClick={() => { setShowFeedback(true); setFeedbackStatus("idle") }}
+            className="w-full bg-pink-500 hover:bg-pink-600 text-white py-4 rounded-full transition-all mb-3 font-medium flex items-center justify-center gap-2 shadow-soft"
+          >
+            <MessageSquare className="h-4 w-4" />
+            {t("profile.feedback", "Send Feedback")}
+          </button>
+          <a
+            href="mailto:laura@rocksome.com?subject=Immu%20Health%20Support"
+            className="w-full bg-white border-2 border-pink-300 text-pink-600 hover:border-pink-400 hover:shadow-soft py-4 rounded-full transition-all mb-3 font-medium flex items-center justify-center gap-2 block text-center"
+          >
+            {t("profile.contact", "Contact Support")}
+          </a>
 
           {isAdmin && (
             <button
@@ -542,7 +540,7 @@ export default function ProfilePage() {
       )}
 
       {showFeedback && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[200] p-4">
           <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-xl">
             <h3 className="text-xl font-bold mb-1 text-brand-dark">{t("feedback.modal.title", "Share Your Feedback")}</h3>
             <p className="text-brand-dark/50 text-sm mb-4">{t("feedback.modal.rating", "How would you rate your experience?")}</p>
