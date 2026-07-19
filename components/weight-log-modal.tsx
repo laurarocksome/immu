@@ -4,6 +4,7 @@ import { useState } from "react"
 import { X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { saveWeightLog } from "@/lib/weight-data"
+import { createClient } from "@/lib/supabase/client"
 
 interface WeightLogModalProps {
   userId: string
@@ -33,6 +34,14 @@ export function WeightLogModal({ userId, currentWeight, currentUnit = "lbs", onC
       console.log("[v0] About to save weight log for user:", userId)
       const result = await saveWeightLog(userId, weightNum, unit)
       console.log("[v0] Weight log saved successfully:", result)
+
+      // Mirror the latest weight into user_profiles so personal info stays in sync
+      const supabase = createClient()
+      await supabase
+        .from("user_profiles")
+        .update({ weight: weightNum, weight_unit: unit })
+        .eq("user_id", userId)
+
       onSave()
       onClose()
     } catch (err) {
