@@ -275,10 +275,12 @@ export async function getUserStreak(userId: string): Promise<number> {
   return streak
 }
 
-export async function getSymptomHistory(userId: string, days = 7) {
+export async function getSymptomHistory(userId: string, days = 7, offsetDays = 0) {
   const supabase = getSupabase()
 
-  const startDate = new Date()
+  const endDate = new Date()
+  endDate.setDate(endDate.getDate() - offsetDays)
+  const startDate = new Date(endDate)
   startDate.setDate(startDate.getDate() - days + 1)
 
   const { data, error } = await supabase
@@ -286,6 +288,7 @@ export async function getSymptomHistory(userId: string, days = 7) {
     .select(`log_date, symptom_logs (symptom, severity)`)
     .eq("user_id", userId)
     .gte("log_date", startDate.toISOString().split("T")[0])
+    .lte("log_date", endDate.toISOString().split("T")[0])
     .order("log_date", { ascending: true })
 
   if (error) {
@@ -295,10 +298,12 @@ export async function getSymptomHistory(userId: string, days = 7) {
   return data || []
 }
 
-export async function getWellnessHistory(userId: string, days = 7) {
+export async function getWellnessHistory(userId: string, days = 7, offsetDays = 0) {
   const supabase = getSupabase()
 
-  const startDate = new Date()
+  const endDate = new Date()
+  endDate.setDate(endDate.getDate() - offsetDays)
+  const startDate = new Date(endDate)
   startDate.setDate(startDate.getDate() - days + 1)
 
   const { data, error } = await supabase
@@ -306,6 +311,7 @@ export async function getWellnessHistory(userId: string, days = 7) {
     .select("log_date, mood, sleep, stress")
     .eq("user_id", userId)
     .gte("log_date", startDate.toISOString().split("T")[0])
+    .lte("log_date", endDate.toISOString().split("T")[0])
     .order("log_date", { ascending: true })
 
   if (error) {

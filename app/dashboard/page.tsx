@@ -213,6 +213,7 @@ export default function DashboardPage() {
   const [reintroductionDay, setReintroductionDay] = useState(0)
   const [currentPhase, setCurrentPhase] = useState<"adaptation" | "elimination" | "reintroduction">("elimination")
   const [chartDates, setChartDates] = useState<string[]>(["Day 1", "Day 2", "Day 3", "Day 4", "Day 5", "Day 6", "Day 7"])
+  const [chartOffset, setChartOffset] = useState(0) // 0 = most recent 7 days, 7 = prev week, etc.
 
   // Add a state for wellness data
   const [wellnessData, setWellnessData] = useState<any>({ mood: [], sleep: [], stress: [] }) // Changed to object for structured data
@@ -1225,8 +1226,8 @@ export default function DashboardPage() {
     }
   }
 
-  const loadSymptomDataFromDatabase = async (userId: string) => {
-    const symptomHistory = await getSymptomHistory(userId, 7)
+  const loadSymptomDataFromDatabase = async (userId: string, offsetDays = 0) => {
+    const symptomHistory = await getSymptomHistory(userId, 7, offsetDays)
 
     console.log("[v0] Loaded symptom history from database:", symptomHistory)
 
@@ -1301,8 +1302,8 @@ export default function DashboardPage() {
     setSymptomData(chartData)
   }
 
-  const loadWellnessDataFromDatabase = async (userId: string) => {
-    const wellnessHistory = await getWellnessHistory(userId, 7)
+  const loadWellnessDataFromDatabase = async (userId: string, offsetDays = 0) => {
+    const wellnessHistory = await getWellnessHistory(userId, 7, offsetDays)
 
     console.log("[v0] Loaded wellness history from database:", wellnessHistory)
 
@@ -1424,7 +1425,7 @@ export default function DashboardPage() {
       if (!userId) return
 
       console.log("[v0] Loading weight logs for user:", userId)
-      const weights = await fetchWeightLogs(userId, 30) // Use renamed function
+      const weights = await fetchWeightLogs(userId, 30, chartOffset) // Use renamed function
       console.log("[v0] Weight logs loaded:", weights)
 
       if (weights.length > 0) {
@@ -1439,7 +1440,7 @@ export default function DashboardPage() {
     }
 
     loadWeightData()
-  }, [userId]) // Run when userId changes
+  }, [userId, chartOffset]) // Run when userId or offset changes
 
   useEffect(() => {
     loadUserData()
@@ -1470,14 +1471,14 @@ export default function DashboardPage() {
   useEffect(() => {
     const handleVisible = () => {
       if (document.visibilityState === "visible" && userId) {
-        loadSymptomDataFromDatabase(userId)
-        loadWellnessDataFromDatabase(userId)
+        loadSymptomDataFromDatabase(userId, chartOffset)
+        loadWellnessDataFromDatabase(userId, chartOffset)
       }
     }
     const handleFocus = () => {
       if (userId) {
-        loadSymptomDataFromDatabase(userId)
-        loadWellnessDataFromDatabase(userId)
+        loadSymptomDataFromDatabase(userId, chartOffset)
+        loadWellnessDataFromDatabase(userId, chartOffset)
       }
       loadUserProfile()
       loadCompletedTodos()
@@ -1488,7 +1489,17 @@ export default function DashboardPage() {
       document.removeEventListener("visibilitychange", handleVisible)
       window.removeEventListener("focus", handleFocus)
     }
-  }, [userId])
+  }, [userId, chartOffset])
+
+  // Re-load all chart data when navigation offset changes
+  useEffect(() => {
+    if (!userId) return
+    setIsChartLoading(true)
+    Promise.all([
+      loadSymptomDataFromDatabase(userId, chartOffset),
+      loadWellnessDataFromDatabase(userId, chartOffset),
+    ]).finally(() => setIsChartLoading(false))
+  }, [chartOffset, userId])
 
   const handleCloseWelcome = () => {
     setShowWelcome(false)
@@ -2017,6 +2028,29 @@ export default function DashboardPage() {
               {t("dashboard.logDay", "Log Day")}
               <ChevronRight className="h-4 w-4 ml-1" />
             </button>
+            {/* Chart date navigation */}
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setChartOffset(o => o + 7)}
+                className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-pink-100 text-brand-dark/60 hover:text-brand-dark transition-colors"
+                aria-label="Previous week"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <span className="text-xs text-brand-dark/50 min-w-[56px] text-center">
+                {chartOffset === 0
+                  ? t("dashboard.chart.latest", "Latest")
+                  : `-${chartOffset}d`}
+              </span>
+              <button
+                onClick={() => setChartOffset(o => Math.max(0, o - 7))}
+                disabled={chartOffset === 0}
+                className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-pink-100 text-brand-dark/60 hover:text-brand-dark transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                aria-label="Next week"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
           </div>
 
           {/* Chart loading skeleton */}

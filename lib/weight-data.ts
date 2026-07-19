@@ -9,15 +9,21 @@ export interface WeightLog {
   created_at: string
 }
 
-export async function getWeightLogs(userId: string, limit = 30): Promise<WeightLog[]> {
+export async function getWeightLogs(userId: string, limit = 30, offsetDays = 0): Promise<WeightLog[]> {
   const supabase = createClient()
+
+  const endDate = new Date()
+  endDate.setDate(endDate.getDate() - offsetDays)
+  const startDate = new Date(endDate)
+  startDate.setDate(startDate.getDate() - limit + 1)
 
   const { data, error } = await supabase
     .from("weight_logs")
     .select("*")
     .eq("user_id", userId)
+    .gte("log_date", startDate.toISOString().split("T")[0])
+    .lte("log_date", endDate.toISOString().split("T")[0])
     .order("log_date", { ascending: true })
-    .limit(limit)
 
   if (error) {
     console.error("[v0] Error fetching weight logs:", error)
