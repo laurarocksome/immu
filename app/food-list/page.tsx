@@ -184,7 +184,7 @@ function foodTooltipKey(name: string) {
 }
 
 export default function FoodListPage() {
-  const { t } = useLanguage()
+  const { t, locale } = useLanguage()
   const [allProducts, setAllProducts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -497,7 +497,7 @@ export default function FoodListPage() {
 
     const phaseLabel = getPhaseIndicator()
     const today = new Date()
-    const dateStr = today.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })
+    const dateStr = today.toLocaleDateString(locale, { year: "numeric", month: "long", day: "numeric" })
 
     // Group by primary tag
     const grouped: Record<string, string[]> = {}
