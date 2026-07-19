@@ -43,3 +43,7 @@ build = ["pnpm", "run", "build"]
 [userenv.shared]
 SENTRY_ORG = "rocksome"
 SENTRY_PROJECT = "javascript-nextjs"
+
+[postMerge]
+path = "scripts/post-merge.sh"
+timeoutMs = 60000
