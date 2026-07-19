@@ -2022,6 +2022,14 @@ export default function DashboardPage() {
             </button>
             {/* Chart date navigation */}
             <div className="flex items-center gap-1">
+              {chartOffset > 0 && (
+                <button
+                  onClick={() => setChartOffset(0)}
+                  className="text-xs font-semibold px-3 py-1 rounded-full bg-pink-500 text-white hover:bg-pink-600 transition-colors mr-1"
+                >
+                  {t("dashboard.chart.goToToday", "Today")}
+                </button>
+              )}
               <button
                 onClick={() => setChartOffset(o => o + 7)}
                 className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-pink-100 text-brand-dark/60 hover:text-brand-dark transition-colors"
@@ -2029,19 +2037,9 @@ export default function DashboardPage() {
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
-              {chartOffset === 0 ? (
-                <span className="text-xs text-brand-dark/50 min-w-[56px] text-center">
-                  {t("dashboard.chart.latest", "Latest")}
-                </span>
-              ) : (
-                <button
-                  onClick={() => setChartOffset(0)}
-                  className="text-xs text-brand-primary font-medium min-w-[56px] text-center hover:underline"
-                  title={t("dashboard.chart.goToToday", "Go to today")}
-                >
-                  -{chartOffset}d
-                </button>
-              )}
+              <span className="text-xs text-brand-dark/50 min-w-[40px] text-center">
+                {chartOffset === 0 ? t("dashboard.chart.latest", "Latest") : `-${chartOffset}d`}
+              </span>
               <button
                 onClick={() => setChartOffset(o => Math.max(0, o - 7))}
                 disabled={chartOffset === 0}
