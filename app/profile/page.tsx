@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic"
 import { useEffect, useState } from "react"
 import { useLanguage, slugifyKey } from "@/lib/i18n/context"
 import { useRouter } from "next/navigation"
-import { List, Home, Plus, BookOpen, UtensilsCrossed, ArrowLeft, Edit, Trash2, ChevronRight, Salad, ShieldCheck } from "lucide-react"
+import { List, Home, Plus, BookOpen, UtensilsCrossed, ArrowLeft, Edit, Trash2, ChevronRight, Salad, ShieldCheck, MessageSquare, Star } from "lucide-react"
 import Logo from "@/app/components/logo"
 import BottomNav from "@/app/components/bottom-nav"
 import { deleteUser, signOut } from "@/lib/auth"
@@ -44,6 +44,12 @@ export default function ProfilePage() {
   const [needsSync, setNeedsSync] = useState(false)
   const [hiddenPages, setHiddenPages] = useState<string[]>([])
   const [isAdmin, setIsAdmin] = useState(false)
+  const [showFeedback, setShowFeedback] = useState(false)
+  const [feedbackMessage, setFeedbackMessage] = useState("")
+  const [feedbackRating, setFeedbackRating] = useState(0)
+  const [feedbackSubmitting, setFeedbackSubmitting] = useState(false)
+  const [feedbackStatus, setFeedbackStatus] = useState<"idle" | "success" | "error">("idle")
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -58,6 +64,7 @@ export default function ProfilePage() {
 
         if (user) {
           const userId = user.id
+          setCurrentUserId(userId)
           let loadedProfile: UserProfile | null = null
           let loadedDietInfo: DietInfo | null = null
           let loadedConditions: string[] = []
@@ -225,6 +232,31 @@ export default function ProfilePage() {
 
   const handleBackToDashboard = () => {
     router.push("/dashboard")
+  }
+
+  const handleFeedbackSubmit = async () => {
+    if (!feedbackMessage.trim()) return
+    setFeedbackSubmitting(true)
+    setFeedbackStatus("idle")
+    try {
+      const res = await fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: currentUserId, message: feedbackMessage, rating: feedbackRating || null }),
+      })
+      if (res.ok) {
+        setFeedbackStatus("success")
+        setFeedbackMessage("")
+        setFeedbackRating(0)
+        setTimeout(() => { setShowFeedback(false); setFeedbackStatus("idle") }, 2200)
+      } else {
+        setFeedbackStatus("error")
+      }
+    } catch {
+      setFeedbackStatus("error")
+    } finally {
+      setFeedbackSubmitting(false)
+    }
   }
 
   const handleDeleteAccount = async () => {
@@ -432,12 +464,21 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          <a
-            href="mailto:laura@rocksome.com?subject=Immu%20Health%20Feedback"
-            className="w-full bg-white border-2 border-brand-primary/30 text-brand-primary hover:border-brand-primary/50 hover:shadow-soft py-4 rounded-full transition-all mb-3 font-medium flex items-center justify-center gap-2"
-          >
-            {t("profile.contact", "Contact Support")}
-          </a>
+          <div className="flex gap-3 mb-3">
+            <button
+              onClick={() => { setShowFeedback(true); setFeedbackStatus("idle") }}
+              className="flex-1 bg-gradient-to-r from-brand-primary to-brand-secondary text-white hover:opacity-90 hover:shadow-soft py-4 rounded-full transition-all font-medium flex items-center justify-center gap-2"
+            >
+              <MessageSquare className="h-4 w-4" />
+              {t("profile.feedback", "Send Feedback")}
+            </button>
+            <a
+              href="mailto:laura@rocksome.com?subject=Immu%20Health%20Support"
+              className="flex-1 bg-white border-2 border-brand-primary/30 text-brand-primary hover:border-brand-primary/50 hover:shadow-soft py-4 rounded-full transition-all font-medium flex items-center justify-center gap-2"
+            >
+              {t("profile.contact", "Contact Support")}
+            </a>
+          </div>
 
           {isAdmin && (
             <button
@@ -494,6 +535,61 @@ export default function ProfilePage() {
                 className="flex-1 bg-red-600 text-white hover:bg-red-700 py-3 rounded-full transition-colors disabled:opacity-50 font-medium shadow-soft"
               >
                 {isDeleting ? t("profile.delete.deleting", "Deleting...") : t("profile.delete.confirm", "Delete")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showFeedback && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-xl">
+            <h3 className="text-xl font-bold mb-1 text-brand-dark">{t("feedback.modal.title", "Share Your Feedback")}</h3>
+            <p className="text-brand-dark/50 text-sm mb-4">{t("feedback.modal.rating", "How would you rate your experience?")}</p>
+
+            <div className="flex gap-2 mb-5 justify-center">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  onClick={() => setFeedbackRating(star)}
+                  className="transition-transform hover:scale-110 focus:outline-none"
+                >
+                  <Star
+                    className={`h-8 w-8 ${star <= feedbackRating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}`}
+                  />
+                </button>
+              ))}
+            </div>
+
+            <textarea
+              value={feedbackMessage}
+              onChange={(e) => setFeedbackMessage(e.target.value)}
+              placeholder={t("feedback.modal.placeholder", "Tell us what you think...")}
+              rows={4}
+              className="w-full border-2 border-brand-primary/20 rounded-2xl p-3 text-sm text-brand-dark placeholder-brand-dark/30 focus:outline-none focus:border-brand-primary/50 resize-none mb-4"
+            />
+
+            {feedbackStatus === "success" && (
+              <p className="text-green-600 text-sm text-center mb-3 font-medium">{t("feedback.modal.success", "Thank you! Your feedback has been sent.")}</p>
+            )}
+            {feedbackStatus === "error" && (
+              <p className="text-red-500 text-sm text-center mb-3">{t("feedback.modal.error", "Something went wrong. Please try again.")}</p>
+            )}
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setShowFeedback(false); setFeedbackMessage(""); setFeedbackRating(0); setFeedbackStatus("idle") }}
+                disabled={feedbackSubmitting}
+                className="flex-1 bg-white border-2 border-brand-dark/20 text-brand-dark hover:border-brand-dark/40 py-3 rounded-full transition-all disabled:opacity-50 font-medium"
+              >
+                {t("feedback.modal.cancel", "Cancel")}
+              </button>
+              <button
+                onClick={handleFeedbackSubmit}
+                disabled={feedbackSubmitting || !feedbackMessage.trim()}
+                className="flex-1 bg-gradient-to-r from-brand-primary to-brand-secondary text-white py-3 rounded-full transition-all disabled:opacity-50 font-medium shadow-soft"
+              >
+                {feedbackSubmitting ? t("feedback.modal.submitting", "Sending...") : t("feedback.modal.submit", "Send")}
               </button>
             </div>
           </div>
