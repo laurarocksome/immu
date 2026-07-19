@@ -24,9 +24,9 @@ export default function NoStressHelpPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-brand-lightest to-white text-brand-dark">
-      <header className="p-4 flex justify-center items-center bg-brand-dark text-white relative">
+      <header className="p-4 border-b border-pink-200/30 flex justify-between items-center bg-gradient-to-r from-pink-300 to-peach-300">
         <Logo variant="light" />
-        <LanguageToggle className="absolute right-4 top-1/2 -translate-y-1/2" />
+        <LanguageToggle />
       </header>
 
       <main className="flex-1 px-4 pb-8 overflow-auto">

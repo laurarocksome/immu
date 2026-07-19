@@ -56,17 +56,17 @@ export default function StressPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-brand-lightest to-white text-brand-dark">
-      <header className="p-4 flex justify-center items-center bg-brand-dark text-white relative">
+      <header className="p-4 border-b border-pink-200/30 flex justify-between items-center bg-gradient-to-r from-pink-300 to-peach-300">
         <button
           onClick={() => router.push("/onboarding/symptoms")}
           className="absolute left-4 text-white/80 hover:text-white transition-colors flex items-center"
           aria-label={t("common.goBackPrev", "Go back to previous page")}
         >
-          <ArrowLeft className="h-5 w-5 mr-1" />
-          <span>{t("common.back", "Back")}</span>
+          <ArrowLeft className="h-4 w-4 text-white" />
+          <span className="text-sm font-medium text-white">{t("common.back", "Back")}</span>
         </button>
         <Logo variant="light" />
-        <LanguageToggle className="absolute right-4 top-1/2 -translate-y-1/2" />
+        <LanguageToggle />
       </header>
 
       <main className="flex-1 px-4 pb-8 overflow-auto">
