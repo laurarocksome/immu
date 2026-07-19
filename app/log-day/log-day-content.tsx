@@ -199,7 +199,14 @@ export default function LogDayContent() {
 
       {/* Phase indicator */}
       <div className="text-center pt-4 pb-2">
-        <p className="text-sm text-brand-dark/60">{currentPhase} – Day {currentDay}</p>
+        <p className="text-sm text-brand-dark/60">
+          {currentPhase === "Adaptation"
+            ? t("dashboard.phase.adaptation", "Adaptation")
+            : currentPhase === "Elimination"
+              ? t("dashboard.phase.elimination", "Elimination")
+              : t("dashboard.phase.reintroduction", "Reintroduction")}
+          {" – "}{t("dashboard.day", "Day")} {currentDay}
+        </p>
         <h1 className="text-2xl font-bold text-brand-dark">{t("logDay.title", "Log Your Day")}</h1>
       </div>
 
