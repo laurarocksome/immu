@@ -2029,11 +2029,19 @@ export default function DashboardPage() {
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
-              <span className="text-xs text-brand-dark/50 min-w-[56px] text-center">
-                {chartOffset === 0
-                  ? t("dashboard.chart.latest", "Latest")
-                  : `-${chartOffset}d`}
-              </span>
+              {chartOffset === 0 ? (
+                <span className="text-xs text-brand-dark/50 min-w-[56px] text-center">
+                  {t("dashboard.chart.latest", "Latest")}
+                </span>
+              ) : (
+                <button
+                  onClick={() => setChartOffset(0)}
+                  className="text-xs text-brand-primary font-medium min-w-[56px] text-center hover:underline"
+                  title={t("dashboard.chart.goToToday", "Go to today")}
+                >
+                  -{chartOffset}d
+                </button>
+              )}
               <button
                 onClick={() => setChartOffset(o => Math.max(0, o - 7))}
                 disabled={chartOffset === 0}
