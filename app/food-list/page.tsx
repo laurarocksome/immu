@@ -20,6 +20,7 @@ import {
   Heart,
   Lock,
   Unlock,
+  Download,
 } from "lucide-react"
 import Logo from "@/app/components/logo"
 import { createBrowserClient } from "@supabase/ssr"
@@ -488,6 +489,59 @@ export default function FoodListPage() {
     setShowOnlyLocked(false)
   }
 
+  // Download "Can eat" product list as a plain-text file
+  const downloadProductList = () => {
+    const canEatProducts = allProducts
+      .filter((p) => p.name !== "5-Hour Energy" && getProductStatus(p) === "Can eat")
+      .sort((a, b) => a.name.localeCompare(b.name))
+
+    const phaseLabel = getPhaseIndicator()
+    const today = new Date()
+    const dateStr = today.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })
+
+    // Group by primary tag
+    const grouped: Record<string, string[]> = {}
+    const ungrouped: string[] = []
+    for (const p of canEatProducts) {
+      const primaryTag = (p.tags || [])[0]
+      if (primaryTag) {
+        if (!grouped[primaryTag]) grouped[primaryTag] = []
+        grouped[primaryTag].push(t(foodNameKey(p.name), p.name))
+      } else {
+        ungrouped.push(t(foodNameKey(p.name), p.name))
+      }
+    }
+
+    const lines: string[] = []
+    lines.push(t("foodList.download.title", "My AIP Food List"))
+    lines.push(`${t("foodList.download.phase", "Phase")}: ${phaseLabel}`)
+    lines.push(`${t("foodList.download.date", "Date")}: ${dateStr}`)
+    lines.push(`${t("foodList.download.count", "Total items")}: ${canEatProducts.length}`)
+    lines.push("")
+    lines.push("─".repeat(40))
+    lines.push("")
+
+    for (const [tag, names] of Object.entries(grouped).sort()) {
+      lines.push(`▸ ${t(foodTagKey(tag), tag).toUpperCase()}`)
+      for (const name of names) lines.push(`  • ${name}`)
+      lines.push("")
+    }
+    if (ungrouped.length > 0) {
+      lines.push(`▸ ${t("foodList.download.other", "OTHER").toUpperCase()}`)
+      for (const name of ungrouped) lines.push(`  • ${name}`)
+      lines.push("")
+    }
+
+    const content = lines.join("\n")
+    const blob = new Blob([content], { type: "text/plain;charset=utf-8" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `aip-food-list-${today.toISOString().slice(0, 10)}.txt`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   // Get classes for status badge
   const getStatusClasses = (status: string) => {
     switch (status) {
@@ -563,7 +617,16 @@ export default function FoodListPage() {
       {/* Main Content */}
       <main className="flex-1 p-4 overflow-hidden">
         <div className="mb-6">
-          <h2 className="text-2xl font-bold mb-2">{t("foodList.title", "Food List")}</h2>
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-2xl font-bold">{t("foodList.title", "Food List")}</h2>
+            <button
+              onClick={downloadProductList}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-pink-100 hover:bg-pink-200 text-pink-700 text-sm font-medium transition-colors"
+            >
+              <Download className="h-4 w-4" />
+              {t("foodList.download.button", "Download list")}
+            </button>
+          </div>
 
           <div className={`inline-block px-3 py-1 rounded-full text-sm ${getPhaseIndicatorClasses()}`}>
             {getPhaseIndicator()}
