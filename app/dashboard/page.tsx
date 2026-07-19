@@ -1255,25 +1255,19 @@ export default function DashboardPage() {
     const symptomNames = Array.from(allSymptoms)
     setUserSymptoms(symptomNames)
 
-    const today = new Date()
+    // Compute the 7-day window from offsetDays — always show real dates
+    const endDate = new Date()
+    endDate.setDate(endDate.getDate() - offsetDays)
+    const windowDates = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(endDate)
+      d.setDate(endDate.getDate() - (6 - i))
+      return d
+    })
+    setChartDates(windowDates.map(d => formatChartDate(d)))
+
+    // Build slot index map from computed window
     const dateMap = new Map<string, number>()
-    // Get last 7 days that have logs, sorted
-    const sortedLogs = [...symptomHistory].sort((a, b) => a.log_date.localeCompare(b.log_date))
-    const lastSeven = sortedLogs.slice(-7)
-    while (lastSeven.length < 7) lastSeven.unshift(null as any)
-
-    // Build chart date labels
-    const newChartDates = lastSeven.map(log => {
-      if (!log) return "-"
-      const d = new Date(log.log_date)
-      return formatChartDate(d)
-    })
-    setChartDates(newChartDates)
-
-    // Build index map
-    lastSeven.forEach((log, i) => {
-      if (log) dateMap.set(log.log_date, i)
-    })
+    windowDates.forEach((d, i) => dateMap.set(d.toISOString().split("T")[0], i))
 
     // Create chart data
     const colors = ["#f4a6b8", "#f6c1b0", "#f9cdd9", "#e87a97", "#f09f88"]
@@ -1314,20 +1308,18 @@ export default function DashboardPage() {
 
     setHasLoggedWellness(true)
 
-    const sortedWellness = [...wellnessHistory].sort((a, b) => a.log_date.localeCompare(b.log_date))
-    const lastSevenW = sortedWellness.slice(-7)
-    while (lastSevenW.length < 7) lastSevenW.unshift(null as any)
-
-    // Set chart date labels from actual log dates (overrides defaults)
-    const wellnessDates = lastSevenW.map(log => {
-      if (!log) return "-"
-      const d = new Date(log.log_date)
-      return formatChartDate(d)
+    // Compute the 7-day window from offsetDays — always show real dates
+    const endDateW = new Date()
+    endDateW.setDate(endDateW.getDate() - offsetDays)
+    const windowDatesW = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(endDateW)
+      d.setDate(endDateW.getDate() - (6 - i))
+      return d
     })
-    setChartDates(wellnessDates)
+    setChartDates(windowDatesW.map(d => formatChartDate(d)))
 
     const wellnessDateMap = new Map<string, number>()
-    lastSevenW.forEach((log, i) => { if (log) wellnessDateMap.set(log.log_date, i) })
+    windowDatesW.forEach((d, i) => wellnessDateMap.set(d.toISOString().split("T")[0], i))
 
     // Create chart data for all 7 days, initialized with null (null = no data, 0 = valid lowest score)
     const moodData: (number | null)[] = [null, null, null, null, null, null, null]
