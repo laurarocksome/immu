@@ -30,6 +30,10 @@ Set as Replit secrets (not in `.env.local`):
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY` (full JWT, ~200 chars)
 - `SUPABASE_SERVICE_ROLE_KEY`
 
+The same three values must also be configured as GitHub repository Actions
+secrets for `laurarocksome/immu`. The CI workflow passes them to the Next.js
+build so Supabase-dependent checks do not run with empty environment values.
+
 ## Resolved Issues
 
 1. **Supabase anon key truncated** — was 40 chars; replaced with correct full JWT.
